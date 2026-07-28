@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SVSS - Settings</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+     <!--Font Awesome-->      
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">      
+
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="css/common.css">
+
+    <!-- Settings CSS -->
+    <link rel="stylesheet" href="css/settings.css">
+
+    <!-- Responsive -->
+    <link rel="stylesheet" href="css/responsive.css">
+
+</head>
+
+<body>
+<!-- ================= MOBILE HEADER ================= -->
+
+<div class="mobile-header">
+
+    <button id="menuBtn" class="menu-btn">
+
+        <i class="bi bi-list"></i>
+
+    </button>
+
+    <div class="mobile-title">
+
+        🏪 <span>SVSS</span>
+
+    </div>
+
+</div>
+<div class="container-app">
+
+    <!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar" id="sidebar">
+
+    <div class="logo">
+
+    <i class="bi bi-shop"></i>
+
+    <div>
+
+        <h2>SVSS</h2>
+
+        <small>Billing System</small>
+
+    </div>
+
+</div>
+
+    <ul>
+
+        <li>
+            <a href="dashboard.html">
+                <i class="bi bi-house"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="products.html">
+                <i class="bi bi-box-seam"></i>
+                <span>Products</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="customers.html">
+                <i class="bi bi-people"></i>
+                <span>Customers</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="billing.html">
+                <i class="bi bi-receipt"></i>
+                <span>Billing</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="history.html">
+                <i class="bi bi-clock-history"></i>
+                <span>Bill History</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="reports.html">
+                <i class="bi bi-bar-chart"></i>
+                <span>Reports</span>
+            </a>
+        </li>
+
+        <li class="active">
+            <a href="settings.html">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </li>
+
+    </ul>
+    <!-- Logout Button -->
+<div class="sidebar-footer">
+
+    <a href="#" onclick="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Logout</span>
+    </a>
+
+</div>
+
+</div>
+    <!-- Main -->
+
+    <main class="main">
+
+        <!-- Welcome Card -->
+
+        <div class="welcome-card">
+
+            <div>
+
+                <h1>
+                    Settings ⚙️
+                </h1>
+
+                <p>
+                    Manage your shop information and invoice settings.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Shop Information -->
+
+        <div class="card mt-4 shadow-sm border-0 rounded-4">
+
+            <div class="card-header text-white rounded-top-4">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-shop"></i>
+
+                    Shop Information
+
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Shop Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="shopName"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Owner Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="ownerName"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Mobile Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="shopMobile"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            GSTIN
+                        </label>
+
+                        <input
+                            type="text"
+                            id="shopGST"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Address
+                        </label>
+
+                        <textarea
+                            id="shopAddress"
+                            rows="3"
+                            class="form-control"></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Appearance -->
+
+<div class="card mt-4 shadow-sm border-0 rounded-4">
+
+    <div class="card-header text-white rounded-top-4">
+
+        <h5 class="mb-0">
+
+            <i class="bi bi-palette-fill"></i>
+
+            Appearance
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <!-- Theme -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+
+                    Theme Color
+
+                </label>
+
+                <select
+                    id="themeColor"
+                    class="form-select">
+
+                    <option value="blue">Blue</option>
+
+                    <option value="green">Green</option>
+
+                    <option value="purple">Purple</option>
+
+                    <option value="orange">Orange</option>
+
+                </select>
+
+            </div>
+
+            <!-- Font -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+
+                    Font Size
+
+                </label>
+
+                <select
+                    id="fontSize"
+                    class="form-select">
+
+                    <option value="small">Small</option>
+
+                    <option value="medium" selected>Medium</option>
+
+                    <option value="large">Large</option>
+
+                </select>
+
+            </div>
+
+            <!-- Dark Mode -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+
+                    Dark Mode
+
+                </label>
+
+                <div class="form-check form-switch">
+
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="darkMode">
+
+                    <label
+                        class="form-check-label"
+                        for="darkMode">
+
+                        Enable Dark Mode
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- Login & Security -->
+
+<div class="card mt-4 shadow-sm border-0 rounded-4">
+
+    <div class="card-header text-white rounded-top-4">
+
+        <h5 class="mb-0">
+
+            <i class="bi bi-shield-lock-fill"></i>
+
+            Login & Security
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <!-- Current Username -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    Current Username
+                </label>
+
+                <div class="form-control bg-light d-flex align-items-center">
+
+                    <i class="bi bi-person-circle me-2"></i>
+
+                    <span id="currentUsername">admin</span>
+
+                </div>
+
+            </div>
+
+            <!-- New Username -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    New Username
+                </label>
+
+                <input
+                    type="text"
+                    id="newUsername"
+                    class="form-control"
+                    placeholder="Enter new username">
+
+            </div>
+
+            <!-- Current Password -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    Current Password
+                </label>
+
+                <div class="input-group">
+
+                    <input
+                        type="password"
+                        id="currentPassword"
+                        class="form-control"
+                        placeholder="Current password">
+
+                    <button
+                        class="btn btn-outline-secondary toggle-password"
+                        type="button"
+                        data-target="currentPassword">
+
+                        <i class="bi bi-eye"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- New Password -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    New Password
+                </label>
+
+                <div class="input-group">
+
+                    <input
+                        type="password"
+                        id="newPassword"
+                        class="form-control"
+                        placeholder="New password">
+
+                    <button
+                        class="btn btn-outline-secondary toggle-password"
+                        type="button"
+                        data-target="newPassword">
+
+                        <i class="bi bi-eye"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Confirm Password -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    Confirm New Password
+                </label>
+
+                <div class="input-group">
+
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        class="form-control"
+                        placeholder="Confirm new password">
+
+                    <button
+                        class="btn btn-outline-secondary toggle-password"
+                        type="button"
+                        data-target="confirmPassword">
+
+                        <i class="bi bi-eye"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Password Strength -->
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+
+                    Password Strength
+
+                </label>
+
+                <div class="progress" style="height:10px;">
+
+                    <div
+                        id="passwordStrength"
+                        class="progress-bar bg-success"
+                        style="width:0%">
+                    </div>
+
+                </div>
+
+                <small
+                    id="strengthText"
+                    class="text-muted">
+
+                    Enter a new password
+
+                </small>
+
+            </div>
+
+            <!-- Password Rules -->
+
+            <div class="col-12">
+
+                <div class="alert alert-light border mb-0">
+
+                    <strong>Password Requirements</strong>
+
+                    <div class="mt-2">
+
+                        ✔ Minimum 8 characters<br>
+
+                        ✔ At least one uppercase letter<br>
+
+                        ✔ At least one number
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+        <!-- Backup & Restore -->
+
+        <div class="card mt-4 shadow-sm border-0 rounded-4">
+
+           <div class="card-header text-white rounded-top-4">
+
+                <h5 class="mb-0">
+
+                    <i class="bi bi-cloud-arrow-down"></i>
+
+                    Backup & Restore
+
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <button
+                            class="btn btn-primary w-100"
+                            id="exportBtn">
+
+                            <i class="bi bi-download"></i>
+
+                            Export Data
+
+                        </button>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <input
+                            type="file"
+                            id="importFile"
+                            hidden>
+
+                        <button
+                            class="btn btn-success w-100"
+                            id="importBtn">
+
+                            <i class="bi bi-upload"></i>
+
+                            Import Data
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+
+        <div class="d-flex justify-content-end gap-3 mt-4 mb-5">
+
+            <button
+                class="btn btn-secondary px-4"
+                id="resetBtn">
+
+                <i class="bi bi-arrow-counterclockwise"></i>
+
+                Reset
+
+            </button>
+
+            <button
+                class="btn btn-primary px-4"
+                id="saveBtn">
+
+                <i class="bi bi-check-circle"></i>
+
+                Save Settings
+
+            </button>
+
+        </div>
+
+    </main>
+
+</div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<script src="js/app.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/shortcuts.js"></script>
+<!-- ========================================= -->
+<!-- LOGOUT MODAL -->
+<!-- ========================================= -->
+
+<div id="logoutModal" class="modal-overlay">
+
+    <div class="logout-modal">
+
+        <div class="logout-icon">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+        </div>
+
+        <h2>
+
+            Logout
+
+        </h2>
+
+        <p>
+
+            Are you sure you want to logout?
+
+        </p>
+
+        <span>
+
+            Your current session will end and you'll need to login again.
+
+        </span>
+
+        <div class="logout-buttons">
+
+            <button
+                id="cancelLogout"
+                class="cancel-btn">
+
+                <i class="fa-solid fa-xmark"></i>
+
+                Cancel
+
+            </button>
+
+            <button
+                id="confirmLogout"
+                class="logout-btn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,367 @@
+/* ======================================
+   SVSS Customers
+====================================== */
+
+body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    transition: .3s;
+}
+
+/* ==========================
+   Page Title
+========================== */
+
+h1{
+    font-size:42px;
+    font-weight:700;
+    color:var(--text);
+}
+
+/* ==========================
+   Cards
+========================== */
+
+.card{
+    border:none;
+    border-radius:14px;
+    box-shadow:0 3px 15px rgba(0,0,0,.08);
+}
+
+.card-body{
+    padding:22px;
+}
+
+/* ==========================
+   Search Box
+========================== */
+
+.form-control{
+    height:48px;
+    border-radius:10px;
+    font-size:16px;
+}
+
+.form-control:focus{
+    box-shadow:none;
+    border-color:#0d6efd;
+}
+
+/* ==========================
+   Table
+========================== */
+
+.table-responsive{
+    overflow-x:auto;
+}
+
+.table{
+    width:100%;
+    min-width:1000px;
+    border-collapse:collapse;
+    margin-bottom:0;
+}
+
+.table thead th{
+
+    background:#212529;
+    color:#fff;
+
+    text-align:center;
+    vertical-align:middle;
+
+    white-space:nowrap;
+
+    font-size:15px;
+
+    padding:14px;
+}
+
+.table tbody td{
+
+    text-align:center;
+    vertical-align:middle;
+
+    padding:14px;
+
+    white-space:nowrap;
+
+    font-size:15px;
+}
+
+.table-hover tbody tr:hover{
+    background:rgba(255,255,255,.05);
+}
+
+.table tbody tr{
+
+    transition:.25s;
+
+}
+
+/* ==========================
+   Amount Colors
+========================== */
+
+.purchase{
+
+    color:#0d6efd;
+    font-weight:600;
+
+}
+
+.paid{
+
+    color:#198754;
+    font-weight:600;
+
+}
+
+.balance{
+
+    color:#dc3545;
+    font-weight:600;
+
+}
+
+/* ==========================
+   Buttons
+========================== */
+
+.btn{
+
+    border-radius:8px;
+
+}
+
+.btn-primary{
+
+    min-width:80px;
+
+}
+
+/* ==========================
+   Alerts
+========================== */
+
+.alert{
+
+    border-radius:12px;
+    margin-bottom:0;
+
+}
+
+.alert h6{
+
+    margin-bottom:10px;
+    font-weight:600;
+
+}
+
+.alert h4{
+
+    margin:0;
+    font-weight:700;
+
+}
+
+/* ==========================
+   Modal
+========================== */
+
+.modal-content{
+
+    border:none;
+    border-radius:14px;
+
+}
+
+.modal-header{
+
+    background:#0d6efd;
+    color:#fff;
+
+}
+
+.modal-header .btn-close{
+
+    filter:invert(1);
+
+}
+
+.modal-title{
+
+    font-weight:600;
+
+}
+
+/* ==========================
+   Customer Details
+========================== */
+
+#viewCustomerName,
+#viewCustomerMobile,
+#viewCustomerAddress{
+    font-weight:600;
+    color:var(--theme);
+}
+
+/* ==========================
+   Empty Table
+========================== */
+
+.empty-row td{
+
+    padding:40px;
+    color:#888;
+    font-size:18px;
+
+}
+
+/* ==========================
+   Scrollbar
+========================== */
+
+.table-responsive::-webkit-scrollbar{
+
+    height:8px;
+
+}
+
+.table-responsive::-webkit-scrollbar-thumb{
+
+    background:#b5b5b5;
+    border-radius:20px;
+
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:992px){
+
+    h1{
+
+        font-size:34px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    h1{
+
+        font-size:28px;
+
+    }
+
+    .card-body{
+
+        padding:15px;
+
+    }
+
+    .table{
+
+        min-width:950px;
+
+    }
+
+}
+
+@media(max-width:576px){
+
+    .btn{
+
+        width:100%;
+
+        margin-bottom:8px;
+
+    }
+
+    .modal-footer{
+
+        display:block;
+
+    }
+
+}
+/* ======================================
+   Add Customer Modal
+====================================== */
+
+#addCustomerModal .form-control,
+#addCustomerModal .form-select{
+
+    background:#3b3b3b;
+    color:#ffffff !important;
+    border:1px solid #555;
+
+}
+
+#addCustomerModal textarea{
+
+    background:#3b3b3b;
+    color:#ffffff !important;
+    border:1px solid #555;
+
+}
+
+#addCustomerModal .form-control::placeholder,
+#addCustomerModal textarea::placeholder{
+
+    color:#cfcfcf;
+
+}
+
+#addCustomerModal .form-control:focus,
+#addCustomerModal textarea:focus{
+
+    background:#3b3b3b;
+    color:#ffffff !important;
+    border-color:#0d6efd;
+    box-shadow:0 0 8px rgba(13,110,253,.35);
+
+}
+
+#addCustomerModal .form-label{
+
+    color:#212529;
+    font-weight:600;
+
+}
+/* ======================================
+   Modal Width
+====================================== */
+
+#addCustomerModal .modal-dialog{
+
+    max-width:900px;
+
+}
+#addCustomerModal .modal-footer{
+
+    padding:18px 24px;
+
+}
+#addCustomerModal .btn{
+
+    min-width:160px;
+    font-weight:600;
+
+}
+#addCustomerModal input::placeholder,
+#addCustomerModal textarea::placeholder{
+
+    color:#b8b8b8;
+    opacity:1;
+
+}
+#addCustomerModal .modal-header{
+
+    background:linear-gradient(135deg,#0d6efd,#267dff);
+
+}

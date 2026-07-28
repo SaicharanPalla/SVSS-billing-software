@@ -1,0 +1,1395 @@
+/* ==========================================================
+   SVSS BILLING SOFTWARE
+   LOGIN PAGE
+   PART 1
+========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,
+body{
+
+    width:100%;
+    height:100%;
+
+}
+
+body{
+
+    font-family:'Poppins',sans-serif;
+
+    overflow:hidden;
+
+    background:#07162d;
+
+}
+
+/* =========================================
+   BACKGROUND
+========================================= */
+
+.background{
+
+    position:fixed;
+
+    inset:0;
+
+    position:fixed;
+
+    inset:0;
+
+    background:url("../images/cloth-bg.jpg") center center / cover no-repeat;
+
+
+    background-repeat:no-repeat;
+
+    z-index:-3;
+
+}
+
+/* =========================================
+   OVERLAY
+========================================= */
+
+.overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:
+
+    linear-gradient(
+
+        90deg,
+
+        rgba(5,17,45,.96) 0%,
+
+        rgba(5,17,45,.90) 28%,
+
+        rgba(5,17,45,.62) 46%,
+
+        rgba(5,17,45,.22) 65%,
+
+        rgba(5,17,45,.04) 100%
+
+    );
+
+    z-index:-2;
+
+}
+
+/* =========================================
+   MAIN LAYOUT
+========================================= */
+
+.login-container{
+
+    width:100%;
+
+    height:100vh;
+
+    display:grid;
+
+    grid-template-columns:46% 54%;
+
+    align-items:center;
+
+}
+
+/* =========================================
+   LEFT PANEL
+========================================= */
+
+.left-panel{
+
+    display:flex;
+
+    justify-content:flex-start;
+
+    align-items:flex-start;
+
+    padding-left:35px;
+
+    padding-top:0;
+
+}
+
+/* =========================================
+   BRAND
+========================================= */
+
+.brand-container{
+
+    width:100%;
+
+    max-width:650px;
+
+    text-align:center;
+
+    margin-top: -35px;
+
+}
+
+/* =========================================
+   LOGO
+========================================= */
+
+.logo{
+
+    width:215px;
+
+    height:215px;
+
+    object-fit:cover;
+
+    display:block;
+
+    margin:0 auto 18px;
+
+    filter:drop-shadow(0 8px 20px rgba(0,0,0,.25));
+
+    border-radius: 50%;
+
+}
+
+/* =========================================
+   SHOP NAME
+========================================= */
+
+.shop-name{
+
+    color:#ffffff;
+
+    font-size:42px;
+
+    font-weight:800;
+
+    line-height:1.08;
+
+    margin-top:8px;
+
+    letter-spacing: -1px;
+
+    margin-bottom:8px;
+
+    width: 100%;
+
+}
+
+/* =========================================
+   SUB TITLE
+========================================= */
+
+.shop-subtitle{
+
+    color:#F6C34F;
+
+    font-size:25px;
+
+    font-weight:700;
+
+    margin-bottom:22px;
+
+    margin-top: 8px;
+
+}
+
+/* =========================================
+   GOLD DIVIDER
+========================================= */
+
+.gold-divider{
+
+    width:420px;
+
+    margin:18px auto;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:18px;
+
+}
+
+.gold-divider span{
+
+    flex:1;
+
+    height:2px;
+
+    background:#D8A72C;
+
+}
+
+.gold-divider i{
+
+    color:#D8A72C;
+
+    font-size:18px;
+
+}
+
+/* =========================================
+   TAG LINE
+========================================= */
+
+.tagline{
+
+    color:#F3F3F3;
+
+    font-size:17px;
+
+    font-weight:400;
+
+    text-align:center;
+
+    margin-top: 4px;
+
+}
+/* ==========================================================
+   PART 2 - RIGHT LOGIN PANEL
+========================================================== */
+
+.right-panel{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    align-items:flex-end;
+
+    padding-right:95px;
+
+    padding-top: 35px;
+
+}
+
+/* =========================================
+   GLASS LOGIN CARD
+========================================= */
+
+.login-card{
+
+    position:relative;
+
+    width:min(410px, 95vw);
+
+    padding:40px 38px;
+
+    border-radius:28px;
+
+    background:rgba(255,255,255,.12);
+
+    border:1px solid rgba(255,255,255,.18);
+
+    backdrop-filter:blur(34px);
+    -webkit-backdrop-filter:blur(34px);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.30);
+
+    overflow:hidden;
+
+}
+
+/* =========================================
+   BLUE TOP LINE
+========================================= */
+
+.card-top-line{
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:linear-gradient(
+        90deg,
+        #1A8DFF,
+        #45B3FF,
+        #1A8DFF
+    );
+
+}
+
+/* =========================================
+   TITLES
+========================================= */
+
+.welcome-title{
+
+    color:#fff;
+
+    text-align:center;
+
+    font-size:31px;
+
+    font-weight:800;
+
+    margin-top:8px;
+
+    margin-bottom:12px;
+
+}
+
+.welcome-subtitle{
+
+    text-align:center;
+
+    color:rgba(255,255,255,.92);
+
+    font-size:14px;
+
+    margin-bottom:18px;
+
+}
+
+/* =========================================
+   BLUE DIVIDER
+========================================= */
+
+.blue-divider{
+
+    width:78px;
+
+    height:4px;
+
+    margin:0 auto 34px;
+
+    border-radius:50px;
+
+    background:#2EA1FF;
+
+}
+
+/* =========================================
+   FORM
+========================================= */
+
+.form-group{
+
+    margin-bottom:28px;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    color:#ffffff;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    margin-bottom:10px;
+
+}
+
+/* =========================================
+   INPUT
+========================================= */
+
+.input-box{
+
+    height:54px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    padding:0 20px;
+
+    border-radius:18px;
+
+    background:rgba(255,255,255,.06);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    transition:.25s;
+
+}
+
+.input-box:focus-within{
+
+    border-color:#2FA2FF;
+
+    box-shadow:
+        0 0 0 4px rgba(47,162,255,.15);
+
+}
+
+.input-box i{
+
+    color:#4FAEFF;
+
+    font-size:20px;
+
+}
+
+.input-box input{
+
+    flex:1;
+
+    background:none;
+
+    border:none;
+
+    outline:none;
+
+    color:#fff;
+
+    font-size:17px;
+
+    font-family:'Poppins',sans-serif;
+
+}
+
+.input-box input::placeholder{
+
+    color:rgba(255,255,255,.55);
+
+}
+
+/* =========================================
+   EYE BUTTON
+========================================= */
+
+.eye-btn{
+
+    border:none;
+
+    background:none;
+
+    color:#5CB5FF;
+
+    cursor:pointer;
+
+    font-size:22px;
+
+}
+/* =========================================
+   REMEMBER ME
+========================================= */
+
+.remember-container{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    margin-top:-8px;
+
+    margin-bottom:18px;
+
+}
+
+.remember-label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:#ffffff;
+
+    font-size:15px;
+
+    font-weight:500;
+
+    cursor:pointer;
+
+    user-select:none;
+
+}
+
+.remember-label input[type="checkbox"]{
+
+    width:18px;
+
+    height:18px;
+
+    accent-color:#2EA1FF;
+
+    cursor:pointer;
+
+}
+
+/* =========================================
+   LOGIN BUTTON
+========================================= */
+
+.login-btn{
+
+    width:100%;
+
+    height:56px;
+
+    margin-top:14px;
+
+    border:none;
+
+    border-radius:18px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+    color:#fff;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    background:linear-gradient(
+        135deg,
+        #2E93FF,
+        #005FE3
+    );
+
+    box-shadow:
+        0 12px 30px rgba(0,95,227,.35);
+
+    transition:.25s;
+
+}
+
+.login-btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.login-footer{
+
+    margin-top:18px;
+
+    text-align:center;
+
+}
+
+.footer-line{
+
+    height:1px;
+
+    background:rgba(255,255,255,.12);
+
+    margin-bottom:20px;
+
+}
+
+.footer-text{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#ffffff;
+
+    font-size:15px;
+
+}
+
+.footer-text i{
+
+    color:#F5C45A;
+
+}
+
+.login-footer small{
+
+    display:block;
+
+    margin-top:12px;
+
+    color:rgba(255,255,255,.60);
+
+    font-size:13px;
+
+}
+/* ==========================================================
+   PART 3 -  EFFECTS + RESPONSIVE
+========================================================== */
+
+/* =========================================
+   LOADING
+========================================= */
+
+.loading-overlay{
+
+    position:fixed;
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+
+    background:rgba(5,17,45,.85);
+
+    backdrop-filter:blur(18px);
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:.45s;
+
+    z-index:99999;
+
+}
+
+.loading-overlay.show{
+
+    opacity:1;
+    visibility:visible;
+
+}
+
+.loader{
+
+    width:85px;
+    height:85px;
+
+    border-radius:50%;
+
+    border:7px solid rgba(255,255,255,.18);
+
+    border-top:7px solid #2EA1FF;
+
+    animation:spin .8s linear infinite;
+
+    box-shadow:
+        0 0 35px rgba(46,161,255,.45);
+
+}
+
+.loading-overlay p{
+
+    margin-top:30px;
+
+    color:#ffffff;
+
+    font-size:23px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+
+}
+
+@keyframes spin{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* =========================================
+   TOAST
+========================================= */
+
+.toast{
+
+    position:fixed;
+
+    top:25px;
+
+    right:25px;
+
+    min-width:330px;
+
+    padding:18px 24px;
+
+    border-radius:16px;
+
+    color:#fff;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transform:translateY(-20px);
+
+    transition:.35s;
+
+    box-shadow:
+        0 20px 45px rgba(0,0,0,.35);
+
+    z-index:99999;
+
+}
+
+.toast.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+    transform:translateY(0);
+
+}
+
+.toast.success{
+
+    background:#16A34A;
+
+}
+
+.toast.error{
+
+    background:#DC2626;
+
+}
+
+.toast.warning{
+
+    background:#F59E0B;
+
+}
+
+/* =========================================
+   PAGE ANIMATION
+========================================= */
+
+.left-panel{
+
+    animation:leftSlide .8s ease;
+
+}
+
+.right-panel{
+
+    animation:rightSlide .8s ease;
+
+}
+
+@keyframes leftSlide{
+
+    from{
+
+        opacity:0;
+
+        transform:translateX(-50px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateX(0);
+
+    }
+
+}
+
+@keyframes rightSlide{
+
+    from{
+
+        opacity:0;
+
+        transform:translateX(50px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateX(0);
+
+    }
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+/* ==========================
+   MOBILE BRAND
+========================== */
+
+.mobile-brand{
+
+    display:none;
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+}
+
+.mobile-logo{
+
+    width:90px;
+
+    height:90px;
+
+    object-fit:cover;
+
+    border-radius:50%;
+
+    display:block;
+
+    margin:0 auto 15px;
+
+}
+
+.mobile-shop-name{
+
+    color:#fff;
+
+    font-size:24px;
+
+    font-weight:700;
+
+    line-height:1.2;
+
+}
+
+.mobile-shop-subtitle{
+
+    color:#F6C34F;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    margin-top:8px;
+
+}
+
+/* ==========================================================
+   LARGE DESKTOP
+========================================================== */
+
+@media (max-width:1400px){
+
+    .login-container{
+
+        grid-template-columns:44% 56%;
+
+    }
+
+    .left-panel{
+
+        padding-left:30px;
+
+    }
+
+    .logo{
+
+        width:190px;
+
+        height:190px;
+
+    }
+
+    .shop-name{
+
+        font-size:40px;
+
+    }
+
+    .shop-subtitle{
+
+        font-size:23px;
+
+    }
+
+    .gold-divider{
+
+        width:360px;
+
+    }
+
+    .right-panel{
+
+        padding-right:50px;
+
+    }
+
+}
+
+/* ==========================================================
+   SMALL LAPTOP
+========================================================== */
+
+@media (max-width:1200px){
+
+    .login-container{
+
+        grid-template-columns:32% 68%;
+
+    }
+
+    .left-panel{
+
+        justify-content:center;
+
+        align-items:center;
+
+        padding:20px;
+
+    }
+
+    .brand-container{
+
+        margin-top:0;
+
+    }
+
+    .logo{
+
+        width:130px;
+
+        height:130px;
+
+    }
+
+    .shop-name{
+
+        font-size:28px;
+
+        line-height:1.2;
+
+    }
+
+    .shop-subtitle{
+
+        font-size:17px;
+
+    }
+
+    .gold-divider{
+
+        width:240px;
+
+        margin:14px auto;
+
+    }
+
+    .tagline{
+
+        font-size:14px;
+
+    }
+
+    .right-panel{
+
+        justify-content:center;
+
+        align-items:center;
+
+        padding:20px;
+
+    }
+
+    .login-card{
+
+        width:100%;
+
+        max-width:430px;
+
+    }
+
+}
+
+/* ==========================================================
+   TABLET
+========================================================== */
+
+@media (max-width:1050px){
+
+    .login-container{
+
+        grid-template-columns:34% 66%;
+
+    }
+
+    .logo{
+
+        width:100px;
+
+        height:100px;
+
+    }
+
+    .shop-name{
+
+        font-size:22px;
+
+    }
+
+    .shop-subtitle{
+
+        font-size:14px;
+
+    }
+
+    .gold-divider{
+
+        width:180px;
+
+    }
+
+    .tagline{
+
+        font-size:13px;
+
+    }
+
+    .login-card{
+
+        max-width:400px;
+
+    }
+
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width:768px){
+
+    body{
+
+        overflow-y:auto;
+
+    }
+
+    .login-container{
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+
+        min-height:100vh;
+
+        padding:25px 15px;
+
+    }
+
+    .left-panel{
+
+        display:none;
+
+    }
+
+    .right-panel{
+
+        width:100%;
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+
+        padding:0;
+
+    }
+
+    .mobile-brand{
+
+        display:block;
+
+    }
+
+    .login-card{
+
+        width:100%;
+
+        max-width:420px;
+
+        padding:28px 22px;
+
+        border-radius:24px;
+
+    }
+
+    .welcome-title{
+
+        font-size:30px;
+
+        margin-top:0;
+
+    }
+
+    .welcome-subtitle{
+
+        font-size:15px;
+
+        margin-bottom:18px;
+
+    }
+
+    .blue-divider{
+
+        margin-bottom:24px;
+
+    }
+
+    .form-group{
+
+        margin-bottom:20px;
+
+    }
+
+    .input-box{
+
+        height:52px;
+
+    }
+
+    .login-btn{
+
+        height:52px;
+
+    }
+
+}
+
+/* ==========================================================
+   SMALL MOBILE
+========================================================== */
+
+@media (max-width:480px){
+
+    .login-container{
+
+        padding:18px 12px;
+
+    }
+
+    .login-card{
+
+        width:100%;
+
+        padding:22px 18px;
+
+        border-radius:20px;
+
+    }
+
+    .mobile-logo{
+
+        width:75px;
+
+        height:75px;
+
+    }
+
+    .mobile-shop-name{
+
+        font-size:20px;
+
+    }
+
+    .mobile-shop-subtitle{
+
+        font-size:13px;
+
+    }
+
+    .welcome-title{
+
+        font-size:26px;
+
+    }
+
+    .welcome-subtitle{
+
+        font-size:14px;
+
+    }
+
+    .input-box{
+
+        height:50px;
+
+        padding:0 16px;
+
+    }
+
+    .input-box input{
+
+        font-size:15px;
+
+    }
+
+    .login-btn{
+
+        height:50px;
+
+        font-size:15px;
+
+    }
+
+    .footer-text{
+
+        font-size:13px;
+
+    }
+
+    .login-footer small{
+
+        font-size:12px;
+
+    }
+
+}
+
+/* ==========================================================
+   LOGIN CARD EFFECT
+========================================================== */
+
+.login-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:inherit;
+
+    background:linear-gradient(
+        180deg,
+        rgba(255,255,255,.10),
+        rgba(255,255,255,.02)
+    );
+
+    pointer-events:none;
+
+}
+
+/* ==========================================================
+   LOGIN TRANSITION
+========================================================== */
+
+.login-card{
+
+    transition:.5s ease;
+
+}
+
+.login-card.hide{
+
+    opacity:0;
+
+    transform:scale(.9) translateY(-40px);
+
+    filter:blur(10px);
+
+}
+
+.loading-overlay{
+
+    opacity:0;
+
+    visibility:hidden;
+
+    display:flex;
+
+    transition:opacity .4s ease, visibility .4s ease;
+
+}
+
+.loading-overlay.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+}
+
+.loading-overlay p{
+
+    animation:pulseText 1s infinite;
+
+}
+
+@keyframes pulseText{
+
+    0%,100%{
+
+        opacity:.5;
+
+    }
+
+    50%{
+
+        opacity:1;
+
+    }
+
+}
+
+body.fade-out{
+
+    animation:fadeOut .4s forwards;
+
+}
+
+@keyframes fadeOut{
+
+    from{
+
+        opacity:1;
+
+    }
+
+    to{
+
+        opacity:0;
+
+    }
+
+}

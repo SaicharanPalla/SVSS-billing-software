@@ -1,0 +1,72 @@
+{
+  "name": "billing_software",
+  "version": "1.0.0",
+  "description": "SVSS Billing Software",
+  "main": "main.js",
+  "author": "SVSS",
+  "license": "ISC",
+  "type": "commonjs",
+  "keywords": [
+    "billing",
+    "invoice",
+    "gst",
+    "electron",
+    "svss"
+  ],
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^38.8.6",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "lowdb": "^7.0.1",
+    "uuid": "^14.0.1"
+  },
+  "build": {
+    "appId": "com.svss.billing",
+    "productName": "SVSS Billing Software",
+    "artifactName": "SVSS Billing Software Setup.${ext}",
+    "copyright": "Copyright © 2026 SVSS",
+    "directories": {
+      "output": "dist",
+      "buildResources": "."
+    },
+    "files": [
+      "**/*",
+      "!dist/**/*",
+      "!node_modules/.cache/**/*",
+      "!*.md",
+      "!package-lock.json"
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "asar": true,
+    "win": {
+      "icon": "icons/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SVSS Billing Software",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
+    }
+  }
+}

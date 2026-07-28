@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>SVSS Billing Software</title>
+
+    <link rel="stylesheet" href="css/login.css">
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Background -->
+
+    <div class="background"></div>
+
+    <div class="overlay"></div>
+
+    <!-- Main Container -->
+
+    <div class="login-container">
+
+        <!-- ========================================= -->
+        <!-- LEFT SIDE -->
+        <!-- ========================================= -->
+
+        <section class="left-panel">
+
+            <div class="brand-container">
+
+                <img
+                    src="images/logo.png"
+                    alt="SVSS Logo"
+                    class="logo">
+
+                <h1 class="shop-name">
+
+                    Sri Venkata Siva Sai
+
+                </h1>
+
+                <h2 class="shop-subtitle">
+
+                    Cloth & Matching Center
+
+                </h2>
+
+                <div class="gold-divider">
+
+                    <span></span>
+
+                    <i class="fa-solid fa-star"></i>
+
+                    <span></span>
+
+                </div>
+
+                <p class="tagline">
+
+                    Professional GST Billing Software
+
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- ========================================= -->
+        <!-- RIGHT SIDE -->
+        <!-- ========================================= -->
+
+        <section class="right-panel">
+                      <div class="login-card">
+
+                <div class="card-top-line"></div>
+                <!-- ================= MOBILE BRAND ================= -->
+                
+                <div class="mobile-brand">
+                
+                    <img
+                        src="images/logo.png"
+                        alt="SVSS Logo"
+                        class="mobile-logo">
+                
+                    <h2 class="mobile-shop-name">
+                
+                        Sri Venkata Siva Sai
+                
+                    </h2>
+                
+                    <p class="mobile-shop-subtitle">
+                
+                        Cloth & Matching Center
+                
+                    </p>
+                
+                </div>
+
+                <h2 class="welcome-title">
+
+                    Welcome Back
+
+                </h2>
+
+                <p class="welcome-subtitle">
+
+                    Login to Continue
+
+                </p>
+
+                <div class="blue-divider"></div>
+
+                <form id="loginForm">
+
+                    <!-- Username -->
+
+                    <div class="form-group">
+
+                        <label for="username">
+
+                            Username
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-user"></i>
+
+                            <input
+                                type="text"
+                                id="username"
+                                placeholder="Enter Username"
+                                autocomplete="username">
+
+                        </div>
+
+                    </div>
+
+                    <!-- Password -->
+
+                    <div class="form-group">
+
+                        <label for="password">
+
+                            Password
+
+                        </label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Enter Password"
+                                autocomplete="current-password">
+
+                            <button
+                                type="button"
+                                id="togglePassword"
+                                class="eye-btn">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+                    <div class="remember-container">
+                    
+                        <label class="remember-label">
+                    
+                            <input
+                                type="checkbox"
+                                id="rememberMe"
+                            >
+                    
+                            <span>Remember Me</span>
+                    
+                        </label>
+                    
+                    </div>
+                    <button
+                        id="loginBtn"
+                        class="login-btn"
+                        type="submit">
+
+                        <i class="fa-solid fa-right-to-bracket"></i>
+
+                        LOGIN
+
+                    </button>
+
+                </form>
+
+                <div class="login-footer">
+
+                    <div class="footer-line"></div>
+
+                    <div class="footer-text">
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                        <span>
+
+                            Fast • Secure • Easy Billing
+
+                        </span>
+
+                    </div>
+
+                    <small id="appVersion">
+
+                        Version
+                    
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    
+
+    <!-- Toast -->
+
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading Overlay -->
+
+    <div
+        id="loadingOverlay"
+        class="loading-overlay">
+
+        <div class="loader"></div>
+
+        <p>
+
+            Signing In...
+
+        </p>
+
+    </div>
+
+    <script src="js/login.js"></script>
+
+
+</body>
+
+</html>

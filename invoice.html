@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Invoice</title>
+
+    <link rel="stylesheet" href="css/invoice.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+</head>
+
+<body>
+
+<div class="invoice">
+
+    <!-- Header -->
+
+    <div class="header">
+
+        <h1>SRI VENKATA SIVA SAI CLOTH & MATCHINGS</h1>
+
+        <h3>GST BILL / TAX INVOICE</h3>
+
+        <p>
+            Opp. Sai Lodge, R.R. Road,
+            Chirala - 523155
+        </p>
+
+        <p>
+            Phone : +91 9440061740
+        </p>
+
+        <p>
+            GSTIN : 37XXXXXXXXXXX
+        </p>
+
+    </div>
+
+    <hr>
+
+    <!-- Customer Details -->
+
+    <div class="details">
+
+        <div>
+
+            <p><b>Bill No :</b>
+                <span id="billNo"></span>
+            </p>
+
+            <p><b>Customer :</b>
+                <span id="customer"></span>
+            </p>
+
+            <p><b>Mobile :</b>
+                <span id="mobile"></span>
+            </p>
+
+        </div>
+
+        <div>
+
+            <p><b>Date :</b>
+            <span id="billDate"></span></p>
+            
+            <p><b>Payment Mode :</b>
+            <span id="paymentMode"></span></p>
+            
+            <p><b>Amount Paid :</b>
+            <span id="amountPaid"></span></p>
+            
+            <p><b>Balance Due :</b>
+            <span id="balanceDue"></span></p>
+            
+            <p><b>Status :</b>
+            <span id="paymentStatus"></span></p>
+            
+            </div>
+    <hr>
+
+    <!-- Products -->
+    <div class="table-responsive">
+    <table>
+
+        <thead>
+
+        <tr>
+
+            <th>Code</th>
+
+            <th>Product</th>
+
+            <th>Unit</th>
+
+            <th>Qty</th>
+
+            <th>Rate</th>
+
+            <th>GST</th>
+
+            <th>Total</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody id="invoiceBody">
+
+        </tbody>
+
+    </table>
+
+    <!-- Totals -->
+
+    <div class="summary">
+
+        <table>
+
+            <tr>
+
+                <td>Sub Total</td>
+
+                <td id="subTotal"></td>
+
+            </tr>
+
+            <tr>
+
+                <td>GST Total</td>
+
+                <td id="gstTotal"></td>
+
+            </tr>
+
+            <tr>
+
+                <td>Discount</td>
+
+                <td id="discount"></td>
+
+            </tr>
+
+            <tr>
+
+                <th>Grand Total</th>
+
+                <th id="grandTotal"></th>
+
+            </tr>
+
+        </table>
+
+    </div>
+    </div>
+
+    <div class="signature">
+
+        <div>
+
+            _______________________
+
+            <br>
+
+            Customer Signature
+
+        </div>
+
+        <div>
+
+            _______________________
+
+            <br>
+
+            Authorized Signature
+
+        </div>
+
+    </div>
+
+    <p class="note">
+
+        Goods once sold cannot be taken back or exchanged.
+
+    </p>
+
+    <h3 class="thank">
+
+        Thank You... Visit Again!
+
+    </h3>
+
+</div>
+<script src="js/app.js"></script>
+<script src="js/invoice.js"></script>
+
+</body>
+
+</html>

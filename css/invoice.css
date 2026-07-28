@@ -1,0 +1,90 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    padding:20px;
+    color:#000;
+}
+
+.invoice{
+    width:100%;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,
+td{
+    border:1px solid #000;
+    padding:8px;
+    text-align:center;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.details{
+    display:flex;
+    justify-content:space-between;
+    margin:20px 0;
+}
+
+.summary{
+    width:320px;
+    margin-left:auto;
+    margin-top:20px;
+}
+
+.summary table{
+    width:100%;
+}
+
+.signature{
+    display:flex;
+    justify-content:space-between;
+    margin-top:60px;
+}
+
+.note,
+.thank{
+    text-align:center;
+    margin-top:20px;
+}
+
+@page{
+    size:A4;
+    margin:10mm;
+}  
+@media print {
+
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    body {
+        color: #000 !important;
+    }
+
+    td,
+    th,
+    p,
+    span,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: #000 !important;
+    }
+}

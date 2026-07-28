@@ -1,0 +1,371 @@
+/* ===========================================
+   SVSS Settings
+=========================================== */
+
+/* Default Theme */
+
+:root{
+    --theme:#3465e1;
+}
+
+/* Welcome Card */
+
+.welcome-card{
+    background:linear-gradient(135deg,var(--theme),#294dc7);
+    color:#fff;
+    border-radius:25px;
+    padding:35px;
+    margin-bottom:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.welcome-card h1{
+    font-size:42px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.welcome-card p{
+    margin:0;
+    font-size:17px;
+}
+
+/* Cards */
+
+.card{
+    border:none;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.card-header{
+    background:var(--theme) !important;
+    color:#fff !important;
+    padding:16px 22px;
+    font-size:20px;
+    font-weight:600;
+}
+
+.card-body{
+    padding:30px;
+}
+
+/* Form */
+
+.form-label{
+    font-weight:600;
+    color:#555;
+    margin-bottom:8px;
+}
+
+.form-control,
+.form-select{
+    height:48px;
+    border-radius:12px;
+    border:1px solid #ddd;
+    font-size:15px;
+}
+
+textarea.form-control{
+    height:auto;
+    min-height:110px;
+    resize:none;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:var(--theme);
+    box-shadow:0 0 8px rgba(52,101,225,.25);
+}
+
+/* Switch */
+
+.form-check-input{
+    cursor:pointer;
+}
+
+.form-check-input:checked{
+    background-color:var(--theme);
+    border-color:var(--theme);
+}
+
+/* Buttons */
+
+.btn{
+    border-radius:12px;
+    font-weight:600;
+    padding:11px 24px;
+}
+
+.btn-primary{
+    background:var(--theme);
+    border:none;
+}
+
+.btn-primary:hover{
+    opacity:.9;
+}
+
+.btn-success,
+.btn-secondary{
+    border:none;
+}
+
+#exportBtn,
+#importBtn{
+    height:55px;
+}
+
+/* Font Sizes */
+
+.font-small{
+    font-size:14px;
+}
+
+.font-medium{
+    font-size:16px;
+}
+
+.font-large{
+    font-size:18px;
+}
+
+/* Dark Mode */
+
+body.dark-mode{
+    background:#181818;
+    color:#fff;
+}
+
+body.dark-mode .welcome-card{
+    background:linear-gradient(135deg,#303030,#222);
+}
+
+body.dark-mode .card{
+    background:#2a2a2a;
+    color:#fff;
+}
+
+body.dark-mode .form-label{
+    color:#eee;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select{
+    background:#3b3b3b;
+    color:#fff;
+    border:1px solid #555;
+}
+
+body.dark-mode .form-control::placeholder{
+    color:#bbb;
+}
+
+/* Theme Colors */
+
+body[data-theme="blue"]{
+    --theme:#3465e1;
+}
+
+body[data-theme="green"]{
+    --theme:#16a34a;
+}
+
+body[data-theme="purple"]{
+    --theme:#7c3aed;
+}
+
+body[data-theme="orange"]{
+    --theme:#ea580c;
+}
+
+/* Responsive */
+
+@media (max-width:768px){
+
+    .welcome-card{
+        padding:25px;
+        border-radius:18px;
+    }
+
+    .welcome-card h1{
+        font-size:30px;
+    }
+
+    .welcome-card p{
+        font-size:15px;
+    }
+
+    .card-body{
+        padding:20px;
+    }
+
+    .btn{
+        width:100%;
+    }
+
+    .d-flex.justify-content-end{
+        flex-direction:column;
+    }
+}
+.card-header{
+    background: var(--theme) !important;
+    color:#fff !important;
+}
+
+.welcome-card{
+    background: linear-gradient(
+        135deg,
+        var(--theme),
+        var(--theme-dark)
+    ) !important;
+}
+/* =========================================================
+   LOGIN & SECURITY
+========================================================= */
+
+#currentUsername{
+    font-weight:600;
+    color:#4b5563;
+    font-size:15px;
+}
+
+.form-control.bg-light{
+    height:48px;
+    border:1px solid #dee2e6;
+    border-radius:12px;
+    background:#f8f9fa !important;
+}
+
+.form-control,
+.form-select{
+    border-radius:12px;
+    min-height:48px;
+    transition:.25s;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:#6f42c1;
+    box-shadow:0 0 0 .2rem rgba(111,66,193,.15);
+}
+
+.input-group .btn{
+    border-radius:0 12px 12px 0;
+    border-color:#dee2e6;
+    background:#fff;
+}
+
+.input-group .btn:hover{
+    background:#6f42c1;
+    color:#fff;
+    border-color:#6f42c1;
+}
+
+.input-group .btn i{
+    font-size:18px;
+}
+
+.progress{
+    height:10px;
+    border-radius:20px;
+    background:#e9ecef;
+}
+
+.progress-bar{
+    border-radius:20px;
+    transition:.4s;
+}
+
+#strengthText{
+    display:block;
+    margin-top:8px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.alert-light{
+    border-radius:14px;
+    background:#fafafa;
+    border:1px solid #e5e7eb;
+}
+
+.alert-light strong{
+    color:#6f42c1;
+    font-size:15px;
+}
+
+.alert-light div{
+    margin-top:10px;
+    color:#555;
+    line-height:1.8;
+}
+
+.toggle-password{
+    width:52px;
+}
+
+.toggle-password i{
+    transition:.2s;
+}
+
+.toggle-password:hover i{
+    transform:scale(1.1);
+}
+
+.card-header h5 i{
+    margin-right:8px;
+}
+
+.card-body label{
+    font-weight:600;
+    color:#495057;
+    margin-bottom:8px;
+}
+
+.card{
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 24px rgba(0,0,0,.08);
+}
+/* =========================
+   ICON
+========================= */
+
+.logout-icon{
+
+    width:90px;
+    height:90px;
+
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    background:rgba(220,53,69,.12);
+
+    color:#dc3545;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:48px;
+
+    box-shadow:0 8px 25px rgba(220,53,69,.18);
+
+}
+.logout-icon i{
+
+    transition:.3s;
+
+}
+
+.logout-modal:hover .logout-icon i{
+
+    transform:translateX(4px);
+
+}

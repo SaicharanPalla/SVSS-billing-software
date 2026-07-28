@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SVSS - Customers</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+     <!--Font Awesome-->      
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">      
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/customers.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+</head>
+
+<body>
+
+<body>
+
+<!-- ================= MOBILE HEADER ================= -->
+
+<div class="mobile-header">
+
+    <button id="menuBtn" class="menu-btn">
+
+        <i class="bi bi-list"></i>
+
+    </button>
+
+    <div class="mobile-title">
+
+        🏪 <span>SVSS</span>
+
+    </div>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar" id="sidebar">
+
+    <div class="logo">
+
+        <i class="bi bi-shop"></i>
+
+        <div>
+
+            <h2>SVSS</h2>
+
+            <small>Billing System</small>
+
+        </div>
+
+    </div>
+
+    <ul>
+
+        <li>
+            <a href="dashboard.html">
+                <i class="bi bi-house"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="products.html">
+                <i class="bi bi-box-seam"></i>
+                <span>Products</span>
+            </a>
+        </li>
+
+        <li class="active">
+            <a href="customers.html">
+                <i class="bi bi-people"></i>
+                <span>Customers</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="billing.html">
+                <i class="bi bi-receipt"></i>
+                <span>Billing</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="history.html">
+                <i class="bi bi-clock-history"></i>
+                <span>Bill History</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="reports.html">
+                <i class="bi bi-bar-chart"></i>
+                <span>Reports</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="settings.html">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </li>
+
+    </ul>
+
+    <div class="sidebar-footer">
+
+        <a href="#" onclick="logout()">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+            <span>Logout</span>
+
+        </a>
+
+    </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+<div class="container-fluid p-4">
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+
+    <h1 class="fw-bold mb-0">
+
+        <i class="bi bi-people-fill text-primary"></i>
+
+        Customers
+
+    </h1>
+
+    <div class="d-flex gap-2">
+
+        <button
+            class="btn btn-success"
+            id="addCustomerBtn"
+            data-bs-toggle="modal"
+            data-bs-target="#addCustomerModal">
+
+            <i class="bi bi-person-plus-fill"></i>
+
+            Add Customer
+
+        </button>
+
+        <a href="dashboard.html"
+           class="btn btn-primary">
+
+            <i class="bi bi-house-door-fill"></i>
+
+            Home
+
+        </a>
+
+    </div>
+
+</div>
+
+    <!-- Search -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <input
+                        type="text"
+                        id="searchCustomer"
+                        class="form-control"
+                        placeholder="Search Customer / Mobile">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Customer Table -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-bordered table-hover align-middle text-center">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th style="width:18%">Customer</th>
+
+                            <th style="width:15%">Mobile</th>
+
+                            <th style="width:18%">Address</th>
+
+                            <th style="width:10%">Bills</th>
+
+                            <th style="width:12%">Purchase</th>
+
+                            <th style="width:12%">Paid</th>
+
+                            <th style="width:10%">Balance</th>
+
+                            <th style="width:5%">Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="customerTableBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ===========================================
+     ADD CUSTOMER MODAL
+=========================================== -->
+
+<div class="modal fade"
+     id="addCustomerModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+
+                <h5 class="modal-title">
+
+                    <i class="bi bi-person-plus-fill"></i>
+
+                    Add New Customer
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            <i class="bi bi-person-fill me-1"></i>
+                            Customer Name
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="customerName"
+                            class="form-control"
+                            placeholder="Enter Customer Name">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                          <i class="bi bi-telephone-fill me-1"></i>
+                          Mobile Number
+                          <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="customerMobile"
+                            class="form-control"
+                            maxlength="10"
+                            placeholder="Enter Mobile Number">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            <i class="bi bi-receipt me-1"></i>
+                            GST Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="customerGST"
+                            class="form-control"
+                            placeholder="GST Number (Optional)">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            <i class="bi bi-envelope-fill me-1"></i>
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="customerEmail"
+                            class="form-control"
+                            placeholder="Email (Optional)">
+
+                    </div>
+
+                    <div class="col-12 mb-3">
+
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            Address
+                        </label>
+
+                        <textarea
+                            id="customerAddress"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Customer Address"></textarea>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            <i class="bi bi-cash-stack me-1"></i>
+                            Opening Balance
+                        </label>
+
+                        <input
+                            type="number"
+                            id="openingBalance"
+                            class="form-control"
+                            value="0">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            <i class="bi bi-pencil-square me-1"></i>
+                            Notes
+                        </label>
+
+                        <input
+                            type="text"
+                            id="customerNotes"
+                            class="form-control"
+                            placeholder="Optional">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="btn btn-success"
+                    id="saveCustomer">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    Save Customer
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ===========================================
+     CUSTOMER DETAILS MODAL
+=========================================== -->
+
+<div class="modal fade"
+     id="customerModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Customer Details
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row mb-4">
+
+                    <div class="col-md-4">
+
+                        <strong>Name :</strong>
+
+                        <span id="viewCustomerName"></span>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <strong>Mobile :</strong>
+
+                        <span id="viewCustomerMobile"></span>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <strong>Address :</strong>
+
+                        <span id="viewCustomerAddress"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered">
+
+                        <thead class="table-primary">
+
+                            <tr>
+
+                                <th>Bill No</th>
+
+                                <th>Date</th>
+
+                                <th>Grand Total</th>
+
+                                <th>Paid</th>
+
+                                <th>Balance</th>
+
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="customerBills">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="row mt-4">
+
+                    <div class="col-md-4">
+
+                        <div class="alert alert-primary text-center">
+
+                            <h6>Total Purchase</h6>
+
+                            <h4 id="customerPurchase">
+
+                                ₹0.00
+
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="alert alert-success text-center">
+
+                            <h6>Total Paid</h6>
+
+                            <h4 id="customerPaid">
+
+                                ₹0.00
+
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="alert alert-danger text-center">
+
+                            <h6>Balance Due</h6>
+
+                            <h4 id="customerBalance">
+
+                                ₹0.00
+
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-primary"
+                    id="printStatement">
+
+                    <i class="bi bi-printer"></i>
+
+                    Print Statement
+
+                </button>
+
+                <button
+                    class="btn btn-success"
+                    id="receivePayment">
+
+                    <i class="bi bi-cash-coin"></i>
+
+                    Receive Payment
+
+                </button>
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===========================================
+     PAYMENT MODAL
+=========================================== -->
+
+<div class="modal fade"
+     id="paymentModal"
+     tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Receive Payment
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Customer
+
+                    </label>
+
+                    <input
+                        id="payCustomer"
+                        class="form-control"
+                        readonly>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Balance
+
+                    </label>
+
+                    <input
+                        id="payBalance"
+                        class="form-control"
+                        readonly>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Payment Amount
+
+                    </label>
+
+                    <input
+                        type="number"
+                        id="payAmount"
+                        class="form-control">
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Payment Mode
+
+                    </label>
+
+                    <select
+                        id="payMode"
+                        class="form-select">
+
+                        <option>Cash</option>
+                        <option>UPI</option>
+                        <option>Card</option>
+                        <option>Bank Transfer</option>
+
+                    </select>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                       Remarks
+
+                    </label>
+
+                    <textarea
+                        id="payRemarks"
+                        class="form-control"></textarea>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+                <button
+                    id="savePayment"
+                    class="btn btn-success">
+                    Save Payment
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<!-- JS -->
+
+<script src="js/app.js"></script>
+
+<script src="js/theme.js"></script>
+
+<script src="js/customers.js"></script>
+
+<script src="js/toast.js"></script>
+
+<script src="js/shortcuts.js"></script>
+<!-- ========================================= -->
+<!-- LOGOUT MODAL -->
+<!-- ========================================= -->
+
+<div id="logoutModal" class="modal-overlay">
+
+    <div class="logout-modal">
+
+        <div class="logout-icon">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+        </div>
+
+        <h2>
+
+            Logout
+
+        </h2>
+
+        <p>
+
+            Are you sure you want to logout?
+
+        </p>
+
+        <span>
+
+            Your current session will end and you'll need to login again.
+
+        </span>
+
+        <div class="logout-buttons">
+
+            <button
+                id="cancelLogout"
+                class="cancel-btn">
+
+                <i class="fa-solid fa-xmark"></i>
+
+                Cancel
+
+            </button>
+
+            <button
+                id="confirmLogout"
+                class="logout-btn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>

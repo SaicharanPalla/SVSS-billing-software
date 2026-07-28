@@ -1,0 +1,60 @@
+#productList{
+
+    position:absolute;
+
+    width:100%;
+
+    z-index:1000;
+
+    max-height:220px;
+
+    overflow-y:auto;
+
+    display:none;
+
+    background:#fff;
+
+}
+
+#productList .list-group-item{
+
+    cursor:pointer;
+
+}
+/* =========================
+   ICON
+========================= */
+
+.logout-icon{
+
+    width:90px;
+    height:90px;
+
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    background:rgba(220,53,69,.12);
+
+    color:#dc3545;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:48px;
+
+    box-shadow:0 8px 25px rgba(220,53,69,.18);
+
+}
+.logout-icon i{
+
+    transition:.3s;
+
+}
+
+.logout-modal:hover .logout-icon i{
+
+    transform:translateX(4px);
+
+}
