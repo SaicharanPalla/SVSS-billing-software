@@ -2002,11 +2002,16 @@ if (localDatabase.settings) {
     localDatabase.settings.rememberMe =
         localLoginState.rememberMe;
 
-    localDatabase.settings.savedUsername =
-        localLoginState.savedUsername;
+    if (localLoginState.rememberMe === true) {
+        localDatabase.settings.savedUsername =
+            localLoginState.savedUsername;
 
-    localDatabase.settings.savedPassword =
-        localLoginState.savedPassword;
+        localDatabase.settings.savedPassword =
+            localLoginState.savedPassword;
+    } else {
+        localDatabase.settings.savedUsername = "";
+        localDatabase.settings.savedPassword = "";
+    }
 
 }
         // ======================================
