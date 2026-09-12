@@ -408,3 +408,39 @@
     }
 
 }
+/* Final mobile Product Master positioning fix */
+@media (max-width:768px){
+
+    #productMasterModal{
+        position:fixed !important;
+        top:56px !important;
+        left:0 !important;
+        right:0 !important;
+        bottom:0 !important;
+        height:calc(100% - 56px) !important;
+        padding:0 !important;
+        overflow-y:auto !important;
+        z-index:2000 !important;
+    }
+
+    #productMasterModal .modal-dialog{
+        width:calc(100% - 16px) !important;
+        max-width:none !important;
+        margin:8px auto !important;
+    }
+
+    #productMasterModal .modal-content{
+        position:relative !important;
+        width:100% !important;
+        overflow:visible !important;
+    }
+
+    #productMasterModal .modal-header{
+        display:flex !important;
+        min-height:58px !important;
+        height:auto !important;
+        visibility:visible !important;
+        opacity:1 !important;
+    }
+
+}
