@@ -365,3 +365,44 @@
     }
 
 }
+/* Keep table action buttons compact on mobile */
+@media (max-width:768px){
+
+    .table .d-flex.justify-content-end{
+        flex-direction:row;
+        align-items:center;
+        gap:6px;
+        flex-wrap:nowrap;
+    }
+
+    .table .d-flex.justify-content-end .btn{
+        width:auto;
+        margin:0;
+        white-space:nowrap;
+    }
+
+}
+
+
+/* Keep Category table action buttons side-by-side on mobile */
+@media (max-width:768px){
+
+    .table td:has(.edit-category),
+    .table td:has(.delete-category){
+        white-space:nowrap;
+        width:1%;
+    }
+
+    .table .edit-category,
+    .table .delete-category{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:auto;
+        min-width:36px;
+        margin:0 2px !important;
+        white-space:nowrap;
+    }
+
+}
+
