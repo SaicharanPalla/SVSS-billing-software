@@ -385,3 +385,26 @@
     }
 
 }
+/* Keep Product Master modal fully visible on mobile */
+@media (max-width:768px){
+
+    body:has(#productMasterModal.show){
+        overflow:hidden !important;
+    }
+
+    #productMasterModal.show{
+        display:block !important;
+        overflow-y:auto !important;
+    }
+
+    #productMasterModal .modal-dialog{
+        margin:20px auto !important;
+        transform:none !important;
+    }
+
+    #productMasterModal .modal-content{
+        position:relative !important;
+        top:0 !important;
+    }
+
+}
