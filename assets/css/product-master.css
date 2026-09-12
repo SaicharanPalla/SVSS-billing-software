@@ -1,0 +1,56 @@
+/* ==========================================
+   MOBILE PRODUCT MASTER MODAL FIX
+========================================== */
+
+@media (max-width:576px){
+
+    #productModal,
+    .product-modal,
+    .modal{
+        z-index:9999 !important;
+    }
+
+    #productModal .modal-dialog,
+    .product-modal .modal-dialog,
+    .modal .modal-dialog{
+        margin:62px 8px 12px !important;
+        max-width:calc(100% - 16px) !important;
+        height:calc(100vh - 74px) !important;
+        display:flex !important;
+        align-items:flex-start !important;
+    }
+
+    #productModal .modal-content,
+    .product-modal .modal-content,
+    .modal .modal-content{
+        width:100% !important;
+        max-height:calc(100vh - 74px) !important;
+        overflow:hidden !important;
+        border-radius:8px !important;
+    }
+
+    #productModal .modal-header,
+    .product-modal .modal-header,
+    .modal .modal-header{
+        position:relative !important;
+        z-index:2 !important;
+        flex-shrink:0 !important;
+    }
+
+    #productModal .modal-body,
+    .product-modal .modal-body,
+    .modal .modal-body{
+        overflow-y:auto !important;
+        max-height:calc(100vh - 190px) !important;
+    }
+
+    #productModal .modal-footer,
+    .product-modal .modal-footer,
+    .modal .modal-footer{
+        position:relative !important;
+        z-index:2 !important;
+        flex-shrink:0 !important;
+        background:#ffffff !important;
+    }
+
+}
