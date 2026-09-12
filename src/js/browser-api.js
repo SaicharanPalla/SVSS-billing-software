@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
 
     if (window.api) {
         return;
@@ -378,9 +378,9 @@
 
         isBrowser: true,
 
-        async cloudLogin() {
-            return cloudLogin();
-        },
+        async cloudLogin(email, password) {
+        return cloudLogin(email, password);
+    },
 
         async syncFromCloud() {
             return syncFromCloud();
@@ -406,10 +406,4 @@
     };
 
 })();
-
-
-
-
-
-
 
