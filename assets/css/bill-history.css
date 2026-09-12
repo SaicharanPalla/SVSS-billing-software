@@ -4,31 +4,34 @@
 
 @media (max-width:576px){
 
-    .bill-history-table td:last-child{
-        width:90px !important;
-        min-width:90px !important;
-        max-width:90px !important;
-        padding:12px 6px !important;
+    #historyTableBody td:last-child{
+        width:78px !important;
+        min-width:78px !important;
+        max-width:78px !important;
+        padding:12px 4px !important;
         text-align:center !important;
         vertical-align:middle !important;
+        white-space:normal !important;
     }
 
-    .bill-history-table td:last-child .btn,
-    .bill-history-table .view-bill-btn,
-    .bill-history-table .delete-bill-btn{
+    #historyTableBody td:last-child .btn{
         display:flex !important;
         align-items:center !important;
         justify-content:center !important;
-        width:48px !important;
-        height:48px !important;
-        min-width:48px !important;
+
+        width:38px !important;
+        height:38px !important;
+        min-width:38px !important;
+
         margin:0 auto 8px auto !important;
         padding:0 !important;
+
         border-radius:50% !important;
-        font-size:20px !important;
+        font-size:16px !important;
+        line-height:1 !important;
     }
 
-    .bill-history-table td:last-child .btn:last-child{
+    #historyTableBody td:last-child .btn:last-child{
         margin-bottom:0 !important;
     }
 
