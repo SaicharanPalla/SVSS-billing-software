@@ -406,3 +406,48 @@
 
 }
 
+
+/* =====================================
+   MOBILE DASHBOARD CARD FIX
+===================================== */
+
+@media (max-width:480px){
+
+    .dashboard-card{
+        min-height:120px !important;
+        height:auto !important;
+        padding:18px !important;
+        gap:14px !important;
+        align-items:center !important;
+        overflow:visible !important;
+    }
+
+    .dashboard-card .card-icon{
+        width:58px !important;
+        height:58px !important;
+        min-width:58px !important;
+        font-size:24px !important;
+    }
+
+    .dashboard-card .card-details{
+        min-width:0 !important;
+        overflow:visible !important;
+    }
+
+    .dashboard-card .card-details h5{
+        margin-bottom:6px !important;
+        line-height:1.3 !important;
+    }
+
+    .dashboard-card .card-details h2{
+        font-size:30px !important;
+        line-height:1.25 !important;
+        height:auto !important;
+        min-height:38px !important;
+        margin:0 !important;
+        overflow:visible !important;
+        white-space:normal !important;
+    }
+
+}
+

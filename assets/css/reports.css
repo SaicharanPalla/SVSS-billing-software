@@ -1151,3 +1151,61 @@ body.dark-mode .reports-header p{
     scrollbar-width: thin;
     scrollbar-color: #aaa #f1f1f1;
 }
+/* ==========================================
+   MOBILE REPORT SUMMARY CARD FIX
+========================================== */
+
+@media (max-width:576px){
+
+    .payment-credit-summary .summary-card,
+    .payment-summary-cards .summary-card{
+        height:auto !important;
+        min-height:145px !important;
+        padding:16px !important;
+        overflow:visible !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:8px !important;
+        text-align:center !important;
+    }
+
+    .payment-credit-summary .summary-card .icon,
+    .payment-summary-cards .summary-card .icon{
+        width:48px !important;
+        height:48px !important;
+        min-width:48px !important;
+        margin:0 !important;
+        flex-shrink:0 !important;
+    }
+
+    .payment-credit-summary .summary-content,
+    .payment-summary-cards .summary-content{
+        width:100% !important;
+        min-width:0 !important;
+        overflow:visible !important;
+    }
+
+    .payment-credit-summary .summary-content small,
+    .payment-summary-cards .summary-content small{
+        display:block !important;
+        margin-bottom:5px !important;
+        white-space:normal !important;
+        line-height:1.3 !important;
+    }
+
+    .payment-credit-summary .summary-content h3,
+    .payment-summary-cards .summary-content h3{
+        font-size:17px !important;
+        line-height:1.3 !important;
+        height:auto !important;
+        min-height:22px !important;
+        white-space:normal !important;
+        overflow:visible !important;
+        text-overflow:clip !important;
+        margin:0 !important;
+    }
+
+}
+
