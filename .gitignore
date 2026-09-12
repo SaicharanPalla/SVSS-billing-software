@@ -53,4 +53,15 @@ test.txt
 # ==========================================
 # Backup Files
 # ==========================================
-*.bak
+*.bak# Local development files
+build-log.txt
+project_structure.txt
+test-cloud-sync.js
+test-supabase-auth.js
+
+# Temporary backups
+pages/*.before-*.html
+src/main_before_*.js
+src/js/browser-api.before-*.js
+src/js/pages/pagecommon.before-*.js
+web-conversion-working-backup/
