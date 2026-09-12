@@ -1,0 +1,165 @@
+Updatedation_Steps
+Simple_Understaned--->
+Step_1:Firstly We Need to Updated Version No: ,Build Version No: in Package.json.
+Step_2:Then After We need to Open Terminal And run Command Called--npm run dist.
+Step_3:Then New file Saved in Folder Called-Dist.
+step_4:we need to open the GITHUD and launch the release with newly added 3_file
+       i)latest.yml
+      ii)SVSS-Billing-Software-Setup.exe
+     iii)SVSS-Billing-Software-Setup.exe.BlockMap
+-------->Then publish it
+Step_5:Open the app and you get the notification and new update available after you need to exit and and reopen it
+-------->Then New Version Installed Succesfully
+
+
+📌 SVSS Billing Software - Update ProcessVersion Update Process
+
+Step 1: Update Version Number
+
+Open package.json
+
+Update the application version.
+
+Example:
+
+"version": "1.0.1"
+
+Important:
+
+Always increase the version number.
+Never release the same version twice.
+Step 2: Save & Test
+
+Before building:
+
+Save all project files.
+Run the application.
+Verify that all newly added features and bug fixes are working properly.
+Ensure there are no errors.
+Step 3: Build the Application
+
+Open Terminal inside the project folder.
+
+Run:
+
+npm run dist
+
+Wait until the build process completes successfully.
+
+Step 4: Verify Build Files
+
+Open the dist folder.
+
+Ensure the following files are generated:
+
+latest.yml
+
+SVSS-Billing-Software-Setup.exe
+
+SVSS-Billing-Software-Setup.exe.blockmap
+
+Important:
+If any file is missing, do NOT publish the release.
+
+Step 5: Open GitHub Releases
+Open GitHub Repository.
+Go to Releases.
+Create a New Release (or edit the latest draft if applicable).
+Step 6: Create Release
+Tag Version
+v1.0.1
+Release Title
+SVSS Billing Software v1.0.1
+Release Notes Example
+• Fixed Bill History Issues
+• Improved Invoice Design
+• Customer Statement Improvements
+• Minor Bug Fixes
+Step 7: Upload Release Files
+
+Upload the following 3 files from the dist folder:
+
+1. latest.yml
+
+2. SVSS-Billing-Software-Setup.exe
+
+3. SVSS-Billing-Software-Setup.exe.blockmap
+
+Wait until all files finish uploading.
+
+Step 8: Publish Release
+
+Click
+
+Publish Release
+
+Wait a few minutes for GitHub to complete the publishing process.
+
+Step 9: Test Auto Update
+
+Open the currently installed (old) version of the application.
+
+The application should display:
+
+New Update Available
+
+Click:
+
+Download Update
+
+Wait until the download completes.
+
+Step 10: Install Update
+
+After the download is complete:
+
+Close the application.
+Reopen the application.
+
+Electron Auto Updater will automatically install the new version during restart.
+
+Step 11: Verify Installation
+
+After reopening:
+
+Verify the version number.
+Check all major modules.
+
+Confirm the following:
+
+✅ Dashboard
+
+✅ Products
+
+✅ Customers
+
+✅ Billing
+
+✅ Bill History
+
+✅ Reports
+
+✅ Settings
+
+✅ Invoice Printing
+
+✅ Customer Statement
+
+✅ Auto Update
+
+Ensure the database is intact and no data is lost.
+
+
+☐ Version updated in package.json
+☐ Application tested locally
+☐ npm run dist completed
+☐ latest.yml generated
+☐ Setup.exe generated
+☐ Setup.exe.blockmap generated
+☐ GitHub Release created
+☐ All 3 files uploaded
+☐ Release published
+☐ Auto update detected
+☐ Update installed successfully
+☐ Version verified
+☐ Database verified

@@ -1,0 +1,1004 @@
+/* ===========================================
+   SVSS PREMIUM INVOICE
+=========================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+    font-family:"Segoe UI",Arial,sans-serif;
+
+}
+
+body{
+
+    background:#ececec;
+
+    padding:30px;
+
+}
+
+.invoice{
+
+    width:210mm;
+
+    min-height:297mm;
+
+    margin:auto;
+
+    background:#fff;
+
+    padding:25px;
+
+    border:3px solid #F4B400;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+}
+
+/* ===========================================
+   HEADER
+=========================================== */
+
+.invoice-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    border-bottom:3px solid #F4B400;
+
+    padding-bottom:18px;
+
+    margin-bottom:20px;
+
+}
+
+.header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+.shop-logo{
+
+    width:90px;
+
+    height:90px;
+
+    object-fit:contain;
+
+}
+
+.shop-info h1{
+
+    font-size:26px;
+
+    color:#222;
+
+    font-weight:700;
+
+    margin-bottom:3px;
+
+}
+
+.shop-info h2{
+
+    color:#F4B400;
+
+    font-size:18px;
+
+    margin-bottom:10px;
+
+}
+
+.shop-info p{
+
+    color:#555;
+
+    font-size:13px;
+
+    margin-bottom:4px;
+
+}
+
+.header-right{
+
+    width:320px;
+
+}
+
+.header-right table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.header-right td{
+
+    border:1px solid #d8d8d8;
+
+    padding:8px;
+
+    font-size:13px;
+
+}
+
+.header-right td:first-child{
+
+    background:#FFF6D6;
+
+    font-weight:600;
+
+    width:110px;
+
+}
+
+/* ===========================================
+   TITLE
+=========================================== */
+
+.invoice-title{
+
+    background:#F4B400;
+
+    color:#fff;
+
+    text-align:center;
+
+    padding:14px;
+
+    border-radius:8px;
+
+    margin-bottom:25px;
+
+}
+
+.invoice-title h2{
+
+    font-size:28px;
+
+    letter-spacing:1px;
+
+}
+
+.invoice-title span{
+
+    display:block;
+
+    margin-top:5px;
+
+    font-size:13px;
+
+    opacity:.95;
+
+}
+/* ===========================================
+   INFORMATION SECTION
+=========================================== */
+
+.info-section{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:18px;
+
+    margin-bottom:25px;
+
+}
+
+/* ===========================================
+   CARD
+=========================================== */
+
+.info-card,
+.status-card{
+
+    background:#ffffff;
+
+    border:2px solid #F4B400;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+
+    transition:.25s;
+
+}
+
+.info-card:hover,
+.status-card:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+
+}
+
+/* ===========================================
+   CARD TITLE
+=========================================== */
+
+.card-title{
+
+    background:#F4B400;
+
+    color:#fff;
+
+    padding:12px;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+.card-title i{
+
+    font-size:18px;
+
+}
+
+/* ===========================================
+   TABLE
+=========================================== */
+
+.info-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.info-table td{
+
+    padding:10px 12px;
+
+    border-bottom:1px solid #ececec;
+
+    font-size:13px;
+
+    color:#444;
+
+}
+
+.info-table tr:last-child td{
+
+    border-bottom:none;
+
+}
+
+.info-table td:first-child{
+
+    width:95px;
+
+    font-weight:600;
+
+    color:#222;
+
+}
+
+.info-table td:nth-child(2){
+
+    width:10px;
+
+    text-align:center;
+
+    color:#777;
+
+}
+
+.info-table td:last-child{
+
+    font-weight:500;
+
+    color:#000;
+
+    word-break:break-word;
+
+}
+
+/* ===========================================
+   STATUS
+=========================================== */
+
+.status-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:flex-start;
+
+}
+
+.status-value{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:35px 15px;
+
+}
+
+.status-value span{
+
+    display:inline-block;
+
+    min-width:120px;
+
+    text-align:center;
+
+    padding:12px 22px;
+
+    border-radius:30px;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    color:#fff;
+
+    background:#28a745;
+
+    letter-spacing:.5px;
+
+}
+
+/* Optional status colors */
+
+.status-paid span{
+
+    background:#28a745;
+
+}
+
+.status-pending span{
+
+    background:#ff9800;
+
+}
+
+.status-due span{
+
+    background:#dc3545;
+
+}
+
+/* ===========================================
+   SECTION SPACING
+=========================================== */
+
+.info-section .info-card:nth-child(2) td:last-child{
+
+    max-width:170px;
+
+}
+
+.info-section .info-card:nth-child(3) td:last-child{
+
+    font-weight:600;
+
+}
+/* ===========================================
+   PRODUCT TABLE
+=========================================== */
+
+.table-section{
+
+    margin-top:25px;
+
+    margin-bottom:30px;
+
+}
+
+.product-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    border:2px solid #F4B400;
+
+}
+
+.product-table thead{
+
+    background:#F4B400;
+
+}
+
+.product-table thead th{
+
+    color:#fff;
+
+    padding:12px 10px;
+
+    text-align:center;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    border:1px solid #ffffff40;
+
+}
+
+.product-table tbody td{
+
+    border:1px solid #e5e5e5;
+
+    padding:10px;
+
+    font-size:13px;
+
+    color:#333;
+
+    text-align:center;
+
+}
+
+.product-table tbody tr:nth-child(even){
+
+    background:#FFFDF5;
+
+}
+
+.product-table tbody tr:hover{
+
+    background:#FFF7DA;
+
+}
+
+.product-table tbody td:nth-child(3){
+
+    text-align:left;
+
+    font-weight:600;
+
+}
+
+.product-table tbody td:last-child{
+
+    font-weight:700;
+
+    color:#0d6efd;
+
+}
+
+/* ===========================================
+   BOTTOM SECTION
+=========================================== */
+
+.bottom-wrapper{
+
+    display:grid;
+
+    grid-template-columns:1.3fr .8fr;
+
+    gap:20px;
+
+    margin-top:30px;
+
+}
+
+/* ===========================================
+   SECTION TITLE
+=========================================== */
+
+.section-title{
+
+    background:#F4B400;
+
+    color:#fff;
+
+    padding:12px 15px;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+/* ===========================================
+   AMOUNT BOX
+=========================================== */
+
+.amount-box{
+
+    border:2px solid #F4B400;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    background:#fff;
+
+}
+
+.amount-words{
+
+    min-height:130px;
+
+    padding:18px;
+
+    font-size:16px;
+
+    line-height:1.8;
+
+    color:#444;
+
+    font-weight:600;
+
+}
+
+/* ===========================================
+   SUMMARY
+=========================================== */
+
+.summary-box{
+
+    border:2px solid #F4B400;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    background:#fff;
+
+}
+
+.summary-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.summary-table td,
+
+.summary-table th{
+
+    padding:12px 15px;
+
+    border-bottom:1px solid #ececec;
+
+    font-size:14px;
+
+}
+
+.summary-table td:first-child{
+
+    font-weight:600;
+
+    color:#333;
+
+}
+
+.summary-table td:last-child,
+
+.summary-table th:last-child{
+
+    text-align:right;
+
+    font-weight:700;
+
+}
+
+.summary-table tr:last-child td{
+
+    border-bottom:none;
+
+}
+
+/* ===========================================
+   GRAND TOTAL
+=========================================== */
+
+.grand-total{
+
+    background:#FFF3CD;
+
+}
+
+.grand-total th{
+
+    color:#000;
+
+    font-size:16px;
+
+}
+
+/* ===========================================
+   PAID
+=========================================== */
+
+.paid-row{
+
+    background:#E8F5E9;
+
+}
+
+.paid-row td{
+
+    color:#2E7D32;
+
+    font-weight:700;
+
+}
+
+/* ===========================================
+   DUE
+=========================================== */
+
+.due-row{
+
+    background:#FFEBEE;
+
+}
+
+.due-row td{
+
+    color:#C62828;
+
+    font-weight:700;
+
+}
+/* ===========================================
+   FOOTER
+=========================================== */
+
+.invoice-footer{
+
+    margin-top:35px;
+
+    border-top:2px solid #F4B400;
+
+    padding-top:25px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-end;
+
+    gap:40px;
+
+}
+
+.footer-left{
+
+    flex:1;
+
+}
+
+.footer-left h3{
+
+    color:#F4B400;
+
+    font-size:24px;
+
+    margin-bottom:10px;
+
+}
+
+.footer-left p{
+
+    color:#555;
+
+    font-size:14px;
+
+    line-height:1.8;
+
+    margin-bottom:6px;
+
+}
+
+.footer-contact{
+
+    margin-top:15px;
+
+    font-weight:600;
+
+    color:#333;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+.footer-contact i{
+
+    color:#F4B400;
+
+    font-size:18px;
+
+}
+
+/* ===========================================
+   SIGNATURE
+=========================================== */
+
+.footer-right{
+
+    width:260px;
+
+    text-align:center;
+
+}
+
+.signature-box{
+
+    width:100%;
+
+}
+
+.signature-space{
+
+    height:70px;
+
+}
+
+.signature-line{
+
+    border-top:2px solid #222;
+
+    margin-bottom:8px;
+
+}
+
+.signature-box h4{
+
+    font-size:15px;
+
+    color:#333;
+
+    font-weight:700;
+
+}
+
+/* ===========================================
+   COPYRIGHT
+=========================================== */
+
+.invoice-bottom{
+
+    margin-top:25px;
+
+    border-top:1px dashed #bbb;
+
+    padding-top:12px;
+
+    text-align:center;
+
+}
+
+.invoice-bottom p{
+
+    font-size:12px;
+
+    color:#666;
+
+    margin:3px 0;
+
+}
+
+/* ===========================================
+   PRINT
+=========================================== */
+
+@media print{
+
+    body{
+
+        background:#fff;
+
+        padding:0;
+
+        margin:0;
+
+    }
+
+    .invoice{
+
+        width:100%;
+
+        min-height:auto;
+
+        border:none;
+
+        box-shadow:none;
+
+        margin:0;
+
+        padding:12mm;
+
+    }
+
+    .info-card:hover,
+    .status-card:hover{
+
+        transform:none;
+
+        box-shadow:none;
+
+    }
+
+    .product-table tbody tr:hover{
+
+        background:transparent;
+
+    }
+
+    .no-print{
+
+        display:none !important;
+
+    }
+
+    @page{
+
+        size:A4 portrait;
+
+        margin:8mm;
+
+    }
+
+}
+
+/* ===========================================
+   RESPONSIVE
+=========================================== */
+
+@media(max-width:992px){
+
+    .invoice{
+
+        width:100%;
+
+        padding:20px;
+
+    }
+
+    .invoice-header{
+
+        flex-direction:column;
+
+        gap:20px;
+
+    }
+
+    .header-right{
+
+        width:100%;
+
+    }
+
+    .info-section{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+    .bottom-wrapper{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    body{
+
+        padding:10px;
+
+    }
+
+    .invoice{
+
+        padding:15px;
+
+    }
+
+    .header-left{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .shop-logo{
+
+        width:70px;
+
+        height:70px;
+
+    }
+
+    .shop-info h1{
+
+        font-size:22px;
+
+    }
+
+    .invoice-title h2{
+
+        font-size:22px;
+
+    }
+
+    .info-section{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .invoice-footer{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .footer-right{
+
+        width:100%;
+
+    }
+
+    .product-table{
+
+        font-size:12px;
+
+    }
+
+    .product-table th,
+    .product-table td{
+
+        padding:7px;
+
+    }
+
+}

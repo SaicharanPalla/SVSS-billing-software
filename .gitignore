@@ -1,49 +1,56 @@
-# Node modules
+# ==========================================
+# Dependencies
+# ==========================================
 node_modules/
 
-# Electron build output
+# ==========================================
+# Electron Build Output
+# ==========================================
 dist/
+out/
 
+# ==========================================
+# Database (Local Shop Data)
+# ==========================================
+database/database.json
+
+# ==========================================
+# Environment
+# ==========================================
+.env
+
+# ==========================================
 # Logs
+# ==========================================
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# ==========================================
 # VS Code
+# ==========================================
 .vscode/
 
-# OS files
-.DS_Store
+# ==========================================
+# Windows / macOS
+# ==========================================
 Thumbs.db
+.DS_Store
 
-# Temporary files
+# ==========================================
+# Temporary Files
+# ==========================================
 temp/
 tmp/
-
-# Build cache
 .cache/
-out/
 
-# Environment files
-.env
+# ==========================================
+# Test Files
+# ==========================================
+test.txt
 
-# GitHub
-.github/
-
-# Optional: database backups
+# ==========================================
+# Backup Files
+# ==========================================
 *.bak
-# Database
-data/database.json
-
-# Build output
-dist/
-
-# Node modules
-node_modules/
-
-# VS Code
-.vscode/
-
-# Logs
-*.log

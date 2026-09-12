@@ -1,0 +1,445 @@
+#productList{
+
+    position:absolute;
+
+    width:100%;
+
+    z-index:1000;
+
+    max-height:220px;
+
+    overflow-y:auto;
+
+    display:none;
+
+    background:#fff;
+
+}
+
+#productList .list-group-item{
+
+    cursor:pointer;
+
+}
+/* =========================
+   ICON
+========================= */
+
+.logout-icon{
+
+    width:90px;
+    height:90px;
+
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    background:rgba(220,53,69,.12);
+
+    color:#dc3545;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:48px;
+
+    box-shadow:0 8px 25px rgba(220,53,69,.18);
+
+}
+.logout-icon i{
+
+    transition:.3s;
+
+}
+
+.logout-modal:hover .logout-icon i{
+
+    transform:translateX(4px);
+
+}
+/* ==========================================
+   CUSTOMER SUGGESTION DROPDOWN
+========================================== */
+
+.customer-suggestion-wrapper {
+    position: relative;
+}
+
+
+/* Main dropdown box */
+#customerSuggestion {
+    position: absolute;
+
+    top: calc(100% + 5px);
+    left: 0;
+
+    width: 100%;
+
+    max-height: 320px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #d8d8d8;
+    border-radius: 10px;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.25);
+
+    z-index: 99999;
+
+    display: none;
+
+    padding: 0;
+
+    scrollbar-width: thin;
+}
+
+
+/* Chrome / Edge scrollbar */
+#customerSuggestion::-webkit-scrollbar {
+    width: 7px;
+}
+
+#customerSuggestion::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#customerSuggestion::-webkit-scrollbar-thumb {
+    background: #b8b8b8;
+    border-radius: 10px;
+}
+
+#customerSuggestion::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+
+/* ==========================================
+   CUSTOMER ITEM
+========================================== */
+
+#customerSuggestion .list-group-item {
+    display: block;
+
+    padding: 13px 16px;
+
+    background: #ffffff;
+
+    color: #222;
+
+    border: none;
+    border-bottom: 1px solid #e5e5e5;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: background 0.15s ease;
+}
+
+
+/* Last item */
+#customerSuggestion .list-group-item:last-child {
+    border-bottom: none;
+}
+
+
+/* Hover */
+#customerSuggestion .list-group-item:hover {
+    background: #3567dc !important;
+    color: #ffffff !important;
+}
+
+#customerSuggestion .list-group-item:hover strong {
+    color: #ffffff !important;
+}
+
+/* Customer name */
+#customerSuggestion .list-group-item strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #222;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+/* Customer details */
+#customerSuggestion .list-group-item br + * {
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   DETAILS TEXT
+========================================== */
+
+#customerSuggestion .list-group-item {
+    line-height: 1.55;
+
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   SELECTED / ACTIVE
+========================================== */
+
+#customerSuggestion .list-group-item:active {
+    background: #e5edff;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 768px) {
+
+    #customerSuggestion {
+        max-height: 280px;
+    }
+
+    #customerSuggestion .list-group-item {
+        padding: 12px 14px;
+    }
+
+}
+/* =========================================
+   BILLING - CUSTOMER SEARCH DROPDOWN
+========================================= */
+
+#customerSuggestion {
+    position: absolute !important;
+
+    top: calc(100% + 6px) !important;
+    left: 0 !important;
+
+    width: 100% !important;
+
+    max-height: 300px !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #dcdcdc !important;
+    border-radius: 12px !important;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35) !important;
+
+    z-index: 99999 !important;
+
+    padding: 0 !important;
+}
+
+
+/* Scrollbar */
+
+#customerSuggestion::-webkit-scrollbar {
+    width: 7px;
+}
+
+#customerSuggestion::-webkit-scrollbar-track {
+    background: #eeeeee;
+    border-radius: 10px;
+}
+
+#customerSuggestion::-webkit-scrollbar-thumb {
+    background: #999999;
+    border-radius: 10px;
+}
+
+#customerSuggestion::-webkit-scrollbar-thumb:hover {
+    background: #666666;
+}
+
+
+/* Individual customer */
+
+#customerSuggestion .list-group-item {
+    display: block !important;
+
+    width: 100% !important;
+
+    padding: 12px 15px !important;
+
+    background: #ffffff !important;
+
+    color: #222222 !important;
+
+    border: none !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+
+    cursor: pointer;
+
+    transition: background 0.15s ease;
+}
+
+
+/* Last customer */
+
+#customerSuggestion .list-group-item:last-child {
+    border-bottom: none !important;
+}
+
+
+/* Hover */
+
+#customerSuggestion .list-group-item:hover {
+    background: #f2f6ff !important;
+}
+
+
+/* Customer name */
+
+#customerSuggestion .list-group-item strong {
+    display: block;
+
+    color: #222222 !important;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    margin-bottom: 4px;
+}
+
+
+/* Customer details */
+
+#customerSuggestion .list-group-item small {
+    color: #666666;
+
+    font-size: 13px;
+}
+/* =========================================
+   PRODUCT SEARCH KEYBOARD SELECTION
+========================================= */
+
+#productList .product-suggestion-item {
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+
+/* Keyboard selected item */
+
+#productList .product-suggestion-item.active {
+    background: #3567dc !important;
+    color: #ffffff !important;
+}
+
+
+/* Keep product code white when selected */
+
+#productList .product-suggestion-item.active strong {
+    color: #ffffff !important;
+}
+
+
+/* Mouse hover */
+/* =========================================
+   PRODUCT SEARCH HIGHLIGHT
+========================================= */
+
+#productList .product-suggestion-item {
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+
+/* Keyboard selected + Mouse hover */
+
+#productList .product-suggestion-item.active,
+#productList .product-suggestion-item:hover {
+    background: #3567dc !important;
+    color: #ffffff !important;
+}
+
+
+/* Product code also becomes white */
+
+#productList .product-suggestion-item.active strong,
+#productList .product-suggestion-item:hover strong {
+    color: #ffffff !important;
+}
+/* ==========================================
+   CUSTOMER SUGGESTION BOX
+========================================== */
+
+.customer-suggestion-item {
+    cursor: pointer;
+    transition: background 0.15s ease,
+                color 0.15s ease;
+}
+
+
+/* Mouse hover + keyboard selected */
+
+.customer-suggestion-item:hover,
+.customer-suggestion-item.active {
+    background-color: #3567dc !important;
+    color: #ffffff !important;
+}
+
+
+/* Keep all text white when highlighted */
+
+.customer-suggestion-item:hover strong,
+.customer-suggestion-item.active strong {
+    color: #ffffff !important;
+}
+/* ==========================================
+   CUSTOMER KEYBOARD SELECTION
+========================================== */
+
+#customerSuggestion .list-group-item.customer-suggestion-item {
+    cursor: pointer;
+    transition: background-color 0.12s ease,
+                color 0.12s ease;
+}
+
+
+/* Keyboard selected customer */
+
+#customerSuggestion
+.list-group-item.customer-suggestion-item.active {
+    background-color: #3567dc !important;
+    color: #ffffff !important;
+}
+
+
+/* Customer name */
+
+#customerSuggestion
+.list-group-item.customer-suggestion-item.active strong {
+    color: #ffffff !important;
+}
+
+
+/* Mouse hover */
+
+#customerSuggestion
+.list-group-item.customer-suggestion-item:hover {
+    background-color: #3567dc !important;
+    color: #ffffff !important;
+}
+
+
+/* Customer name on hover */
+
+#customerSuggestion
+.list-group-item.customer-suggestion-item:hover strong {
+    color: #ffffff !important;
+}

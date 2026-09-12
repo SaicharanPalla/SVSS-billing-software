@@ -1,0 +1,965 @@
+/* ======================================
+   SVSS Customers
+====================================== */
+
+body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    transition: .3s;
+}
+
+/* ==========================
+   Page Title
+========================== */
+
+h1{
+    font-size:42px;
+    font-weight:700;
+    color:var(--text);
+}
+
+/* ==========================
+   Cards
+========================== */
+
+.card{
+    border:none;
+    border-radius:14px;
+    box-shadow:0 3px 15px rgba(0,0,0,.08);
+}
+
+.card-body{
+    padding:22px;
+}
+
+/* ==========================
+   Search Box
+========================== */
+
+.form-control{
+    height:48px;
+    border-radius:10px;
+    font-size:16px;
+}
+
+.form-control:focus{
+    box-shadow:none;
+    border-color:#0d6efd;
+}
+
+/* ==========================
+   Table
+========================== */
+
+.table-responsive{
+    overflow-x:auto;
+}
+
+.table{
+    width:100%;
+    min-width:1000px;
+    border-collapse:collapse;
+    margin-bottom:0;
+}
+
+.table thead th{
+
+    background:#212529;
+    color:#fff;
+
+    text-align:center;
+    vertical-align:middle;
+
+    white-space:nowrap;
+
+    font-size:15px;
+
+    padding:14px;
+}
+
+.table tbody td{
+
+    text-align:center;
+    vertical-align:middle;
+
+    padding:14px;
+
+    white-space:nowrap;
+
+    font-size:15px;
+}
+
+.table-hover tbody tr:hover{
+    background:rgba(255,255,255,.05);
+}
+
+.table tbody tr{
+
+    transition:.25s;
+
+}
+
+/* ==========================
+   Amount Colors
+========================== */
+
+.purchase{
+
+    color:#0d6efd;
+    font-weight:600;
+
+}
+
+.paid{
+
+    color:#198754;
+    font-weight:600;
+
+}
+
+.balance{
+
+    color:#dc3545;
+    font-weight:600;
+
+}
+
+/* ==========================
+   Buttons
+========================== */
+
+.btn{
+
+    border-radius:8px;
+
+}
+
+.btn-primary{
+
+    min-width:80px;
+
+}
+
+/* ==========================
+   Alerts
+========================== */
+
+.alert{
+
+    border-radius:12px;
+    margin-bottom:0;
+
+}
+
+.alert h6{
+
+    margin-bottom:10px;
+    font-weight:600;
+
+}
+
+.alert h4{
+
+    margin:0;
+    font-weight:700;
+
+}
+
+/* ==========================
+   Modal
+========================== */
+
+.modal-content{
+
+    border:none;
+    border-radius:14px;
+
+}
+
+.modal-header{
+
+    background:#0d6efd;
+    color:#fff;
+
+}
+
+.modal-header .btn-close{
+
+    filter:invert(1);
+
+}
+
+.modal-title{
+
+    font-weight:600;
+
+}
+
+/* ==========================
+   Customer Details
+========================== */
+
+#viewCustomerName,
+#viewCustomerMobile,
+#viewCustomerAddress{
+    font-weight:600;
+    color:var(--theme);
+}
+
+/* ==========================
+   Empty Table
+========================== */
+
+.empty-row td{
+
+    padding:40px;
+    color:#888;
+    font-size:18px;
+
+}
+
+/* ==========================
+   Scrollbar
+========================== */
+
+.table-responsive::-webkit-scrollbar{
+
+    height:8px;
+
+}
+
+.table-responsive::-webkit-scrollbar-thumb{
+
+    background:#b5b5b5;
+    border-radius:20px;
+
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:992px){
+
+    h1{
+
+        font-size:34px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    h1{
+
+        font-size:28px;
+
+    }
+
+    .card-body{
+
+        padding:15px;
+
+    }
+
+    .table{
+
+        min-width:950px;
+
+    }
+
+}
+
+@media(max-width:576px){
+
+    .btn{
+
+        width:100%;
+
+        margin-bottom:8px;
+
+    }
+
+    .modal-footer{
+
+        display:block;
+
+    }
+
+}
+/* ======================================
+   Add Customer Modal
+====================================== */
+
+#addCustomerModal .form-control,
+#addCustomerModal .form-select{
+
+    background:#3b3b3b;
+    color:#ffffff !important;
+    border:1px solid #555;
+
+}
+
+#addCustomerModal textarea{
+
+    background:#3b3b3b;
+    color:#ffffff !important;
+    border:1px solid #555;
+
+}
+
+#addCustomerModal .form-control::placeholder,
+#addCustomerModal textarea::placeholder{
+
+    color:#cfcfcf;
+
+}
+
+#addCustomerModal .form-control:focus,
+#addCustomerModal textarea:focus{
+
+    background:#3b3b3b;
+    color:#ffffff !important;
+    border-color:#0d6efd;
+    box-shadow:0 0 8px rgba(13,110,253,.35);
+
+}
+
+#addCustomerModal .form-label{
+
+    color:#212529;
+    font-weight:600;
+
+}
+/* ======================================
+   Modal Width
+====================================== */
+
+#addCustomerModal .modal-dialog{
+
+    max-width:900px;
+
+}
+#addCustomerModal .modal-footer{
+
+    padding:18px 24px;
+
+}
+#addCustomerModal .btn{
+
+    min-width:160px;
+    font-weight:600;
+
+}
+#addCustomerModal input::placeholder,
+#addCustomerModal textarea::placeholder{
+
+    color:#b8b8b8;
+    opacity:1;
+
+}
+#addCustomerModal .modal-header{
+
+    background:linear-gradient(135deg,#0d6efd,#267dff);
+
+}
+/* ==========================================
+   DELETE CUSTOMER MODAL - POLISHED VERSION
+========================================== */
+
+.delete-modal {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #ffffff;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.35);
+
+    max-width: 100%;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.delete-modal-header {
+    padding: 22px 26px;
+
+    border-bottom: 1px solid #eeeeee;
+
+    background: #ffffff;
+}
+
+
+.delete-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+
+.delete-icon {
+    width: 56px;
+    height: 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+
+    background: #ffe4e4;
+    color: #dc3545;
+
+    font-size: 24px;
+}
+
+
+.delete-modal-header .modal-title {
+    margin: 0;
+
+    color: #242424;
+
+    font-size: 23px;
+    font-weight: 700;
+}
+
+
+.delete-modal-header small {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+
+/* ==========================================
+   CLOSE BUTTON
+========================================== */
+
+.delete-modal-header .btn-close {
+    opacity: 0.65;
+
+    transition: 0.2s ease;
+}
+
+.delete-modal-header .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+
+/* ==========================================
+   BODY
+========================================== */
+
+.delete-modal-body {
+    padding: 26px 27px;
+}
+
+
+.delete-question {
+    margin: 0 0 20px 0;
+
+    color: #4a4a4a;
+
+    font-size: 17px;
+    font-weight: 500;
+}
+
+
+/* ==========================================
+   CUSTOMER CARD
+========================================== */
+
+.customer-delete-card {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 16px 18px;
+
+    border-radius: 13px;
+
+    background: #f8f8f8;
+
+    border: 1px solid #e3e3e3;
+
+    transition: 0.2s ease;
+}
+
+
+.customer-delete-card:hover {
+    background: #f5f5f5;
+}
+
+
+.customer-delete-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #e7efff;
+    color: #2864dc;
+
+    font-size: 20px;
+}
+
+
+.customer-delete-details {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    min-width: 0;
+}
+
+
+.customer-delete-details strong {
+    color: #242424;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.customer-delete-details span {
+    color: #777;
+
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   WARNING
+========================================== */
+
+.delete-warning {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 18px;
+
+    padding: 13px 15px;
+
+    border-radius: 11px;
+
+    background: #fff4f4;
+
+    border: 1px solid #ffe0e0;
+
+    color: #dc3545;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+
+.delete-warning i {
+    flex-shrink: 0;
+
+    font-size: 16px;
+}
+
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.delete-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 18px 27px;
+
+    border-top: 1px solid #eeeeee;
+
+    background: #fafafa;
+}
+
+
+.delete-modal-footer button {
+    height: 46px;
+
+    padding: 0 18px;
+
+    border-radius: 9px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    transition: all 0.2s ease;
+}
+
+
+/* Cancel */
+
+.delete-modal-footer .btn-secondary {
+    min-width: 115px;
+
+    background: #6c757d;
+
+    border-color: #6c757d;
+}
+
+
+.delete-modal-footer .btn-secondary:hover {
+    background: #5c636a;
+
+    border-color: #5c636a;
+
+    transform: translateY(-1px);
+}
+
+
+/* Delete */
+
+.delete-modal-footer .btn-danger {
+    min-width: 170px;
+
+    background: #c92f3e;
+
+    border-color: #c92f3e;
+}
+
+
+.delete-modal-footer .btn-danger:hover {
+    background: #b42635;
+
+    border-color: #b42635;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 5px 15px rgba(201, 47, 62, 0.25);
+}
+
+
+.delete-modal-footer button:active {
+    transform: translateY(0);
+}
+
+
+/* ==========================================
+   MODAL ANIMATION
+========================================== */
+
+#deleteCustomerModal .modal-dialog {
+    transform: scale(0.94);
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+#deleteCustomerModal.show .modal-dialog {
+    transform: scale(1);
+}
+
+
+/* ==========================================
+   BACKDROP
+========================================== */
+
+.modal-backdrop.show {
+    opacity: 0.72;
+}
+
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 576px) {
+
+    #deleteCustomerModal .modal-dialog {
+        margin: 12px;
+    }
+
+    .delete-modal-header {
+        padding: 18px;
+    }
+
+    .delete-modal-body {
+        padding: 20px;
+    }
+
+    .delete-modal-footer {
+        padding: 15px 20px;
+    }
+
+    .delete-modal-footer button {
+        flex: 1;
+
+        min-width: 0 !important;
+    }
+
+    .delete-modal-header .modal-title {
+        font-size: 19px;
+    }
+
+    .delete-question {
+        font-size: 15px;
+    }
+
+}
+/* ==========================================
+   CUSTOMER PAYMENT HISTORY
+========================================== */
+
+.payment-history-box {
+
+    max-height: 230px;
+
+    overflow-y: auto;
+
+    overflow-x: auto;
+
+    border: 1px solid #dee2e6;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+}
+
+
+/* Keep table header visible */
+
+.payment-history-box thead th {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 2;
+
+    white-space: nowrap;
+
+}
+
+
+/* Payment rows */
+
+.payment-history-box tbody td {
+
+    vertical-align: middle;
+
+    white-space: nowrap;
+
+}
+
+
+/* Scrollbar */
+
+.payment-history-box::-webkit-scrollbar {
+
+    width: 8px;
+
+    height: 8px;
+
+}
+
+
+.payment-history-box::-webkit-scrollbar-track {
+
+    background: #f1f1f1;
+
+    border-radius: 10px;
+
+}
+
+
+.payment-history-box::-webkit-scrollbar-thumb {
+
+    background: #6c757d;
+
+    border-radius: 10px;
+
+}
+
+
+.payment-history-box::-webkit-scrollbar-thumb:hover {
+
+    background: #495057;
+
+}
+
+
+/* Payment amount */
+
+.payment-history-box .payment-amount {
+
+    font-weight: 700;
+
+    color: #198754;
+
+}
+
+
+/* Balance */
+
+.payment-history-box .payment-balance {
+
+    font-weight: 700;
+
+}
+/* ==========================================
+   CUSTOMER DETAILS MODAL - SCROLLABLE
+========================================== */
+
+#customerDetailsModal {
+    overflow: hidden;
+}
+
+/* Main customer details popup */
+#customerDetailsModal .modal-content {
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scroll only the content area */
+#customerDetailsModal .customer-details-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    max-height: calc(90vh - 140px);
+    padding-right: 8px;
+}
+
+
+/* ==========================================
+   CUSTOM SCROLLBAR
+========================================== */
+
+#customerDetailsModal .customer-details-body::-webkit-scrollbar {
+    width: 9px;
+}
+
+#customerDetailsModal .customer-details-body::-webkit-scrollbar-track {
+    background: #eeeeee;
+    border-radius: 10px;
+}
+
+#customerDetailsModal .customer-details-body::-webkit-scrollbar-thumb {
+    background: #3867d6;
+    border-radius: 10px;
+}
+
+#customerDetailsModal .customer-details-body::-webkit-scrollbar-thumb:hover {
+    background: #2854c7;
+}
+
+
+/* ==========================================
+   KEEP HEADER VISIBLE
+========================================== */
+
+#customerDetailsModal .modal-header {
+    flex-shrink: 0;
+}
+
+
+/* ==========================================
+   KEEP BUTTONS VISIBLE
+========================================== */
+
+#customerDetailsModal .modal-footer {
+    flex-shrink: 0;
+    background: #ffffff;
+}
+/* ==========================================
+   CUSTOMER DETAILS SCROLL
+========================================== */
+
+#customerModal .modal-dialog {
+    max-width: 1250px;
+    height: 90vh;
+    margin: 5vh auto;
+}
+
+#customerModal .modal-content {
+    height: 90vh;
+    max-height: 90vh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+#customerModal .modal-header {
+    flex-shrink: 0;
+}
+
+#customerModal .modal-body {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 24px;
+}
+
+/* Scrollbar */
+
+#customerModal .modal-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+#customerModal .modal-body::-webkit-scrollbar-track {
+    background: #eeeeee;
+}
+
+#customerModal .modal-body::-webkit-scrollbar-thumb {
+    background: #3867d6;
+    border-radius: 10px;
+}
+
+#customerModal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #2854c7;
+}
+
+/* Keep buttons at bottom */
+
+#customerModal .modal-footer {
+    flex-shrink: 0;
+    background: #ffffff;
+}

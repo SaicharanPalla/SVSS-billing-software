@@ -1,0 +1,269 @@
+/* =========================
+   ICON
+========================= */
+
+.logout-icon{
+
+    width:90px;
+    height:90px;
+
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    background:rgba(220,53,69,.12);
+
+    color:#dc3545;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:48px;
+
+    box-shadow:0 8px 25px rgba(220,53,69,.18);
+
+}
+.logout-icon i{
+
+    transition:.3s;
+
+}
+
+.logout-modal:hover .logout-icon i{
+
+    transform:translateX(4px);
+
+}
+/* ===========================
+   Product Modal Labels
+=========================== */
+
+/* =====================================
+   PRODUCT MODAL LABELS
+===================================== */
+
+#productModal .form-label{
+
+    color:#6f42c1;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    margin-bottom:6px;
+
+    letter-spacing:.3px;
+
+}
+/* =====================================
+   READ ONLY INPUT
+===================================== */
+
+#gst{
+
+    background:#f5f5f5;
+
+    color:#6c757d;
+
+    font-weight:600;
+
+    cursor:not-allowed;
+
+}
+#productModal .btn-link{
+
+    color:#6f42c1;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    text-decoration:none;
+
+}
+
+#productModal .btn-link:hover{
+
+    color:#5a32a3;
+
+}
+/* ==========================================
+   DELETE PRODUCT CONFIRMATION POPUP
+========================================== */
+
+.delete-confirm-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.60);
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 999999;
+}
+
+
+/* Popup box */
+
+.delete-confirm-box {
+    width: 420px;
+    max-width: calc(100% - 30px);
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    padding: 30px 30px 25px;
+
+    text-align: center;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.35);
+
+    animation: deletePopupIn 0.18s ease-out;
+}
+
+
+/* Delete icon */
+
+.delete-confirm-icon {
+    width: 70px;
+    height: 70px;
+
+    margin: 0 auto 18px;
+
+    border-radius: 50%;
+
+    background: rgba(220, 53, 69, 0.12);
+
+    color: #dc3545;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 30px;
+}
+
+
+/* Heading */
+
+.delete-confirm-box h3 {
+    margin: 0 0 10px;
+
+    color: #222;
+
+    font-size: 24px;
+
+    font-weight: 700;
+}
+
+
+/* Message */
+
+.delete-confirm-box p {
+    margin: 0 auto 25px;
+
+    color: #666;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+.delete-confirm-box p strong {
+    color: #222;
+}
+
+
+/* Buttons */
+
+.delete-confirm-actions {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+}
+
+
+/* Cancel */
+
+.delete-cancel-btn {
+    min-width: 110px;
+
+    padding: 11px 20px;
+
+    border: 1px solid #ced4da;
+
+    border-radius: 9px;
+
+    background: #f1f3f5;
+
+    color: #333;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.delete-cancel-btn:hover {
+    background: #e2e6ea;
+}
+
+
+/* Delete */
+
+.delete-confirm-btn {
+    min-width: 110px;
+
+    padding: 11px 20px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #dc3545;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.delete-confirm-btn:hover {
+    background: #bb2d3b;
+
+    transform: translateY(-1px);
+}
+
+
+/* Animation */
+
+@keyframes deletePopupIn {
+
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+}

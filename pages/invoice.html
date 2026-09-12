@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>SVSS Tax Invoice</title>
+
+    <!-- Bootstrap Icons -->
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="css/invoice.css">
+
+    <link rel="stylesheet" href="css/responsive.css">
+
+</head>
+
+<body>
+
+<div class="invoice">
+
+    <!-- ====================================== -->
+    <!-- HEADER -->
+    <!-- ====================================== -->
+
+    <div class="invoice-header">
+
+        <!-- LEFT -->
+
+        <div class="header-left">
+
+            <img
+                src="../assets/images/logo.png"
+                class="shop-logo"
+                alt="SVSS Logo">
+
+            <div class="shop-info">
+
+                <h1>
+
+                    SRI VENKATA SIVA SAI
+
+                </h1>
+
+                <h2>
+
+                    CLOTH & MATCHINGS
+
+                </h2>
+
+                <p>
+
+                    Opp. Sai Lodge,
+                    R.R. Road,
+                    Chirala - 523155
+
+                </p>
+
+                <p>
+
+                    Andhra Pradesh, India
+
+                </p>
+
+                <p>
+
+                    <b>Phone :</b>
+
+                    +91 9440061740
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+
+        <div class="header-right">
+
+            <table>
+
+                <tr>
+
+                    <td>
+
+                        GSTIN
+
+                    </td>
+
+                    <td>
+
+                        :
+
+                    </td>
+
+                    <td>
+
+                        37XXXXXXXXXXX
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        Invoice Type
+
+                    </td>
+
+                    <td>
+
+                        :
+
+                    </td>
+
+                    <td>
+
+                        TAX INVOICE
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        Copy
+
+                    </td>
+
+                    <td>
+
+                        :
+
+                    </td>
+
+                    <td>
+
+                        Original Copy
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- TITLE -->
+    <!-- ====================================== -->
+
+    <div class="invoice-title">
+
+        <h2>
+
+            TAX INVOICE
+
+        </h2>
+
+        <span>
+
+            Goods & Services Tax Invoice
+
+        </span>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- TOP INFORMATION -->
+    <!-- (PART 2 STARTS HERE) -->
+    <!-- ====================================== -->
+         <div class="info-section">
+
+        <!-- ====================================== -->
+        <!-- INVOICE DETAILS -->
+        <!-- ====================================== -->
+
+        <div class="info-card">
+
+            <div class="card-title">
+
+                <i class="bi bi-receipt"></i>
+
+                Invoice Details
+
+            </div>
+
+            <table class="info-table">
+
+                <tr>
+
+                    <td>Bill No</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="billNo"></span>
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Bill Book</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="billBookNo"></span>
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Date</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="billDate"></span>
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- CUSTOMER DETAILS -->
+        <!-- ====================================== -->
+
+        <div class="info-card">
+
+            <div class="card-title">
+
+                <i class="bi bi-person-circle"></i>
+
+                Customer Details
+
+            </div>
+
+            <table class="info-table">
+
+                <tr>
+
+                    <td>Name</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="customer"></span>
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Mobile</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="mobile"></span>
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Address</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="address"></span>
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- PAYMENT DETAILS -->
+        <!-- ====================================== -->
+
+        <div class="info-card">
+
+            <div class="card-title">
+
+                <i class="bi bi-wallet2"></i>
+
+                Payment Details
+
+            </div>
+
+            <table class="info-table">
+
+                <tr>
+
+                    <td>Mode</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="paymentMode"></span>
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Amount Paid</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="amountPaid"></span>
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Balance Due</td>
+
+                    <td>:</td>
+
+                    <td>
+                        <span id="balanceDue"></span>
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- STATUS -->
+        <!-- ====================================== -->
+
+        <div class="status-card">
+
+            <div class="card-title">
+
+                <i class="bi bi-patch-check-fill"></i>
+
+                Payment Status
+
+            </div>
+
+            <div class="status-value">
+
+                <span id="paymentStatus">
+
+                    Pending
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- PRODUCT TABLE -->
+    <!-- PART 3 STARTS HERE -->
+    <!-- ====================================== -->
+         <!-- ====================================== -->
+    <!-- PRODUCT TABLE -->
+    <!-- ====================================== -->
+
+    <div class="table-section">
+
+        <table class="product-table">
+
+            <thead>
+
+                <tr>
+
+                    <th width="50">Sl</th>
+
+                    <th width="90">Code</th>
+
+                    <th>Product</th>
+
+                    <th width="70">Unit</th>
+
+                    <th width="70">Qty</th>
+
+                    <th width="90">Rate</th>
+
+                    <th width="100">Taxable</th>
+
+                    <th width="70">CGST</th>
+
+                    <th width="70">SGST</th>
+
+                    <th width="70">GST</th>
+
+                    <th width="110">Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="invoiceBody">
+
+                <!-- Dynamic Rows -->
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- BOTTOM SECTION -->
+    <!-- ====================================== -->
+
+    <div class="bottom-wrapper">
+
+        <!-- LEFT SIDE -->
+
+        <div class="amount-box">
+
+            <div class="section-title">
+
+                <i class="bi bi-cash-stack"></i>
+
+                Amount In Words
+
+            </div>
+
+            <div
+                class="amount-words"
+                id="amountWords">
+
+                One Hundred Five Rupees Only
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+
+        <div class="summary-box">
+
+            <div class="section-title">
+
+                <i class="bi bi-calculator-fill"></i>
+
+                Invoice Summary
+
+            </div>
+
+            <table class="summary-table">
+
+                <tr>
+
+                    <td>
+
+                        Sub Total
+
+                    </td>
+
+                    <td id="subTotal">
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        CGST
+
+                    </td>
+
+                    <td id="cgstTotal">
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        SGST
+
+                    </td>
+
+                    <td id="sgstTotal">
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        GST Total
+
+                    </td>
+
+                    <td id="gstTotal">
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        Discount
+
+                    </td>
+
+                    <td id="discount">
+
+                    </td>
+
+                </tr>
+
+                <tr class="grand-total">
+
+                    <th>
+
+                        Grand Total
+
+                    </th>
+
+                    <th id="grandTotal">
+
+                    </th>
+
+                </tr>
+
+                <tr class="paid-row">
+
+                    <td>
+
+                        Amount Paid
+
+                    </td>
+
+                    <td id="summaryPaid">
+
+                    </td>
+
+                </tr>
+
+                <tr class="due-row">
+
+                    <td>
+
+                        Balance Due
+
+                    </td>
+
+                    <td id="summaryDue">
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- FOOTER -->
+    <!-- PART 4 STARTS HERE -->
+    <!-- ====================================== -->
+         <!-- ====================================== -->
+    <!-- FOOTER -->
+    <!-- ====================================== -->
+
+    <div class="invoice-footer">
+
+        <!-- LEFT -->
+
+        <div class="footer-left">
+
+            <h3>
+
+                Thank You!
+
+            </h3>
+
+            <p>
+
+                Thank you for shopping with
+                <strong>Sri Venkata Siva Sai Cloth & Matchings</strong>
+
+            </p>
+
+            <p>
+
+                We appreciate your business and look
+                forward to serving you again.
+
+            </p>
+
+            <div class="footer-contact">
+
+                <i class="bi bi-telephone-fill"></i>
+
+                +91 9440061740
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+
+        <div class="footer-right">
+
+            <div class="signature-box">
+
+                <div class="signature-space">
+
+                </div>
+
+                <div class="signature-line">
+
+                </div>
+
+                <h4>
+
+                    Authorized Signature
+
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- COPYRIGHT -->
+    <!-- ====================================== -->
+
+    <div class="invoice-bottom">
+
+        <p>
+
+            Computer Generated Invoice
+
+        </p>
+
+        <p>
+
+            Powered by
+            <strong>SVSS Billing System</strong>
+
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ====================================== -->
+<!-- JAVASCRIPT -->
+<!-- ====================================== -->
+
+<script src="js/app.js"></script>
+<script src="../src/js/browser-api.js"></script>
+<script src="js/invoice.js"></script>
+
+</body>
+
+</html>
