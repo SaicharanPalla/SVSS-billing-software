@@ -1,4 +1,4 @@
-console.log("window.api =", window.api);
+﻿console.log("window.api =", window.api);
 
 // =====================================
 // SVSS LOGIN
@@ -187,8 +187,11 @@ loginForm.addEventListener("submit", async (e) => {
         // LOGIN SUCCESS
         // ==========================
 
-        if (username === savedUser &&
-            password === savedPass) {
+        const loginSuccess = window.api.isBrowser
+            ? true
+            : (username === savedUser && password === savedPass);
+
+        if (loginSuccess) {
 
             db.settings.loggedIn = true;
             db.settings.loggedUser = username;
@@ -213,111 +216,105 @@ loginForm.addEventListener("submit", async (e) => {
 
 console.log("LOGIN SUCCESS");
 console.log(db.settings);
-// ==========================
-// SUPABASE CLOUD LOGIN
-// ==========================
-
-try {
-
-    const cloudResult =
-        await window.api.cloudLogin();
-
-    if (cloudResult.success) {
-
-        console.log(
-            "SVSS CLOUD LOGIN SUCCESS"
-        );
-
-        console.log(
-            "Cloud User ID:",
-            cloudResult.userId
-        );
-
-        console.log(
-            "Cloud Email:",
-            cloudResult.email
-        );
-
-        // ======================================
-        // CLOUD → LOCAL DATABASE SYNC
-        // ======================================
-
-        console.log(
-            "SVSS Cloud: Starting Cloud → Local sync..."
-        );
+        // ==========================
+        // SUPABASE CLOUD LOGIN
+        // ==========================
 
         try {
 
-            const syncResult =
-                await window.api.syncFromCloud();
+            const cloudResult =
+                await window.api.cloudLogin(username, password);
 
-            if (syncResult.success) {
+            if (!cloudResult.success) {
 
-                console.log(
-                    "SVSS Cloud: Cloud → Local sync successful."
+                showToast(
+                    cloudResult.error || "Invalid email or password.",
+                    "error"
                 );
 
-                console.log(
-                    "SVSS Cloud Sync Counts:",
-                    syncResult.counts
-                );
+                passwordInput.value = "";
+                passwordInput.focus();
 
-            } else {
+                return;
+            }
+
+            console.log("SVSS CLOUD LOGIN SUCCESS");
+            console.log("Cloud User ID:", cloudResult.userId);
+            console.log("Cloud Email:", cloudResult.email);
+
+            // ======================================
+            // CLOUD → LOCAL DATABASE SYNC
+            // ======================================
+
+            try {
+
+                const syncResult =
+                    await window.api.syncFromCloud();
+
+                if (syncResult.success) {
+
+                    console.log(
+                        "SVSS Cloud: Cloud → Local sync successful."
+                    );
+
+                    console.log(
+                        "SVSS Cloud Sync Counts:",
+                        syncResult.counts
+                    );
+
+                } else {
+
+                    console.warn(
+                        "SVSS Cloud: Cloud → Local sync failed:",
+                        syncResult.error
+                    );
+
+                }
+
+            } catch (syncError) {
 
                 console.warn(
-                    "SVSS Cloud: Cloud → Local sync failed:",
-                    syncResult.error
+                    "SVSS Cloud: Cloud → Local sync error:",
+                    syncError
                 );
 
             }
 
-        } catch (syncError) {
+            // ======================================
+            // RESTORE LOCAL LOGIN STATE
+            // AFTER CLOUD SYNC
+            // ======================================
 
-            console.warn(
-                "SVSS Cloud: Cloud → Local sync error:",
-                syncError
+            const latestDb =
+                await window.api.getDatabase();
+
+            if (!latestDb.settings) {
+                latestDb.settings = {};
+            }
+
+            latestDb.settings.loggedIn = true;
+            latestDb.settings.loggedUser = username;
+
+            await window.api.saveDatabase(latestDb);
+
+            console.log(
+                "SVSS: Local login state restored after cloud sync."
             );
 
+        } catch (cloudError) {
+
+            console.error(
+                "SVSS CLOUD LOGIN ERROR:",
+                cloudError
+            );
+
+            showToast(
+                "Cloud login failed. Please try again.",
+                "error"
+            );
+
+            return;
         }
-                // ======================================
-        // RESTORE LOCAL LOGIN STATE
-        // AFTER CLOUD SYNC
-        // ======================================
-
-        const latestDb =
-            await window.api.getDatabase();
-
-        if (!latestDb.settings) {
-            latestDb.settings = {};
-        }
-
-        latestDb.settings.loggedIn = true;
-        latestDb.settings.loggedUser = username;
-
-        await window.api.saveDatabase(latestDb);
-
-        console.log(
-            "SVSS: Local login state restored after cloud sync."
-        );
-
-    } else {
-
-        console.warn(
-            "SVSS CLOUD LOGIN FAILED:",
-            cloudResult.error
-        );
-
-    }
-
-} catch (cloudError) {
-
-    console.warn(
-        "SVSS CLOUD LOGIN ERROR:",
-        cloudError
-    );
-
-}
-
             // Disable Login Button
 
             loginBtn.disabled = true;
@@ -438,3 +435,5 @@ function showToast(message, type = "success") {
     }, 3000);
 
 }
+
+

@@ -1,10 +1,12 @@
-(function () {
+﻿(function () {
 
     if (window.api) {
         return;
     }
 
     const STORAGE_KEY = "svss_browser_database";
+
+    const isBrowser = true;
 
     let currentDatabase = null;
 
@@ -149,29 +151,22 @@
         };
     }
 
-    async function cloudLogin() {
+    async function cloudLogin(email, password) {
 
-        const email =
-            "charancherry03521@gmail.com";
-
-        const password =
-            prompt("Enter your Supabase cloud password:");
-
-        if (!password) {
+        if (!email || !password) {
             return {
                 success: false,
-                error: "Cloud password was not entered."
+                error: "Email and password are required."
             };
         }
 
         const { data, error } =
             await supabaseClient.auth.signInWithPassword({
-                email,
+                email: email.trim(),
                 password
             });
 
         if (error || !data?.session) {
-
             return {
                 success: false,
                 error: error?.message ||
@@ -381,6 +376,8 @@
             return "Web";
         },
 
+        isBrowser: true,
+
         async cloudLogin() {
             return cloudLogin();
         },
@@ -409,6 +406,9 @@
     };
 
 })();
+
+
+
 
 
 
