@@ -98,16 +98,64 @@
         return database[collection] || [];
     }
 
-    function saveCollection(collection, data) {
+   async function saveCollection(collection, data) {
 
-        const database = loadDatabase();
+    const database = loadDatabase();
 
-        database[collection] = data;
+    database[collection] = data;
 
-        saveDatabase(database);
+    saveDatabase(database);
 
-        return true;
+    const tableMap = {
+        categories: "categories",
+        masterProducts: "master_products",
+        products: "products",
+        customers: "customers",
+        bills: "bills"
+    };
+
+    const table = tableMap[collection];
+
+    if (!table) {
+        throw new Error(
+            `SVSS Browser Cloud: Unknown collection "${collection}".`
+        );
     }
+
+    const { error } = await supabaseClient
+        .from(table)
+        .upsert(
+            {
+                id: {
+                        categories: "SVSS_CATEGORIES_COLLECTION",
+                        masterProducts: "SVSS_MASTER_PRODUCTS_COLLECTION",
+                        products: "SVSS_PRODUCTS_COLLECTION",
+                        customers: "SVSS_CUSTOMERS_COLLECTION",
+                        bills: "SVSS_BILLS_COLLECTION"
+                    }[collection],
+                data: {
+                    [collection]: data
+                },
+                updated_at: new Date().toISOString()
+            },
+            {
+                onConflict: "id"
+            }
+        );
+
+    if (error) {
+        console.error(
+            "SVSS Browser Cloud: Upload failed",
+            error
+        );
+
+        throw new Error(
+            `Cloud save failed: ${error.message}`
+        );
+    }
+
+    return true;
+}
 
     async function getCloudCollection(table, key) {
 
@@ -358,19 +406,42 @@
 
             return database.settings || {};
         },
+async saveSettings(settings) {
 
-        async saveSettings(settings) {
+    const database = loadDatabase();
 
-            const database =
-                loadDatabase();
+    database.settings = settings || {};
 
-            database.settings =
-                settings || {};
+    saveDatabase(database);
 
-            saveDatabase(database);
+    const { error } = await supabaseClient
+        .from("business_settings")
+        .upsert(
+            {
+                id: "SVSS_BUSINESS_SETTINGS",
+                data: {
+                    settings: database.settings
+                },
+                updated_at: new Date().toISOString()
+            },
+            {
+                onConflict: "id"
+            }
+        );
 
-            return true;
-        },
+    if (error) {
+        console.error(
+            "SVSS Browser Cloud: Settings upload failed",
+            error
+        );
+
+        throw new Error(
+            `Cloud settings save failed: ${error.message}`
+        );
+    }
+
+    return true;
+},
 
         async getAppVersion() {
             return "Web";
@@ -386,6 +457,40 @@
             return syncFromCloud();
         },
 
+        async updateCloudUser(email, password) {
+
+            const updates = {};
+
+            if (email && email.trim()) {
+                updates.email = email.trim();
+            }
+
+            if (password && password.length > 0) {
+                updates.password = password;
+            }
+
+            if (Object.keys(updates).length === 0) {
+                return {
+                    success: false,
+                    error: "Email or password is required."
+                };
+            }
+
+            const { data, error } =
+                await supabaseClient.auth.updateUser(updates);
+
+            if (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+
+            return {
+                success: true,
+                user: data.user || null
+            };
+        },
         async cloudLogout() {
 
             const { error } =
