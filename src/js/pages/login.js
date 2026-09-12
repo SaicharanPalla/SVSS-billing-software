@@ -1,4 +1,4 @@
-﻿console.log("window.api =", window.api);
+console.log("window.api =", window.api);
 
 // =====================================
 // SVSS LOGIN
@@ -187,9 +187,9 @@ loginForm.addEventListener("submit", async (e) => {
         // LOGIN SUCCESS
         // ==========================
 
-        const loginSuccess = window.api.isBrowser
-            ? true
-            : (username === savedUser && password === savedPass);
+        // Cloud email/password is validated by Supabase below.
+        // Do not reject valid cloud credentials against old local credentials.
+        const loginSuccess = true;
 
         if (loginSuccess) {
 
@@ -243,7 +243,7 @@ console.log(db.settings);
             console.log("Cloud Email:", cloudResult.email);
 
             // ======================================
-            // CLOUD → LOCAL DATABASE SYNC
+            // CLOUD Ã¢â€ â€™ LOCAL DATABASE SYNC
             // ======================================
 
             try {
@@ -254,7 +254,7 @@ console.log(db.settings);
                 if (syncResult.success) {
 
                     console.log(
-                        "SVSS Cloud: Cloud → Local sync successful."
+                        "SVSS Cloud: Cloud Ã¢â€ â€™ Local sync successful."
                     );
 
                     console.log(
@@ -265,7 +265,7 @@ console.log(db.settings);
                 } else {
 
                     console.warn(
-                        "SVSS Cloud: Cloud → Local sync failed:",
+                        "SVSS Cloud: Cloud Ã¢â€ â€™ Local sync failed:",
                         syncResult.error
                     );
 
@@ -274,7 +274,7 @@ console.log(db.settings);
             } catch (syncError) {
 
                 console.warn(
-                    "SVSS Cloud: Cloud → Local sync error:",
+                    "SVSS Cloud: Cloud Ã¢â€ â€™ Local sync error:",
                     syncError
                 );
 
@@ -294,6 +294,20 @@ console.log(db.settings);
 
             latestDb.settings.loggedIn = true;
             latestDb.settings.loggedUser = username;
+
+            // ======================================
+            // SAVE CURRENT REMEMBER-ME CREDENTIALS
+            // ======================================
+
+            if (rememberMe.checked) {
+                latestDb.settings.rememberMe = true;
+                latestDb.settings.savedUsername = username;
+                latestDb.settings.savedPassword = password;
+            } else {
+                latestDb.settings.rememberMe = false;
+                latestDb.settings.savedUsername = "";
+                latestDb.settings.savedPassword = "";
+            }
 
             await window.api.saveDatabase(latestDb);
 
@@ -435,5 +449,3 @@ function showToast(message, type = "success") {
     }, 3000);
 
 }
-
-
