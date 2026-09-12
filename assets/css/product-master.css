@@ -54,3 +54,48 @@
     }
 
 }
+/* ==========================================
+   PRODUCT MASTER MODAL MOBILE POSITION FIX
+========================================== */
+
+@media (max-width:576px){
+
+    #productMasterModal{
+        z-index:9999 !important;
+        padding:0 !important;
+    }
+
+    #productMasterModal .modal-dialog{
+        margin:58px 8px 10px !important;
+        max-width:calc(100% - 16px) !important;
+        height:calc(100vh - 68px) !important;
+        display:flex !important;
+        align-items:flex-start !important;
+    }
+
+    #productMasterModal .modal-content{
+        width:100% !important;
+        max-height:calc(100vh - 68px) !important;
+        overflow:hidden !important;
+        border-radius:8px !important;
+    }
+
+    #productMasterModal .modal-header{
+        flex-shrink:0 !important;
+        position:relative !important;
+        z-index:5 !important;
+    }
+
+    #productMasterModal .modal-body{
+        overflow-y:auto !important;
+        max-height:calc(100vh - 170px) !important;
+    }
+
+    #productMasterModal .modal-footer{
+        flex-shrink:0 !important;
+        position:relative !important;
+        z-index:5 !important;
+        background:#ffffff !important;
+    }
+
+}
