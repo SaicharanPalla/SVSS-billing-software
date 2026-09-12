@@ -322,15 +322,12 @@ ipcMain.handle("get-app-version", () => {
 
 ipcMain.handle(
     "cloud-login",
-    async () => {
+    async (event, email, password) => {
 
         try {
 
-            const email =
-                process.env.SVSS_CLOUD_EMAIL;
-
-            const password =
-                process.env.SVSS_CLOUD_PASSWORD;
+            email = String(email || '').trim();
+            password = String(password || '');
 
             if (!email || !password) {
 

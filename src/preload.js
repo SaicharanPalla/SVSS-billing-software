@@ -74,8 +74,8 @@ getAppVersion: () =>
 // SUPABASE CLOUD AUTH
 // ==========================
 
-cloudLogin: () =>
-    ipcRenderer.invoke("cloud-login"),
+cloudLogin: (email, password) =>
+    ipcRenderer.invoke("cloud-login", email, password),
 
 cloudLogout: () =>
     ipcRenderer.invoke("cloud-logout"),
