@@ -333,3 +333,55 @@
 
 }
 
+/* Product Master mobile header fix */
+@media (max-width:768px){
+
+    #productMasterModal{
+        padding-left:0 !important;
+        padding-right:0 !important;
+    }
+
+    #productMasterModal .modal-dialog{
+        width:100% !important;
+        max-width:calc(100% - 16px) !important;
+        margin:8px auto !important;
+    }
+
+    #productMasterModal .modal-content{
+        width:100% !important;
+        max-width:100% !important;
+        overflow:visible !important;
+    }
+
+    #productMasterModal .modal-header{
+        display:flex !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        position:relative !important;
+        height:auto !important;
+        min-height:58px !important;
+        padding:12px 14px !important;
+        align-items:center !important;
+        justify-content:space-between !important;
+        flex-wrap:nowrap !important;
+        overflow:visible !important;
+    }
+
+    #productMasterModal .modal-title{
+        display:flex !important;
+        align-items:center !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        font-size:20px !important;
+        white-space:nowrap !important;
+        margin:0 !important;
+    }
+
+    #productMasterModal .btn-close{
+        display:block !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        flex-shrink:0 !important;
+    }
+
+}
