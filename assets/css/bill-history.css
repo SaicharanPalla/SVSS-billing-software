@@ -1,0 +1,35 @@
+/* ==========================================
+   MOBILE BILL HISTORY ACTION BUTTON FIX
+========================================== */
+
+@media (max-width:576px){
+
+    .bill-history-table td:last-child{
+        width:90px !important;
+        min-width:90px !important;
+        max-width:90px !important;
+        padding:12px 6px !important;
+        text-align:center !important;
+        vertical-align:middle !important;
+    }
+
+    .bill-history-table td:last-child .btn,
+    .bill-history-table .view-bill-btn,
+    .bill-history-table .delete-bill-btn{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:48px !important;
+        height:48px !important;
+        min-width:48px !important;
+        margin:0 auto 8px auto !important;
+        padding:0 !important;
+        border-radius:50% !important;
+        font-size:20px !important;
+    }
+
+    .bill-history-table td:last-child .btn:last-child{
+        margin-bottom:0 !important;
+    }
+
+}
