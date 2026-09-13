@@ -58,7 +58,7 @@ let win = null;
 // ======================================
 
 // =========================================================
-// SVSS CLOUD — INTERNET CONNECTIVITY CHECK
+// SVSS CLOUD â€” INTERNET CONNECTIVITY CHECK
 // =========================================================
 //
 // We check the actual Supabase endpoint instead of relying
@@ -530,7 +530,7 @@ Developed By
 
 Sri Venkata Siva Sai Cloth & Matching Centre
 
-© 2026 SVSS`
+Â© 2026 SVSS`
 
                         });
 
@@ -734,7 +734,7 @@ async function updateCloudSyncMetadata(
 }
 // ======================================
 // SVSS CLOUD
-// OFFLINE → ONLINE SYNC ENGINE
+// OFFLINE â†’ ONLINE SYNC ENGINE
 // ======================================
 
 let cloudSyncRunning = false;
@@ -795,7 +795,7 @@ async function reportPendingIndividualDeletions() {
 // =========================================================
 //
 // MODIFIES DATABASE:
-// YES — modifies the Supabase JSON collection.
+// YES â€” modifies the Supabase JSON collection.
 //
 // LOCAL DATABASE:
 // Only clears successfully processed deletion queue entries.
@@ -1481,7 +1481,7 @@ for (const record of localData) {
     const localJson =
         JSON.stringify(record);
 
-    // Same record → safe
+    // Same record â†’ safe
     if (cloudJson === localJson) {
         continue;
     }
@@ -1632,14 +1632,14 @@ ipcMain.handle("get-database", async () => {
 
 });
 // ======================================
-// CLOUD → LOCAL DATABASE SYNC
+// CLOUD â†’ LOCAL DATABASE SYNC
 // ======================================
 
 ipcMain.handle("sync-from-cloud", async () => {
 
     try {
 
-        log.info("SVSS Cloud: Starting Cloud → Local synchronization...");
+        log.info("SVSS Cloud: Starting Cloud â†’ Local synchronization...");
 
         // ======================================
         // BACKUP BEFORE CLOUD RESTORE
@@ -1678,7 +1678,7 @@ const pendingCollections =
 if (pendingCollections.length > 0) {
 
     log.warn(
-        "SVSS Cloud: Cloud → Local synchronization skipped because local changes are pending."
+        "SVSS Cloud: Cloud â†’ Local synchronization skipped because local changes are pending."
     );
 
     log.warn(
@@ -2023,7 +2023,7 @@ if (localDatabase.settings) {
         await db.write();
 
         log.info(
-            "SVSS Cloud: Cloud → Local synchronization completed successfully."
+            "SVSS Cloud: Cloud â†’ Local synchronization completed successfully."
         );
 
         return {
@@ -2051,7 +2051,7 @@ if (localDatabase.settings) {
     } catch (error) {
 
         log.error(
-            "SVSS Cloud: Cloud → Local synchronization failed."
+            "SVSS Cloud: Cloud â†’ Local synchronization failed."
         );
 
         log.error(error);
@@ -2065,7 +2065,7 @@ if (localDatabase.settings) {
 
 });
 // =========================================================
-// SAVE COMPLETE DATABASE — LOCAL FIRST
+// SAVE COMPLETE DATABASE â€” LOCAL FIRST
 // WITH DELETION TRACKING
 // =========================================================
 //
@@ -2425,23 +2425,43 @@ ipcMain.handle(
                 of SYNC_COLLECTIONS
             ) {
 
-                const previousValue =
-                    collection ===
-                    "businessSettings"
-                        ? previousDatabase
-                            .settings
-                        : previousDatabase[
-                            collection
-                        ];
+                let previousValue;
+                let newValue;
 
-                const newValue =
-                    collection ===
-                    "businessSettings"
-                        ? database
-                            .settings
-                        : database[
-                            collection
-                        ];
+                if (collection === "businessSettings") {
+
+                    const localOnlyAuthFields = [
+                        "loggedIn",
+                        "loggedUser",
+                        "username",
+                        "password",
+                        "rememberMe",
+                        "savedUsername",
+                        "savedPassword"
+                    ];
+
+                    previousValue = {
+                        ...(previousDatabase.settings || {})
+                    };
+
+                    newValue = {
+                        ...(database.settings || {})
+                    };
+
+                    for (const field of localOnlyAuthFields) {
+                        delete previousValue[field];
+                        delete newValue[field];
+                    }
+
+                } else {
+
+                    previousValue =
+                        previousDatabase[collection];
+
+                    newValue =
+                        database[collection];
+
+                }
 
                 const previousJson =
                     JSON.stringify(
