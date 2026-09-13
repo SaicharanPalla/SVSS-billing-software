@@ -58,7 +58,7 @@ let win = null;
 // ======================================
 
 // =========================================================
-// SVSS CLOUD â€” INTERNET CONNECTIVITY CHECK
+// SVSS CLOUD Ã¢â‚¬â€ INTERNET CONNECTIVITY CHECK
 // =========================================================
 //
 // We check the actual Supabase endpoint instead of relying
@@ -530,7 +530,7 @@ Developed By
 
 Sri Venkata Siva Sai Cloth & Matching Centre
 
-Â© 2026 SVSS`
+Ã‚Â© 2026 SVSS`
 
                         });
 
@@ -734,7 +734,7 @@ async function updateCloudSyncMetadata(
 }
 // ======================================
 // SVSS CLOUD
-// OFFLINE â†’ ONLINE SYNC ENGINE
+// OFFLINE Ã¢â€ â€™ ONLINE SYNC ENGINE
 // ======================================
 
 let cloudSyncRunning = false;
@@ -795,7 +795,7 @@ async function reportPendingIndividualDeletions() {
 // =========================================================
 //
 // MODIFIES DATABASE:
-// YES â€” modifies the Supabase JSON collection.
+// YES Ã¢â‚¬â€ modifies the Supabase JSON collection.
 //
 // LOCAL DATABASE:
 // Only clears successfully processed deletion queue entries.
@@ -1481,7 +1481,7 @@ for (const record of localData) {
     const localJson =
         JSON.stringify(record);
 
-    // Same record â†’ safe
+    // Same record Ã¢â€ â€™ safe
     if (cloudJson === localJson) {
         continue;
     }
@@ -1632,14 +1632,14 @@ ipcMain.handle("get-database", async () => {
 
 });
 // ======================================
-// CLOUD â†’ LOCAL DATABASE SYNC
+// CLOUD Ã¢â€ â€™ LOCAL DATABASE SYNC
 // ======================================
 
 ipcMain.handle("sync-from-cloud", async () => {
 
     try {
 
-        log.info("SVSS Cloud: Starting Cloud â†’ Local synchronization...");
+        log.info("SVSS Cloud: Starting Cloud Ã¢â€ â€™ Local synchronization...");
 
         // ======================================
         // BACKUP BEFORE CLOUD RESTORE
@@ -1678,7 +1678,7 @@ const pendingCollections =
 if (pendingCollections.length > 0) {
 
     log.warn(
-        "SVSS Cloud: Cloud â†’ Local synchronization skipped because local changes are pending."
+        "SVSS Cloud: Cloud Ã¢â€ â€™ Local synchronization skipped because local changes are pending."
     );
 
     log.warn(
@@ -1970,6 +1970,18 @@ for (const collection of collections) {
             ].lastCloudUpdatedAt =
                 cloudRecord.updated_at;
 
+
+            // Cloud data has now been restored locally.
+            // Clear stale synchronization status.
+            localDatabase.syncMeta[
+                collection.name
+            ].pendingSync = false;
+
+            localDatabase.syncMeta[
+                collection.name
+            ].localUpdatedAt = null;
+
+
             log.info(
                 `SVSS Cloud: ${collection.name} cloud version recorded: ${cloudRecord.updated_at}`
             );
@@ -2023,7 +2035,7 @@ if (localDatabase.settings) {
         await db.write();
 
         log.info(
-            "SVSS Cloud: Cloud â†’ Local synchronization completed successfully."
+            "SVSS Cloud: Cloud Ã¢â€ â€™ Local synchronization completed successfully."
         );
 
         return {
@@ -2051,7 +2063,7 @@ if (localDatabase.settings) {
     } catch (error) {
 
         log.error(
-            "SVSS Cloud: Cloud â†’ Local synchronization failed."
+            "SVSS Cloud: Cloud Ã¢â€ â€™ Local synchronization failed."
         );
 
         log.error(error);
@@ -2065,7 +2077,7 @@ if (localDatabase.settings) {
 
 });
 // =========================================================
-// SAVE COMPLETE DATABASE â€” LOCAL FIRST
+// SAVE COMPLETE DATABASE Ã¢â‚¬â€ LOCAL FIRST
 // WITH DELETION TRACKING
 // =========================================================
 //
