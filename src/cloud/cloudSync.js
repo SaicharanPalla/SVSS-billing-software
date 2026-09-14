@@ -295,26 +295,23 @@ async function deleteRecordsFromCloud(
         );
     }
 
-    // =====================================================
-    // OPTIMISTIC CONFLICT CHECK
-    // =====================================================
+// =====================================================
+// USE THE LATEST CLOUD VERSION FOR DELETION
+// =====================================================
 
-    if (
-        expectedUpdatedAt &&
-        currentRecord.updated_at !== expectedUpdatedAt
-    ) {
-        const conflictError = new Error(
-            `SVSS Cloud: Delete conflict detected for ${collection}. ` +
-            `Cloud version has changed since the last synchronization.`
-        );
-
-        conflictError.code = "CLOUD_CONFLICT";
-        conflictError.collection = collection;
-        conflictError.cloudUpdatedAt = currentRecord.updated_at;
-        conflictError.expectedUpdatedAt = expectedUpdatedAt;
-
-        throw conflictError;
-    }
+// The latest cloud container was already loaded above.
+// Continue deleting from that current cloud version.
+// This prevents an old pending-deletion timestamp from
+// blocking the deletion permanently.
+if (
+    expectedUpdatedAt &&
+    currentRecord.updated_at !== expectedUpdatedAt
+) {
+    console.warn(
+        `SVSS Cloud: ${collection} changed after local deletion was queued. ` +
+        `Using the latest cloud version for deletion.`
+    );
+}
 
     // =====================================================
     // VALIDATE CLOUD DATA
