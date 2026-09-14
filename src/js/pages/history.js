@@ -2081,8 +2081,11 @@ function summaryRow(label,value,bold=false){
 
 summaryRow(
     "Sub Total",
-    String(selectedBill.subTotal)
-    .replace("Rs.")
+    "Rs. " +
+    Number(
+        String(selectedBill.subTotal ?? 0)
+            .replace(/[^\d.-]/g, "")
+    ).toFixed(2)
 );
 
 summaryRow(
@@ -2149,8 +2152,8 @@ const roundOff =
 
 summaryRow(
     "Round Off",
-    (Number(selectedBill.roundOff || 0) >= 0 ? "+" : "") +
-    Number(selectedBill.roundOff || 0).toFixed(2)
+    (Number(roundOff) >= 0 ? "+" : "") +
+    Number(roundOff).toFixed(2)
 );
 
 doc.setFillColor(255,248,220);
@@ -2164,8 +2167,11 @@ doc.rect(
 );
 summaryRow(
     "Grand Total",
-    String(selectedBill.grandTotal)
-    .replace("Rs."),
+    "Rs. " +
+    Number(
+        String(selectedBill.grandTotal)
+            .replace(/[^\d.-]/g, "")
+    ).toFixed(2),
     true
 );
 

@@ -1785,18 +1785,49 @@ if (!dbCustomer) {
 
 }
 // ==========================================
-// CUSTOMER MUST EXIST
+// CREATE CUSTOMER IF BILL-HISTORY CUSTOMER
 // ==========================================
 
 if (!dbCustomer) {
-    console.error(
-        "Payment history customer not found:",
+    console.warn(
+        "Customer not found in customer database. Creating customer from bill history:",
         currentCustomer
     );
 
-    throw new Error(
-        "Customer not found. Payment was not saved."
-    );
+    dbCustomer = {
+        customerId:
+            currentCustomer.customerId ||
+            (
+                "AUTO_" +
+                Date.now() +
+                "_" +
+                Math.random().toString(36).substring(2, 8)
+            ),
+
+        name:
+            String(currentCustomer.name || "").trim(),
+
+        mobile:
+            String(currentCustomer.mobile || "").trim(),
+
+        address:
+            currentCustomer.address || "-",
+
+        gst:
+            currentCustomer.gst || "",
+
+        email:
+            currentCustomer.email || "",
+
+        notes:
+            currentCustomer.notes || "",
+
+        openingBalance: 0,
+
+        paymentHistory: []
+    };
+
+    db.customers.push(dbCustomer);
 }
 
 // ==========================================
