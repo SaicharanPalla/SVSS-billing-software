@@ -1589,14 +1589,7 @@ document
 
         if (remainingAmount > 0) {
 
-            const dbCustomer =
-                db.customers.find(c =>
-                    String(c.name).trim() ===
-                        String(currentCustomer.name).trim() &&
-
-                    String(c.mobile || "").trim() ===
-                        String(currentCustomer.mobile || "").trim()
-                );
+            const dbCustomer = db.customers.find(c => String(c.customerId) === String(currentCustomer.customerId)) || db.customers.find(c => String(c.name).trim() === String(currentCustomer.name).trim() && String(c.mobile || "").trim() === String(currentCustomer.mobile || "").trim());
 
 
             if (dbCustomer) {
@@ -1640,14 +1633,7 @@ document
         // PAYMENT HISTORY
         // ==========================================
 
-        const dbCustomer =
-            db.customers.find(c =>
-                String(c.name).trim() ===
-                    String(currentCustomer.name).trim() &&
-
-                String(c.mobile || "").trim() ===
-                    String(currentCustomer.mobile || "").trim()
-            );
+        const dbCustomer = db.customers.find(c => String(c.customerId) === String(currentCustomer.customerId)) || db.customers.find(c => String(c.name).trim() === String(currentCustomer.name).trim() && String(c.mobile || "") .trim() === String(currentCustomer.mobile || "").trim());
 
 
         if (dbCustomer) {
@@ -1728,6 +1714,15 @@ document
 
 
         await window.api.saveDatabase(db);
+
+
+        // ==========================================
+        // CLOUD SYNC - CUSTOMER REPAYMENT
+        // ==========================================
+        if (window.api.isBrowser) {
+            await window.api.saveCustomers(db.customers);
+            await window.api.saveBills(db.bills);
+        }
 
 
         // ==========================================
