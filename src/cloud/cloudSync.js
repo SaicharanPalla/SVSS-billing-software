@@ -630,25 +630,36 @@ async function syncToCloud(db) {
                 const expectedUpdatedAt =
                     meta.lastCloudUpdatedAt || null;
 
-                /*
-                 * For collection-level synchronization,
-                 * upload the complete local collection.
-                 */
-
-                for (const record of localData) {
-
-                    if (!record || !record.id) {
-                        continue;
-                    }
-
-                    await saveToCloud(
-                        collection,
-                        record.id,
-                        record,
-                        expectedUpdatedAt
-                    );
-
-                }
+            /*
+             * For collection-level synchronization,
+             * upload the complete collection container.
+             */
+            
+            const collectionContainerIds = {
+                products: "SVSS_PRODUCTS_COLLECTION",
+                customers: "SVSS_CUSTOMERS_COLLECTION",
+                bills: "SVSS_BILLS_COLLECTION",
+                categories: "SVSS_CATEGORIES_COLLECTION",
+                masterProducts: "SVSS_MASTER_PRODUCTS_COLLECTION"
+            };
+            
+            const containerId =
+                collectionContainerIds[collection];
+            
+            if (!containerId) {
+                throw new Error(
+                    `SVSS Cloud: Missing container ID for "${collection}".`
+                );
+            }
+            
+            await saveToCloud(
+                collection,
+                containerId,
+                {
+                    [collection]: localData
+                },
+                expectedUpdatedAt
+            );
 
                 meta.pendingSync = false;
                 meta.localUpdatedAt = null;

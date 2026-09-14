@@ -1496,25 +1496,24 @@ for (const record of localData) {
 }
 
 // --------------------------------------
-// STOP BEFORE PRODUCTION WRITE
+// RECORD-LEVEL CONFLICT HANDLING
 // --------------------------------------
 
 if (conflicts.length > 0) {
 
-    log.error(
+    log.warn(
         `SVSS Cloud: ${collection.name} has ${conflicts.length} record-level conflict(s).`
     );
 
     for (const conflict of conflicts) {
 
-        log.error(
-            `SVSS Cloud: Record conflict in ${collection.name}: ${conflict.id}`
+        log.warn(
+            `SVSS Cloud: Using local record for ${collection.name}: ${conflict.id}`
         );
     }
 
-    throw new Error(
-        `CLOUD_RECORD_CONFLICT:${collection.name}:${conflicts.length}`
-    );
+    // Continue synchronization using local records.
+    // Do not stop the complete collection sync.
 }
 
 const mergedData =
