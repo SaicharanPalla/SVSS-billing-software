@@ -143,14 +143,33 @@ db.customers.forEach((customer, dbIndex) => {
 
                 let key = name + "_" + mobile;
 
-// Try to find existing customer with same name
-const existingKey = Object.keys(customers).find(k =>
+// Try to find existing customer by customerId
+// OR by matching customer name and mobile number
+const existingKey = Object.keys(customers).find(k => {
 
-    customers[k].customerId &&
-    bill.customerId &&
-    customers[k].customerId === bill.customerId
+    const existingCustomer = customers[k];
 
-);
+    const sameCustomerId =
+        existingCustomer.customerId &&
+        bill.customerId &&
+        String(existingCustomer.customerId).trim() ===
+        String(bill.customerId).trim();
+
+    const sameName =
+        String(existingCustomer.name || "").trim().toLowerCase() ===
+        String(name || "").trim().toLowerCase();
+
+    const sameMobile =
+        String(existingCustomer.mobile || "").trim() ===
+        String(mobile || "").trim();
+
+    const sameNameAndMobile =
+        sameName &&
+        sameMobile &&
+        mobile !== "";
+
+    return sameCustomerId || sameNameAndMobile;
+});
 
 if (existingKey) {
 
@@ -1110,185 +1129,171 @@ showToast(
         });
 
     }
-    // ==========================================
+// ==========================================
 // PAYMENT HISTORY
 // ==========================================
 
 function loadPaymentHistory(customer) {
 
     const tbody =
-        document.getElementById(
-            "paymentHistoryBody"
-        );
+        document.getElementById("paymentHistoryBody");
 
     const countBadge =
-        document.getElementById(
-            "paymentHistoryCount"
-        );
+        document.getElementById("paymentHistoryCount");
 
-
-    if (!tbody)
-        return;
-
+    if (!tbody) return;
 
     tbody.innerHTML = "";
 
-
-    // ==========================================
-    // GET PAYMENT HISTORY
-    // ==========================================
-
+    // Get payment history
     const payments =
         Array.isArray(customer.paymentHistory)
             ? [...customer.paymentHistory]
             : [];
 
-
-    // Latest payment first
-
-    payments.sort(
-        (a, b) =>
-            new Date(b.date) -
-            new Date(a.date)
-    );
-
-
-    // ==========================================
-    // UPDATE COUNT
-    // ==========================================
-
+    // Update payment count
     if (countBadge) {
-
         countBadge.textContent =
             `${payments.length} ${
                 payments.length === 1
                     ? "Payment"
                     : "Payments"
             }`;
-
     }
 
-
-    // ==========================================
-    // NO PAYMENTS
-    // ==========================================
-
+    // No payments
     if (payments.length === 0) {
 
         tbody.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="7"
+                <td colspan="7"
                     class="text-center text-muted py-3">
-
                     <i class="bi bi-cash-stack"></i>
-
                     No Payments Found
-
                 </td>
-
             </tr>
-
         `;
 
         return;
-
     }
 
+    // Sort oldest payment first for correct calculation
+    const chronologicalPayments =
+        [...payments].sort((a, b) => {
 
-    // ==========================================
-    // DISPLAY PAYMENTS
-    // ==========================================
+            const dateA = new Date(
+                a.createdAt || a.date || 0
+            ).getTime();
 
-    payments.forEach(
+            const dateB = new Date(
+                b.createdAt || b.date || 0
+            ).getTime();
+
+            return dateA - dateB;
+        });
+
+    // Original customer amount
+    const originalAmount =
+        Number(customer.totalPurchase) || 0;
+
+    const openingBalance =
+        Number(customer.openingBalance) || 0;
+
+    const totalAmount =
+        originalAmount + openingBalance;
+
+    let runningPaid = 0;
+
+    // Calculate correct running totals
+    const calculatedPayments =
+        chronologicalPayments.map(payment => {
+
+            const amount =
+                Number(payment.amount) || 0;
+
+            runningPaid =
+                Number(
+                    (runningPaid + amount).toFixed(2)
+                );
+
+            const balanceDue =
+                Math.max(
+                    totalAmount - runningPaid,
+                    0
+                );
+
+            return {
+                ...payment,
+                amount,
+                totalPaid: runningPaid,
+                balanceDue
+            };
+        });
+
+    // Show newest payment first
+    calculatedPayments.reverse();
+
+    // Display payment history
+    calculatedPayments.forEach(
         (payment, index) => {
 
             const row =
                 document.createElement("tr");
 
-
             const amount =
                 Number(payment.amount) || 0;
-
 
             const totalPaid =
                 Number(payment.totalPaid) || 0;
 
-
-            // Calculate balance at this payment
-
-            const balanceAtPayment =
-                Math.max(
-                    0,
-                    (
-                        Number(customer.totalPurchase) +
-                        Number(customer.openingBalance || 0) -
-                        totalPaid
-                    )
-                );
-
+            const balanceDue =
+                Number(payment.balanceDue) || 0;
 
             row.innerHTML = `
-
                 <td>
                     ${index + 1}
                 </td>
 
-
                 <td>
-                    ${formatDate(payment.date)}
+                    ${formatDate(
+                        payment.date ||
+                        payment.createdAt?.split("T")[0]
+                    )}
                 </td>
-
 
                 <td class="payment-amount">
                     Rs.${amount.toFixed(2)}
                 </td>
 
-
                 <td>
                     Rs.${totalPaid.toFixed(2)}
                 </td>
 
-
                 <td class="payment-balance">
-                    Rs.${balanceAtPayment.toFixed(2)}
+                    Rs.${balanceDue.toFixed(2)}
                 </td>
 
-
                 <td>
-
                     <span class="badge bg-secondary">
-
                         ${
                             payment.paymentMode ||
                             "Cash"
                         }
-
                     </span>
-
                 </td>
 
-
                 <td>
-
                     ${
                         payment.remarks
                             ? payment.remarks
                             : "-"
                     }
-
                 </td>
-
             `;
 
-
             tbody.appendChild(row);
-
         }
     );
-
 }
 // ==========================================
 // RECEIVE PAYMENT BUTTON
@@ -1512,19 +1517,38 @@ document
         // FIND CUSTOMER BILLS
         // ==========================================
 
-        const customerBills =
-            bills
-                .filter(bill =>
-                    (bill.customer || "").trim() ===
-                        currentCustomer.name.trim() &&
+       const customerBills =
+    bills
+        .filter(bill => {
 
-                    (bill.mobile || "").trim() ===
-                        (currentCustomer.mobile || "").trim()
-                )
-                .sort((a, b) =>
-                    new Date(a.date) -
-                    new Date(b.date)
-                );
+            const sameCustomerId =
+                bill.customerId &&
+                currentCustomer.customerId &&
+                String(bill.customerId).trim() ===
+                String(currentCustomer.customerId).trim();
+
+            const sameName =
+                String(bill.customer || "").trim().toLowerCase() ===
+                String(currentCustomer.name || "").trim().toLowerCase();
+
+            const billMobile =
+                String(bill.mobile || "").trim();
+
+            const customerMobile =
+                String(currentCustomer.mobile || "").trim();
+
+            const sameMobile =
+                billMobile === customerMobile ||
+                billMobile === "" ||
+                billMobile === "-" ||
+                customerMobile === "" ||
+                customerMobile === "-";
+
+            return sameCustomerId || (sameName && sameMobile);
+        })
+        .sort((a, b) =>
+            new Date(a.date) - new Date(b.date)
+        );
 
 
         // ==========================================
@@ -1589,7 +1613,34 @@ document
 
         if (remainingAmount > 0) {
 
-            const dbCustomer = db.customers.find(c => String(c.customerId) === String(currentCustomer.customerId)) || db.customers.find(c => String(c.name).trim() === String(currentCustomer.name).trim() && String(c.mobile || "").trim() === String(currentCustomer.mobile || "").trim());
+            const dbCustomer =
+    db.customers.find(c => {
+
+        const sameCustomerId =
+            c.customerId &&
+            currentCustomer.customerId &&
+            String(c.customerId).trim() ===
+            String(currentCustomer.customerId).trim();
+
+        const sameName =
+            String(c.name || "").trim().toLowerCase() ===
+            String(currentCustomer.name || "").trim().toLowerCase();
+
+        const dbMobile =
+            String(c.mobile || "").trim();
+
+        const currentMobile =
+            String(currentCustomer.mobile || "").trim();
+
+        const sameMobile =
+            dbMobile === currentMobile ||
+            dbMobile === "" ||
+            dbMobile === "-" ||
+            currentMobile === "" ||
+            currentMobile === "-";
+
+        return sameCustomerId || (sameName && sameMobile);
+    });
 
 
             if (dbCustomer) {
@@ -1629,96 +1680,141 @@ document
         }
 
 
+// ==========================================
+// PAYMENT HISTORY
+// ==========================================
+
+let dbCustomer =
+    db.customers.find(c =>
+        currentCustomer.customerId &&
+        String(c.customerId) ===
+            String(currentCustomer.customerId)
+    ) ||
+    db.customers.find(c =>
+        String(c.name || "").trim() ===
+            String(currentCustomer.name || "").trim() &&
+
+        String(c.mobile || "").trim() ===
+            String(currentCustomer.mobile || "").trim()
+    );
+
+
+// ==========================================
+// CREATE CUSTOMER IF MISSING
+// ==========================================
+
+if (!dbCustomer) {
+
+    dbCustomer = {
+
+        customerId:
+            currentCustomer.customerId ||
+            "CUS" + Date.now(),
+
+        name:
+            currentCustomer.name || "",
+
+        mobile:
+            currentCustomer.mobile || "",
+
+        gst:
+            currentCustomer.gst || "",
+
+        address:
+            currentCustomer.address || "",
+
+        openingBalance:
+            Number(currentCustomer.openingBalance) || 0,
+
+        paymentHistory:
+            []
+
+    };
+
+    db.customers.push(dbCustomer);
+
+}
+
+
+// ==========================================
+// ENSURE PAYMENT HISTORY ARRAY
+// ==========================================
+
+if (!Array.isArray(dbCustomer.paymentHistory)) {
+
+    dbCustomer.paymentHistory = [];
+
+}
+
+
+// ==========================================
+// CALCULATE TOTAL PAID
+// ==========================================
+
+const previousPaid =
+    dbCustomer.paymentHistory.reduce(
+        (total, payment) =>
+            total + (Number(payment.amount) || 0),
+        0
+    );
+
+const newTotalPaid =
+    Number(
+        (previousPaid + requestedAmount).toFixed(2)
+    );
+
+
+// ==========================================
+// CREATE PAYMENT RECORD
+// ==========================================
+
+const paymentRecord = {
+
+    paymentId:
+        "PAY-" + Date.now(),
+
+    date:
+        new Date()
+            .toISOString()
+            .split("T")[0],
+
+    createdAt:
+        new Date().toISOString(),
+
+    amount:
+        Number(
+            requestedAmount.toFixed(2)
+        ),
+
+    totalPaid:
+        newTotalPaid,
+
+    paymentMode:
+        paymentMode,
+
+    remarks:
+        remarks
+
+};
+
+
+// ==========================================
+// SAVE PAYMENT HISTORY
+// ==========================================
+
+dbCustomer.paymentHistory.push(
+    paymentRecord
+);
         // ==========================================
-        // PAYMENT HISTORY
+        // SAVE DATABASE + CLOUD SYNC
         // ==========================================
-
-        const dbCustomer = db.customers.find(c => String(c.customerId) === String(currentCustomer.customerId)) || db.customers.find(c => String(c.name).trim() === String(currentCustomer.name).trim() && String(c.mobile || "") .trim() === String(currentCustomer.mobile || "").trim());
-
-
-        if (dbCustomer) {
-
-            // Create payment history if it doesn't exist
-
-            if (!Array.isArray(dbCustomer.paymentHistory)) {
-
-                dbCustomer.paymentHistory = [];
-
-            }
-
-
-            // Get current total paid from existing history
-
-            const previousPaid =
-                dbCustomer.paymentHistory.reduce(
-                    (sum, payment) =>
-                        sum +
-                        (Number(payment.amount) || 0),
-                    0
-                );
-
-
-            const newTotalPaid =
-                Number(
-                    (
-                        previousPaid +
-                        requestedAmount
-                    ).toFixed(2)
-                );
-
-
-            // ==========================================
-            // CREATE PAYMENT RECORD
-            // ==========================================
-
-            const paymentRecord = {
-
-                paymentId:
-                    "PAY-" +
-                    Date.now(),
-
-                date:
-                    new Date()
-                        .toISOString()
-                        .split("T")[0],
-
-                amount:
-                    Number(
-                        requestedAmount.toFixed(2)
-                    ),
-
-                totalPaid:
-                    newTotalPaid,
-
-                paymentMode:
-                    paymentMode,
-
-                remarks:
-                    remarks
-
-            };
-
-
-            dbCustomer.paymentHistory.push(
-                paymentRecord
-            );
-
-        }
-
-
-        // ==========================================
-        // SAVE DATABASE
-        // ==========================================
-
+        
         db.bills = bills;
-
-
+        
+        // Save to local storage / Electron database
         await window.api.saveDatabase(db);
-
-
-        // ==========================================
-        // CLOUD SYNC - CUSTOMER REPAYMENT
-        // ==========================================
+        
+        // Upload updated customer repayments and bills to cloud
         if (window.api.isBrowser) {
             await window.api.saveCustomers(db.customers);
             await window.api.saveBills(db.bills);
@@ -2421,14 +2517,34 @@ doc.autoTable({
 // ======================================
 // PAYMENT HISTORY
 // ======================================
+const paymentCustomer =
+    db.customers.find(c => {
 
-// Collect all payment history entries for this customer
-const paymentHistory = Array.isArray(customer.paymentHistory)
-    ? customer.paymentHistory
-    : [];
+        const sameCustomerId =
+            c.customerId &&
+            currentCustomer.customerId &&
+            String(c.customerId).trim() ===
+            String(currentCustomer.customerId).trim();
 
-let y = doc.lastAutoTable.finalY + 12;
+        const sameName =
+            String(c.name || "").trim().toLowerCase() ===
+            String(currentCustomer.name || "").trim().toLowerCase();
 
+        const dbMobile =
+            String(c.mobile || "").trim();
+
+        const currentMobile =
+            String(currentCustomer.mobile || "").trim();
+
+        const sameMobile =
+            dbMobile === currentMobile ||
+            dbMobile === "" ||
+            dbMobile === "-" ||
+            currentMobile === "" ||
+            currentMobile === "-";
+
+        return sameCustomerId || (sameName && sameMobile);
+    }); 
 
 // ======================================
 // SHOW PAYMENT HISTORY ONLY IF AVAILABLE
