@@ -910,7 +910,7 @@ if (dbIndex === -1) {
 
     }
 
-    // ==========================================
+// ==========================================
 // CUSTOM DELETE CONFIRMATION MODAL
 // ==========================================
 
@@ -1192,43 +1192,51 @@ function loadPaymentHistory(customer) {
             return dateA - dateB;
         });
 
-    // Original customer amount
-    const originalAmount =
-        Number(customer.totalPurchase) || 0;
+// Current remaining customer balance
+const currentBalance =
+    Number(customer.totalBalance) || 0;
 
-    const openingBalance =
-        Number(customer.openingBalance) || 0;
+let runningPaid = 0;
 
-    const totalAmount =
-        originalAmount + openingBalance;
+// Calculate payment rows without changing
+// the existing Total Paid calculation
+const calculatedPayments =
+    chronologicalPayments.map((payment, index) => {
 
-    let runningPaid = 0;
+        const amount =
+            Number(payment.amount) || 0;
 
-    // Calculate correct running totals
-    const calculatedPayments =
-        chronologicalPayments.map(payment => {
+        runningPaid =
+            Number(
+                (runningPaid + amount).toFixed(2)
+            );
 
-            const amount =
-                Number(payment.amount) || 0;
-
-            runningPaid =
-                Number(
-                    (runningPaid + amount).toFixed(2)
-                );
-
-            const balanceDue =
-                Math.max(
-                    totalAmount - runningPaid,
+        // Payments made after this payment
+        const paymentsAfterThis =
+            chronologicalPayments
+                .slice(index + 1)
+                .reduce(
+                    (total, laterPayment) =>
+                        total +
+                        (Number(laterPayment.amount) || 0),
                     0
                 );
 
-            return {
-                ...payment,
-                amount,
-                totalPaid: runningPaid,
-                balanceDue
-            };
-        });
+        // Remaining balance after this payment
+        const balanceDue =
+            Math.max(
+                currentBalance +
+                paymentsAfterThis,
+                0
+            );
+
+        return {
+            ...payment,
+            amount,
+            totalPaid: runningPaid,
+            balanceDue
+        };
+    });
 
     // Show newest payment first
     calculatedPayments.reverse();
@@ -1687,54 +1695,109 @@ document
 let dbCustomer =
     db.customers.find(c =>
         currentCustomer.customerId &&
-        String(c.customerId) ===
-            String(currentCustomer.customerId)
+        String(c.customerId || "").trim() ===
+            String(currentCustomer.customerId || "").trim()
     ) ||
-    db.customers.find(c =>
-        String(c.name || "").trim() ===
-            String(currentCustomer.name || "").trim() &&
+    db.customers.find(c => {
 
-        String(c.mobile || "").trim() ===
-            String(currentCustomer.mobile || "").trim()
-    );
+        const customerName =
+            String(c.name || "")
+                .trim()
+                .toLowerCase();
 
+        const selectedName =
+            String(currentCustomer.name || "")
+                .trim()
+                .toLowerCase();
+
+        const customerMobile =
+            String(c.mobile || "")
+                .trim();
+
+        const selectedMobile =
+            String(currentCustomer.mobile || "")
+                .trim();
+
+        const normalizedCustomerMobile =
+            customerMobile === "-" ? "" : customerMobile;
+
+        const normalizedSelectedMobile =
+            selectedMobile === "-" ? "" : selectedMobile;
+
+        return (
+            customerName === selectedName &&
+            normalizedCustomerMobile ===
+                normalizedSelectedMobile
+        );
+
+    });
 
 // ==========================================
-// CREATE CUSTOMER IF MISSING
+// FIND CUSTOMER BY CUSTOMER ID FIRST
+// ==========================================
+
+if (currentCustomer.customerId) {
+    dbCustomer = db.customers.find(customer =>
+        String(customer.customerId || "").trim() ===
+        String(currentCustomer.customerId || "").trim()
+    );
+}
+
+// ==========================================
+// FIND CUSTOMER BY NAME AND MOBILE
 // ==========================================
 
 if (!dbCustomer) {
 
-    dbCustomer = {
+    const currentName =
+        String(currentCustomer.name || "")
+            .trim()
+            .toLowerCase();
 
-        customerId:
-            currentCustomer.customerId ||
-            "CUS" + Date.now(),
+    const currentMobile =
+        String(currentCustomer.mobile || "")
+            .trim();
 
-        name:
-            currentCustomer.name || "",
+    dbCustomer = db.customers.find(customer => {
 
-        mobile:
-            currentCustomer.mobile || "",
+        const customerName =
+            String(customer.name || "")
+                .trim()
+                .toLowerCase();
 
-        gst:
-            currentCustomer.gst || "",
+        const customerMobile =
+            String(customer.mobile || "")
+                .trim();
 
-        address:
-            currentCustomer.address || "",
+        const sameName =
+            customerName === currentName;
 
-        openingBalance:
-            Number(currentCustomer.openingBalance) || 0,
+        const sameMobile =
+            customerMobile === currentMobile ||
+            customerMobile === "" ||
+            customerMobile === "-" ||
+            currentMobile === "" ||
+            currentMobile === "-";
 
-        paymentHistory:
-            []
+        return sameName && sameMobile;
 
-    };
-
-    db.customers.push(dbCustomer);
+    });
 
 }
+// ==========================================
+// CUSTOMER MUST EXIST
+// ==========================================
 
+if (!dbCustomer) {
+    console.error(
+        "Payment history customer not found:",
+        currentCustomer
+    );
+
+    throw new Error(
+        "Customer not found. Payment was not saved."
+    );
+}
 
 // ==========================================
 // ENSURE PAYMENT HISTORY ARRAY
@@ -1760,7 +1823,23 @@ const previousPaid =
 
 const newTotalPaid =
     Number(
-        (previousPaid + requestedAmount).toFixed(2)
+        (
+            previousPaid +
+            Number(requestedAmount)
+        ).toFixed(2)
+    );
+
+
+// ==========================================
+// CALCULATE BALANCE AFTER PAYMENT
+// ==========================================
+
+const currentBalanceAfterPayment =
+    Number(
+        (
+            Number(currentCustomer.totalBalance || 0) -
+            Number(requestedAmount)
+        ).toFixed(2)
     );
 
 
@@ -1783,17 +1862,23 @@ const paymentRecord = {
 
     amount:
         Number(
-            requestedAmount.toFixed(2)
+            Number(requestedAmount).toFixed(2)
         ),
 
     totalPaid:
         newTotalPaid,
 
+    balanceDue:
+        Math.max(
+            0,
+            currentBalanceAfterPayment
+        ),
+
     paymentMode:
-        paymentMode,
+        paymentMode || "Cash",
 
     remarks:
-        remarks
+        remarks || ""
 
 };
 
@@ -1812,13 +1897,14 @@ dbCustomer.paymentHistory.push(
         db.bills = bills;
         
         // Save to local storage / Electron database
-        await window.api.saveDatabase(db);
-        
-        // Upload updated customer repayments and bills to cloud
-        if (window.api.isBrowser) {
-            await window.api.saveCustomers(db.customers);
-            await window.api.saveBills(db.bills);
-        }
+        // Save locally first
+         await window.api.saveDatabase(db);
+         
+         // Save customer payment history and bills together
+         await Promise.all([
+             window.api.saveCustomers(db.customers),
+             window.api.saveBills(db.bills)
+         ]);
 
 
         // ==========================================
@@ -1920,6 +2006,9 @@ dbCustomer.paymentHistory.push(
         );
 
     });
+    // ==========================================
+    // Print Customer Statement
+    // ==========================================
     // ==========================================
     // Print Customer Statement
     // ==========================================
@@ -2517,34 +2606,14 @@ doc.autoTable({
 // ======================================
 // PAYMENT HISTORY
 // ======================================
-const paymentCustomer =
-    db.customers.find(c => {
 
-        const sameCustomerId =
-            c.customerId &&
-            currentCustomer.customerId &&
-            String(c.customerId).trim() ===
-            String(currentCustomer.customerId).trim();
+// Collect all payment history entries for this customer
+const paymentHistory = Array.isArray(customer.paymentHistory)
+    ? customer.paymentHistory
+    : [];
 
-        const sameName =
-            String(c.name || "").trim().toLowerCase() ===
-            String(currentCustomer.name || "").trim().toLowerCase();
+let y = doc.lastAutoTable.finalY + 12;
 
-        const dbMobile =
-            String(c.mobile || "").trim();
-
-        const currentMobile =
-            String(currentCustomer.mobile || "").trim();
-
-        const sameMobile =
-            dbMobile === currentMobile ||
-            dbMobile === "" ||
-            dbMobile === "-" ||
-            currentMobile === "" ||
-            currentMobile === "-";
-
-        return sameCustomerId || (sameName && sameMobile);
-    }); 
 
 // ======================================
 // SHOW PAYMENT HISTORY ONLY IF AVAILABLE

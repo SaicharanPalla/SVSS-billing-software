@@ -124,17 +124,17 @@ function displayBills(billList) {
 
     <td>${bill.customer}</td>
 
-    <td>â‚¹${(gst / 2).toFixed(2)}</td>
+    <td>Rs. ${(gst / 2).toFixed(2)}</td>
 
-    <td>â‚¹${(gst / 2).toFixed(2)}</td>
+    <td>Rs. ${(gst / 2).toFixed(2)}</td>
 
     <td>${bill.gstTotal}</td>
 
     <td>${bill.grandTotal}</td>
 
-    <td>â‚¹${Number(bill.amountPaid || 0).toFixed(2)}</td>
+    <td>Rs. ${Number(bill.amountPaid || 0).toFixed(2)}</td>
 
-    <td>â‚¹${Number(bill.balanceDue || 0).toFixed(2)}</td>
+    <td>Rs. ${Number(bill.balanceDue || 0).toFixed(2)}</td>
 
     <td>
 
@@ -263,7 +263,7 @@ function viewBill(billNo) {
 
     setText(
         "viewAmountPaid",
-        "â‚¹" + Number(selectedBill.amountPaid || 0).toFixed(2)
+        "Rs. " + Number(selectedBill.amountPaid || 0).toFixed(2)
     );
 
     const status =
@@ -289,19 +289,19 @@ function viewBill(billNo) {
 
     setText(
         "viewCGST",
-        "â‚¹" + (totalGST / 2).toFixed(2)
+        "Rs. " + (totalGST / 2).toFixed(2)
     );
 
     setText(
         "viewSGST",
-        "â‚¹" + (totalGST / 2).toFixed(2)
+        "Rs. " + (totalGST / 2).toFixed(2)
     );
 
     setText("viewGST", selectedBill.gstTotal);
 
     setText(
         "viewDiscount",
-        "â‚¹" + Number(selectedBill.discount || 0).toFixed(2)
+        "Rs. " + Number(selectedBill.discount || 0).toFixed(2)
     );
 
     setText(
@@ -311,12 +311,12 @@ function viewBill(billNo) {
 
     setText(
         "viewAmountPaid2",
-        "â‚¹" + Number(selectedBill.amountPaid || 0).toFixed(2)
+        "Rs. " + Number(selectedBill.amountPaid || 0).toFixed(2)
     );
 
     setText(
         "viewBalanceDue2",
-        "â‚¹" + Number(selectedBill.balanceDue || 0).toFixed(2)
+        "Rs. " + Number(selectedBill.balanceDue || 0).toFixed(2)
     );
 
     setText(
@@ -352,7 +352,7 @@ function viewBill(billNo) {
             : parseInt(item.qty)
     }</td>
 
-    <td>â‚¹${Number(item.rate).toFixed(2)}</td>
+    <td>Rs. ${Number(item.rate).toFixed(2)}</td>
 
     <td>${item.cgst}%</td>
 
@@ -360,7 +360,7 @@ function viewBill(billNo) {
 
     <td>${item.gst}%</td>
 
-    <td>â‚¹${Number(item.total).toFixed(2)}</td>
+    <td>Rs. ${Number(item.total).toFixed(2)}</td>
 
 </tr>
 
@@ -777,7 +777,7 @@ function renderEditBillItems() {
                         <strong
                             id="editItemTotal_${index}">
 
-                            â‚¹0.00
+                            Rs. 0.00
 
                         </strong>
 
@@ -900,7 +900,7 @@ function calculateEditBillTotals() {
             if (totalElement) {
 
                 totalElement.textContent =
-                    "â‚¹" +
+                    "Rs. " +
                     total.toFixed(2);
 
             }
@@ -952,37 +952,37 @@ function calculateEditBillTotals() {
     document.getElementById(
         "editSubTotal"
     ).textContent =
-        "â‚¹" + subTotal.toFixed(2);
+        "Rs. " + subTotal.toFixed(2);
 
 
     document.getElementById(
         "editCGST"
     ).textContent =
-        "â‚¹" + cgstTotal.toFixed(2);
+        "Rs. " + cgstTotal.toFixed(2);
 
 
     document.getElementById(
         "editSGST"
     ).textContent =
-        "â‚¹" + sgstTotal.toFixed(2);
+        "Rs. " + sgstTotal.toFixed(2);
 
 
     document.getElementById(
         "editGST"
     ).textContent =
-        "â‚¹" + totalGST.toFixed(2);
+        "Rs. " + totalGST.toFixed(2);
 
 
     document.getElementById(
         "editGrandTotal"
     ).textContent =
-        "â‚¹" + grandTotal.toFixed(2);
+        "Rs. " + grandTotal.toFixed(2);
 
 
     document.getElementById(
         "editBalanceDue"
     ).textContent =
-        "â‚¹" + balanceDue.toFixed(2);
+        "Rs. " + balanceDue.toFixed(2);
 
 
     document.getElementById(
@@ -1268,22 +1268,22 @@ document
                     // Totals
 
                     subTotal:
-                        "â‚¹" +
+                        "Rs. " +
                         totals.subTotal.toFixed(2),
 
 
                     cgstTotal:
-                        "â‚¹" +
+                        "Rs. " +
                         totals.cgstTotal.toFixed(2),
 
 
                     sgstTotal:
-                        "â‚¹" +
+                        "Rs. " +
                         totals.sgstTotal.toFixed(2),
 
 
                     gstTotal:
-                        "â‚¹" +
+                        "Rs. " +
                         totals.gstTotal.toFixed(2),
 
 
@@ -1296,7 +1296,7 @@ document
 
 
                     grandTotal:
-                        "â‚¹" +
+                        "Rs. " +
                         totals.grandTotal.toFixed(2),
 
 
@@ -2082,7 +2082,7 @@ function summaryRow(label,value,bold=false){
 summaryRow(
     "Sub Total",
     String(selectedBill.subTotal)
-    .replace("â‚¹","Rs.")
+    .replace("Rs.")
 );
 
 summaryRow(
@@ -2165,7 +2165,7 @@ doc.rect(
 summaryRow(
     "Grand Total",
     String(selectedBill.grandTotal)
-    .replace("â‚¹","Rs."),
+    .replace("Rs."),
     true
 );
 
