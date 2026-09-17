@@ -33,6 +33,8 @@
     <link rel="stylesheet" href="../assets/css/common.css">
     <link rel="stylesheet" href="../assets/css/billing.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/theme-colors.css">
+    
 
 </head>
 
@@ -239,18 +241,19 @@
 
             <!-- Bill Date -->
             <div class="col-md-2 mb-3">
-
+            
                 <label class="form-label">
                     Bill Date
                 </label>
-
+            
                 <input
                     type="text"
                     id="billDate"
                     class="form-control"
                     placeholder="DD-MM-YYYY"
-                    autocomplete="off">
-
+                    autocomplete="off"
+                    inputmode="none">
+            
             </div>
 
         </div>
@@ -844,7 +847,41 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const billDateInput = document.getElementById("billDate");
+
+    if (!billDateInput) return;
+
+    flatpickr(billDateInput, {
+        dateFormat: "d-m-Y",
+        defaultDate: new Date(),
+        allowInput: false,
+        clickOpens: true,
+        disableMobile: true,
+
+        // Keyboard support
+        onReady: function (selectedDates, dateStr, instance) {
+            instance.calendarContainer.setAttribute(
+                "aria-label",
+                "Bill date calendar"
+            );
+        },
+
+        onChange: function (selectedDates, dateStr) {
+            billDateInput.dispatchEvent(
+                new Event("change", {
+                    bubbles: true
+                })
+            );
+        }
+    });
+
+});
+</script>
 <!-- Billing JS -->
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
  <script src="../src/js/browser-api.js"></script>

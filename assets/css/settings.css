@@ -369,3 +369,147 @@ body[data-theme="orange"]{
     transform:translateX(4px);
 
 }
+/* =========================================
+   PRODUCT PAGE SIDEBAR WIDTH ONLY
+========================================= */
+
+@media (min-width: 1201px) {
+
+    .sidebar {
+        width: 260px !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+
+    .sidebar {
+        width: 260px !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+
+}
+/* =========================================
+   PRODUCT PAGE SIDEBAR
+   SAME DASHBOARD SIZE + GRADIENT
+========================================= */
+
+@media (min-width: 769px) {
+
+    .sidebar {
+        width: 260px !important;
+
+        background: linear-gradient(
+            180deg,
+            #111c2e 0%,
+            #121a29 35%,
+            #512b25 58%,
+            #a83b16 78%,
+            #f04400 100%
+        ) !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+
+}
+/* ======================================
+   SVSS GLOBAL THEME COLORS
+   ====================================== */
+
+/* BLUE THEME */
+body[data-theme="blue"] {
+    --theme-primary: #2563eb;
+    --theme-secondary: #1d4ed8;
+    --theme-gradient: linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+}
+
+/* GREEN THEME */
+body[data-theme="green"] {
+    --theme-primary: #16a34a;
+    --theme-secondary: #15803d;
+    --theme-gradient: linear-gradient(
+        135deg,
+        #16a34a,
+        #15803d
+    );
+}
+
+/* PURPLE THEME */
+body[data-theme="purple"] {
+    --theme-primary: #9333ea;
+    --theme-secondary: #7e22ce;
+    --theme-gradient: linear-gradient(
+        135deg,
+        #9333ea,
+        #7e22ce
+    );
+}
+
+/* ORANGE THEME */
+body[data-theme="orange"] {
+    --theme-primary: #ff5a00;
+    --theme-secondary: #e64a00;
+    --theme-gradient: linear-gradient(
+        135deg,
+        #ff5a00,
+        #e64a00
+    );
+}
+/* ======================================
+   APPLY THE SELECTED THEME
+   ====================================== */
+
+/* Sidebar background */
+body .sidebar {
+    background: var(--theme-gradient) !important;
+}
+
+/* Mobile top header */
+body .mobile-header {
+    background: var(--theme-gradient) !important;
+}
+
+/* Dashboard welcome/hero card */
+body .welcome-card,
+body .welcome-banner,
+body .dashboard-welcome,
+body .hero-card {
+    background: var(--theme-gradient) !important;
+}
+
+/* Main theme buttons */
+body .btn-primary,
+body .primary-btn,
+body .add-product-btn,
+body .new-bill-btn {
+    background: var(--theme-gradient) !important;
+}
+
+/* Active sidebar item text and icon */
+body .sidebar a.active,
+body .sidebar a.active i,
+body .sidebar a.active span {
+    color: var(--theme-primary) !important;
+}
+
+/* Settings section headings */
+body .section-header,
+body .settings-header {
+    background: var(--theme-primary) !important;
+}

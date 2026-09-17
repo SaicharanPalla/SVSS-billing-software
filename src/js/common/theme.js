@@ -33,6 +33,35 @@ async function applyTheme() {
         "data-theme",
         appSettings.themeColor || "blue"
     );
+    // ======================================
+    // APPLY SIDEBAR GRADIENT
+    // ======================================
+    
+    const sidebar = document.getElementById("sidebar");
+    
+    if (sidebar) {
+    
+        const theme = appSettings.themeColor || "blue";
+    
+        const sidebarGradients = {
+    
+            blue: "linear-gradient(180deg, #0b172a 10%, #1e3a8a 50%, #2563eb 100%)",
+    
+            green: "linear-gradient(180deg, #0b172a 10%, #166534 50%, #16a34a 100%)",
+    
+            purple: "linear-gradient(180deg, #0b172a 10%, #6b21a8 50%, #9333ea 100%)",
+    
+            orange: "linear-gradient(180deg, #0b172a 10%, #ae4b2a 60%, #f97316 100%)"
+    
+        };
+    
+        sidebar.style.setProperty(
+            "background",
+            sidebarGradients[theme] || sidebarGradients.blue,
+            "important"
+        );
+    
+    }
 
     // ===========================
     // Dark Mode

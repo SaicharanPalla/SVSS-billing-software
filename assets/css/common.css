@@ -171,7 +171,7 @@ body{
 
     gap:10px;
 
-    padding:0 6px 20px;
+    padding:0 40px 20px;
 
     border-radius: 50%;
 
@@ -1139,4 +1139,96 @@ body{
 #paymentModal .form-control::placeholder,
 #paymentModal textarea::placeholder{
     color:#cfcfcf;
+}
+/* =========================================
+   PURPLE THEME - ACTIVE SIDEBAR FIX
+========================================= */
+
+/* Active menu item */
+.sidebar ul li.active,
+.sidebar-menu li.active,
+.nav-menu li.active {
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    border-radius: 22px !important;
+}
+
+/* Active menu text */
+.sidebar ul li.active a,
+.sidebar-menu li.active a,
+.nav-menu li.active a {
+    color: #7c3aed !important;
+}
+
+/* Active menu icon */
+.sidebar ul li.active i,
+.sidebar-menu li.active i,
+.nav-menu li.active i {
+    color: #7c3aed !important;
+}
+
+/* Remove old orange active color */
+.sidebar ul li.active .bi,
+.sidebar ul li.active .fa,
+.sidebar-menu li.active .bi,
+.sidebar-menu li.active .fa,
+.nav-menu li.active .bi,
+.nav-menu li.active .fa {
+    color: #7c3aed !important;
+}
+
+/* Hover color */
+.sidebar ul li:hover a,
+.sidebar-menu li:hover a,
+.nav-menu li:hover a {
+    color: #ffffff !important;
+}
+
+.sidebar ul li:hover i,
+.sidebar-menu li:hover i,
+.nav-menu li:hover i {
+    color: #ffffff !important;
+}
+/* ==========================================
+   ACTIVE SIDEBAR MUST FOLLOW THEME COLOR
+========================================== */
+
+/* Active menu background */
+.sidebar li.active > a,
+.sidebar nav a.active,
+.sidebar-menu a.active,
+.nav-menu a.active {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: var(--primary-color) !important;
+}
+
+/* Active menu name */
+.sidebar li.active > a span,
+.sidebar nav a.active span,
+.sidebar-menu a.active span,
+.nav-menu a.active span {
+    color: var(--primary-color) !important;
+    -webkit-text-fill-color: var(--primary-color) !important;
+}
+
+/* Active menu icon */
+.sidebar li.active > a i,
+.sidebar nav a.active i,
+.sidebar-menu a.active i,
+.nav-menu a.active i {
+    color: var(--primary-color) !important;
+    -webkit-text-fill-color: var(--primary-color) !important;
+}
+
+/* Keep active item theme-colored during hover */
+.sidebar li.active > a:hover,
+.sidebar li.active > a:hover span,
+.sidebar li.active > a:hover i,
+.sidebar nav a.active:hover,
+.sidebar nav a.active:hover span,
+.sidebar nav a.active:hover i {
+    background: #ffffff !important;
+    color: var(--primary-color) !important;
+    -webkit-text-fill-color: var(--primary-color) !important;
 }

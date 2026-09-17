@@ -995,3 +995,58 @@ h1{
     }
 
 }
+/* =========================================
+   PRODUCT PAGE SIDEBAR WIDTH ONLY
+========================================= */
+
+@media (min-width: 1201px) {
+
+    .sidebar {
+        width: 260px !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+
+    .sidebar {
+        width: 260px !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+
+}
+/* =========================================
+   PRODUCT PAGE SIDEBAR
+   SAME DASHBOARD SIZE + GRADIENT
+========================================= */
+
+@media (min-width: 769px) {
+
+    .sidebar {
+        width: 260px !important;
+
+        background: linear-gradient(
+            180deg,
+            #111c2e 0%,
+            #121a29 35%,
+            #512b25 58%,
+            #a83b16 78%,
+            #f04400 100%
+        ) !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+
+}

@@ -87,15 +87,21 @@ async function loadCards() {
 // Recent Bills
 // ==========================================
 
+// ==========================================
+// Recent Bills
+// ==========================================
+
 async function loadRecentBills() {
 
     const tbody = document.getElementById("recentBillsBody");
+
+    if (!tbody) return;
 
     tbody.innerHTML = "";
 
     const bills = await getRecentBills();
 
-    if (bills.length === 0) {
+    if (!bills || bills.length === 0) {
 
         tbody.innerHTML = `
 
@@ -117,23 +123,79 @@ async function loadRecentBills() {
 
     bills.forEach(bill => {
 
+        // ==========================================
+        // GET ACTUAL BILL PAYMENT STATUS
+        // ==========================================
+
+        const paymentStatus =
+            bill.paymentStatus ||
+            bill.status ||
+            "Pending";
+
+
+        // ==========================================
+        // NORMALIZE STATUS
+        // ==========================================
+
+        const status =
+            String(paymentStatus).trim().toLowerCase();
+
+
+        // ==========================================
+        // STATUS BADGE
+        // ==========================================
+
+        let badgeClass = "bg-warning text-dark";
+
+        let badgeText = "Pending";
+
+
+        if (status === "paid") {
+
+            badgeClass = "bg-success";
+
+            badgeText = "Paid";
+
+        }
+
+        else if (status === "cancelled") {
+
+            badgeClass = "bg-danger";
+
+            badgeText = "Cancelled";
+
+        }
+
+        else if (status === "pending") {
+
+            badgeClass = "bg-warning text-dark";
+
+            badgeText = "Pending";
+
+        }
+
+
+        // ==========================================
+        // DISPLAY BILL
+        // ==========================================
+
         tbody.innerHTML += `
 
         <tr>
 
-            <td>${bill.billNo}</td>
+            <td>${bill.billNo || ""}</td>
 
-            <td>${bill.customer}</td>
+            <td>${bill.customer || ""}</td>
 
-            <td>${bill.grandTotal}</td>
+            <td>${bill.grandTotal || "0.00"}</td>
 
             <td>${formatDisplayDate(bill.date)}</td>
 
             <td>
 
-                <span class="badge bg-success">
+                <span class="badge ${badgeClass}">
 
-                    Paid
+                    ${badgeText}
 
                 </span>
 

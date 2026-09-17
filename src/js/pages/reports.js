@@ -69,32 +69,106 @@ const exportExcel = document.getElementById("exportExcel");
 // Currency Helpers
 // ----------------------------
 
+// ===========================================
+// MONEY HELPERS
+// ===========================================
+
 function parseAmount(value) {
-
-    if (value === undefined || value === null)
+    if (value === undefined || value === null) {
         return 0;
+    }
 
-    if (typeof value === "number")
-        return value;
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
 
-    return parseFloat(
-        String(value).replace(/[^\d.-]/g, "")
-    ) || 0;
+    const cleaned = String(value)
+        .replace(/₹|Rs\.?|INR/gi, "")
+        .replace(/,/g, "")
+        .trim();
 
+    const amount = Number(cleaned);
+
+    return Number.isFinite(amount) ? amount : 0;
 }
+
+
+// ===========================================
+// GET BILL TOTAL
+// ===========================================
+
+function getBillTotal(bill) {
+    if (!bill) {
+        return 0;
+    }
+
+    // IMPORTANT:
+    // Read the saved amount directly.
+    // Do not call getBillTotal() here.
+    const savedTotal = parseAmount(bill.grandTotal);
+
+    if (savedTotal > 0) {
+        return savedTotal;
+    }
+
+    // Fallback calculation for bills without grandTotal
+    let itemTotal = 0;
+
+    if (Array.isArray(bill.items)) {
+        itemTotal = bill.items.reduce((sum, item) => {
+            return sum + parseAmount(item.total);
+        }, 0);
+    }
+
+    const discount = parseAmount(bill.discount);
+
+    return Math.max(0, itemTotal - discount);
+}
+
+
+// ===========================================
+// GET PAID AMOUNT
+// ===========================================
+
+function getBillPaid(bill) {
+    if (!bill) {
+        return 0;
+    }
+
+    return Math.max(
+        0,
+        parseAmount(
+            bill.amountPaid ??
+            bill.paidAmount ??
+            bill.paid ??
+            0
+        )
+    );
+}
+
+
+// ===========================================
+// GET BALANCE DUE
+// ===========================================
+
+function getBillBalance(bill) {
+    const total = getBillTotal(bill);
+    const paid = getBillPaid(bill);
+
+    return Math.max(0, total - paid);
+}
+
+
+// ===========================================
+// FORMAT CURRENCY
+// ===========================================
 
 function formatCurrency(value) {
-
-    return "Rs. " + Number(value).toLocaleString("en-IN", {
-
+    return "Rs. " + Number(value || 0).toLocaleString("en-IN", {
         minimumFractionDigits: 2,
-
         maximumFractionDigits: 2
-
     });
-
 }
-
 // ----------------------------
 // Date Helpers
 // ----------------------------
@@ -337,7 +411,7 @@ function loadSummaryCards(reportBills) {
 
         const billDate = getBillDate(bill);
 
-        const grandTotal = parseAmount(bill.grandTotal);
+        const grandTotal = getBillTotal(bill);
 
         const gst = parseAmount(bill.gstTotal);
 
@@ -446,15 +520,15 @@ function loadPaymentSummary(reportBills) {
     reportBills.forEach(bill => {
 
         const grandTotal =
-            parseAmount(bill.grandTotal);
+            getBillTotal(bill);
 
         const paid =
-            parseAmount(bill.amountPaid);
+            getBillPaid(bill);
 
         const balance =
             Math.max(
                 0,
-                parseAmount(bill.balanceDue)
+                getBillBalance(bill)
             );
 
 
@@ -690,7 +764,7 @@ function loadSalesChart(reportBills) {
 
         const date = bill.date;
 
-        const amount = parseAmount(bill.grandTotal);
+        const amount = getBillTotal(bill);
 
         if (!salesData[date]) {
 
@@ -789,11 +863,17 @@ function loadPaymentChart(reportBills) {
     let card = 0;
     let credit = 0;
 
-    reportBills.forEach(bill => {
+   reportBills.forEach(bill => {
 
-        const amount = parseAmount(bill.grandTotal);
+    // Payment chart must show collected amount,
+    // not the full bill amount.
+    const amount = getBillPaid(bill);
 
-        switch ((bill.paymentMode || "").toLowerCase()) {
+    switch (
+        String(bill.paymentMode || "")
+            .trim()
+            .toLowerCase()
+    ) {
 
             case "cash":
                 cash += amount;
@@ -941,7 +1021,7 @@ function loadTables(reportBills) {
         salesMap[date].bills++;
 
         salesMap[date].amount +=
-            parseAmount(bill.grandTotal);
+            getBillTotal(bill);
 
         // Customers
 
@@ -963,7 +1043,7 @@ function loadTables(reportBills) {
         customerMap[customer].bills++;
 
         customerMap[customer].amount +=
-            parseAmount(bill.grandTotal);
+            getBillTotal(bill);
 
         // Products
 
@@ -1151,158 +1231,95 @@ if (totalAmountElement) {
         });
 
 }
+
 // ===========================================
-// CREDIT CUSTOMER STATEMENT
+// CREDIT / OUTSTANDING STATEMENT
 // ===========================================
 
 function loadCreditStatement(reportBills) {
 
     const body =
-        document.getElementById(
-            "creditStatementBody"
-        );
+        document.getElementById("creditStatementBody");
 
     if (!body) return;
 
     body.innerHTML = "";
 
-
     const customerMap = {};
-
 
     reportBills.forEach(bill => {
 
-        const balance =
-            parseAmount(
-                bill.balanceDue
-            );
+        const total = getBillTotal(bill);
+        const paid = getBillPaid(bill);
+        const balance = getBillBalance(bill);
 
-
-        // Only customers with balance
+        // Show only customers who still have balance
         if (balance <= 0) return;
 
-
         const customer =
-            bill.customer ||
-            "Walk-in Customer";
-
+            bill.customer || "Walk-in Customer";
 
         if (!customerMap[customer]) {
-
             customerMap[customer] = {
-
                 bills: 0,
-
                 purchase: 0,
-
                 paid: 0,
-
                 balance: 0
-
             };
-
         }
 
-
-        customerMap[customer].bills++;
-
-        customerMap[customer].purchase +=
-            parseAmount(
-                bill.grandTotal
-            );
-
-        customerMap[customer].paid +=
-            parseAmount(
-                bill.amountPaid
-            );
-
-        customerMap[customer].balance +=
-            balance;
-
+        customerMap[customer].bills += 1;
+        customerMap[customer].purchase += total;
+        customerMap[customer].paid += paid;
+        customerMap[customer].balance += balance;
     });
-
 
     const customers =
         Object.entries(customerMap)
-            .sort(
-                (a, b) =>
-                    b[1].balance -
-                    a[1].balance
+            .sort((a, b) =>
+                b[1].balance - a[1].balance
             );
 
-
     if (customers.length === 0) {
-
         body.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="6"
+                <td colspan="6"
                     class="text-center text-muted py-4">
-
                     No Credit Customers
-
                 </td>
-
             </tr>
-
         `;
-
         return;
-
     }
 
+    customers.forEach(([name, data], index) => {
 
-    customers.forEach(
-        ([name, data], index) => {
+        const row = document.createElement("tr");
 
-            const row =
-                document.createElement("tr");
+        row.innerHTML = `
+            <td>${index + 1}</td>
 
+            <td>
+                <strong>${name}</strong>
+            </td>
 
-            row.innerHTML = `
+            <td>${data.bills}</td>
 
-                <td>
-                    ${index + 1}
-                </td>
+            <td>
+                ${formatCurrency(data.purchase)}
+            </td>
 
-                <td>
-                    <strong>
-                        ${name}
-                    </strong>
-                </td>
+            <td>
+                ${formatCurrency(data.paid)}
+            </td>
 
-                <td>
-                    ${data.bills}
-                </td>
+            <td class="text-danger fw-bold">
+                ${formatCurrency(data.balance)}
+            </td>
+        `;
 
-                <td>
-                    ${formatCurrency(
-                        data.purchase
-                    )}
-                </td>
-
-                <td>
-                    ${formatCurrency(
-                        data.paid
-                    )}
-                </td>
-
-                <td class="text-danger fw-bold">
-                    ${formatCurrency(
-                        data.balance
-                    )}
-                </td>
-
-            `;
-
-
-            body.appendChild(row);
-
-        }
-    );
-
+        body.appendChild(row);
+    });
 }
 // ===========================================
 // PAID BILL STATEMENT
@@ -1662,7 +1679,7 @@ if (printCreditStatement) {
 
         reportBills.forEach(bill => {
 
-            const balance = parseAmount(bill.balanceDue);
+            const balance = getBillBalance(bill);
 
             if (balance <= 0) return;
 
@@ -1681,10 +1698,10 @@ if (printCreditStatement) {
             customerMap[customer].bills++;
 
             customerMap[customer].purchase +=
-                parseAmount(bill.grandTotal);
+                getBillTotal(bill);
 
             customerMap[customer].paid +=
-                parseAmount(bill.amountPaid);
+                getBillPaid(bill);
 
             customerMap[customer].balance += balance;
         });
@@ -1918,7 +1935,7 @@ if (printPaidStatement) {
         const paidBills =
             reportBills.filter(
                 bill =>
-                    parseAmount(bill.balanceDue) <= 0
+                    getBillBalance(bill) <= 0
             );
 
         const settings = db.settings || {};
@@ -1975,7 +1992,7 @@ const rows = paidBills.map(
     (bill, index) => {
 
         const amount =
-            parseAmount(bill.grandTotal);
+            getBillTotal(bill);
 
         totalPaidAmount += amount;
 

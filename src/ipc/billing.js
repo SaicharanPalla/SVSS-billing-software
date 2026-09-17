@@ -54,11 +54,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     const printBill = document.getElementById("printBill");
     const printBillBottom = document.getElementById("printBillBottom");
 
-    flatpickr("#billDate", {
+    // ==========================================
+// BILL DATE PICKER
+// ==========================================
+
+const billDatePicker = flatpickr("#billDate", {
     dateFormat: "d-m-Y",
-    allowInput: true,
-    defaultDate: "today"
-    });
+    allowInput: false,
+    clickOpens: true,
+    disableMobile: true,
+    defaultDate: new Date(),
+
+    onChange: function (selectedDates, dateStr) {
+        billDate.value = dateStr;
+
+        billDate.dispatchEvent(
+            new Event("change", {
+                bubbles: true
+            })
+        );
+    }
+});
 
     // ==============================
     // DATABASE
@@ -3066,6 +3082,7 @@ document.addEventListener("svss:escape", () => {
     customerSuggestion.style.display = "none";
 
 });
+
 // ==============================
 // BILLING.JS COMPLETED
 // ==============================

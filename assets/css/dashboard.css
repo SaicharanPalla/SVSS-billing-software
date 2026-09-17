@@ -743,3 +743,1512 @@
     }
 
 }
+/* =====================================================
+   DASHBOARD - RECENT BILLS LAPTOP RESPONSIVE FIX
+===================================================== */
+
+
+/* Recent Bills outer card */
+.recent-bills-card,
+.recent-bills,
+.recent-bills-section {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+
+/* Table wrapper */
+.recent-bills-card .table-responsive,
+.recent-bills .table-responsive,
+.recent-bills-section .table-responsive,
+.recent-bills-table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto;
+}
+
+
+/* Recent Bills table */
+.recent-bills-card table,
+.recent-bills table,
+.recent-bills-section table,
+#recentBillsTable {
+    width: 100% !important;
+    min-width: 700px;
+    table-layout: auto !important;
+}
+
+
+/* Table columns */
+.recent-bills-card th,
+.recent-bills-card td,
+.recent-bills th,
+.recent-bills td,
+.recent-bills-section th,
+.recent-bills-section td {
+    white-space: nowrap;
+    padding: 15px 18px;
+}
+
+
+/* Give columns balanced space */
+.recent-bills-card th:nth-child(1),
+.recent-bills-card td:nth-child(1) {
+    width: 22%;
+}
+
+.recent-bills-card th:nth-child(2),
+.recent-bills-card td:nth-child(2) {
+    width: 24%;
+}
+
+.recent-bills-card th:nth-child(3),
+.recent-bills-card td:nth-child(3) {
+    width: 20%;
+}
+
+.recent-bills-card th:nth-child(4),
+.recent-bills-card td:nth-child(4) {
+    width: 20%;
+}
+
+.recent-bills-card th:nth-child(5),
+.recent-bills-card td:nth-child(5) {
+    width: 14%;
+}
+
+
+/* Laptop and desktop */
+@media (min-width: 1000px) {
+
+    .recent-bills-card table,
+    .recent-bills table,
+    .recent-bills-section table,
+    #recentBillsTable {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+}
+
+
+/* Mobile and smaller screens */
+@media (max-width: 768px) {
+
+    .recent-bills-card table,
+    .recent-bills table,
+    .recent-bills-section table,
+    #recentBillsTable {
+        width: max-content !important;
+        min-width: 750px !important;
+    }
+
+}/* =========================================================
+   SVSS DASHBOARD - MODERN GLASSMORPHISM DESIGN
+   DESIGN ONLY - NO JAVASCRIPT CHANGES
+========================================================= */
+
+
+/* =========================================================
+   MAIN DASHBOARD BACKGROUND
+========================================================= */
+
+.main {
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(255, 102, 0, 0.08),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 90% 20%,
+            rgba(70, 110, 255, 0.08),
+            transparent 30%
+        ),
+        #111315 !important;
+
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   WELCOME GLASS CARD
+========================================================= */
+
+.welcome-card {
+    position: relative;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 102, 0, 0.88),
+            rgba(190, 55, 0, 0.82)
+        ) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 26px !important;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    padding: 30px 34px !important;
+}
+
+
+/* Decorative glow inside welcome card */
+
+.welcome-card::before {
+    content: "";
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    right: -90px;
+    top: -130px;
+
+    background: rgba(255, 255, 255, 0.13);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.welcome-card::after {
+    content: "";
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    left: 35%;
+    bottom: -145px;
+
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+
+/* Welcome text */
+
+.welcome-card h2 {
+    position: relative;
+    z-index: 1;
+
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px;
+}
+
+.welcome-card p {
+    position: relative;
+    z-index: 1;
+
+    color: rgba(255, 255, 255, 0.92) !important;
+}
+
+
+/* User button */
+
+.admin-btn {
+    background: rgba(255, 255, 255, 0.94) !important;
+    color: #2864e8 !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    border-radius: 14px !important;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+    transition: all 0.2s ease;
+}
+
+.admin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Date and time */
+
+#liveDate,
+#liveTime {
+    color: #ffffff !important;
+    position: relative;
+    z-index: 1;
+}
+
+
+/* =========================================================
+   STATISTIC GLASS CARDS
+========================================================= */
+
+.dashboard-card {
+    position: relative;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.96),
+            rgba(235, 240, 248, 0.88)
+        ) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    border-radius: 22px !important;
+
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+
+/* Card hover */
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 16px 35px rgba(0, 0, 0, 0.28),
+        0 0 20px rgba(255, 102, 0, 0.08) !important;
+}
+
+
+/* Decorative card glow */
+
+.dashboard-card::after {
+    content: "";
+
+    position: absolute;
+    width: 125px;
+    height: 125px;
+
+    right: -45px;
+    bottom: -55px;
+
+    background: rgba(255, 120, 50, 0.12);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+
+/* Card headings */
+
+.dashboard-card h5 {
+    color: #65738a !important;
+    font-weight: 700 !important;
+}
+
+.dashboard-card h2 {
+    color: #234c91 !important;
+    font-weight: 850 !important;
+    letter-spacing: -1px;
+}
+
+
+/* =========================================================
+   CARD ICONS
+========================================================= */
+
+.card-icon {
+    border-radius: 20px !important;
+
+    box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+
+    transition: transform 0.2s ease;
+}
+
+.dashboard-card:hover .card-icon {
+    transform: scale(1.06) rotate(-3deg);
+}
+
+
+/* =========================================================
+   QUICK ACTION BUTTONS
+========================================================= */
+
+.quick-actions {
+    gap: 16px !important;
+}
+
+
+/* All action buttons */
+
+.action-btn {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 70px;
+
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 18px !important;
+
+    box-shadow:
+        0 9px 24px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+
+    font-weight: 800 !important;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+
+/* Button shine effect */
+
+.action-btn::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: -120%;
+
+    width: 80%;
+    height: 100%;
+
+    background: linear-gradient(
+        100deg,
+        transparent,
+        rgba(255, 255, 255, 0.18),
+        transparent
+    );
+
+    transform: skewX(-20deg);
+    transition: left 0.5s ease;
+
+    pointer-events: none;
+}
+
+.action-btn:hover::before {
+    left: 130%;
+}
+
+.action-btn:hover {
+    transform: translateY(-4px);
+    filter: brightness(1.06);
+
+    box-shadow:
+        0 14px 30px rgba(0, 0, 0, 0.3),
+        0 0 18px rgba(255, 255, 255, 0.06) !important;
+}
+
+.action-btn:active {
+    transform: translateY(-1px);
+}
+
+
+/* Keep your existing button colours */
+
+.action-btn.blue {
+    background: linear-gradient(135deg, #2867ed, #1850c7) !important;
+}
+
+.action-btn.green {
+    background: linear-gradient(135deg, #13bd8b, #079c73) !important;
+}
+
+.action-btn.orange {
+    background: linear-gradient(135deg, #ffad0a, #f18b00) !important;
+}
+
+
+/* =========================================================
+   RECENT BILLS GLASS CARD
+========================================================= */
+
+.recent-bills {
+    position: relative;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.97),
+            rgba(239, 243, 249, 0.92)
+        ) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: 24px !important;
+
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    padding: 24px !important;
+}
+
+
+/* Recent Bills heading */
+
+.section-title h3 {
+    color: #234c91 !important;
+    font-weight: 850 !important;
+}
+
+.section-title h3 i {
+    color: #2867ed !important;
+}
+
+
+/* =========================================================
+   RECENT BILLS TABLE
+========================================================= */
+
+.recent-bills .table-responsive {
+    border-radius: 14px;
+    overflow-x: auto;
+}
+
+
+/* Table header */
+
+.recent-bills table thead th {
+    background:
+        linear-gradient(
+            135deg,
+            #ff6500,
+            #e94b00
+        ) !important;
+
+    color: #ffffff !important;
+
+    border: none !important;
+    padding: 16px 14px !important;
+
+    font-weight: 800 !important;
+    white-space: nowrap;
+}
+
+
+/* Table body */
+
+.recent-bills table tbody td {
+    background: rgba(38, 40, 43, 0.98) !important;
+    color: #ffffff !important;
+
+    border-color: rgba(255, 255, 255, 0.18) !important;
+
+    padding: 15px 14px !important;
+    white-space: nowrap;
+}
+
+
+/* Alternate rows */
+
+.recent-bills table tbody tr:nth-child(even) td {
+    background: rgba(48, 50, 54, 0.98) !important;
+}
+
+
+/* Table hover without light cream colour */
+
+.recent-bills table.table-hover tbody tr:hover td {
+    background: #3a3d42 !important;
+    color: #ffffff !important;
+}
+
+
+/* Remove Bootstrap table hover effect */
+
+.recent-bills .table > :not(caption) > * > * {
+    box-shadow: none !important;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.recent-bills .badge {
+    border-radius: 9px !important;
+    padding: 6px 10px !important;
+    font-weight: 800 !important;
+    border: none !important;
+}
+
+.recent-bills .badge-paid {
+    background: #159c68 !important;
+    color: #ffffff !important;
+}
+
+.recent-bills .badge-pending {
+    background: #ffc107 !important;
+    color: #191919 !important;
+}
+
+.recent-bills .badge-cancelled {
+    background: #e63950 !important;
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   SCROLLBAR - SUBTLE DARK STYLE
+========================================================= */
+
+.main,
+.recent-bills .table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: #41454b #17191c;
+}
+
+.main::-webkit-scrollbar,
+.recent-bills .table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.main::-webkit-scrollbar-track,
+.recent-bills .table-responsive::-webkit-scrollbar-track {
+    background: #17191c;
+}
+
+.main::-webkit-scrollbar-thumb,
+.recent-bills .table-responsive::-webkit-scrollbar-thumb {
+    background: #41454b;
+    border-radius: 20px;
+}
+
+.main::-webkit-scrollbar-thumb:hover,
+.recent-bills .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #50555c;
+}
+
+
+/* =========================================================
+   LAPTOP WIDTH FIX
+========================================================= */
+
+@media (min-width: 1000px) {
+
+    .recent-bills {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .recent-bills .table-responsive {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .recent-bills table {
+        width: 100% !important;
+        min-width: 100% !important;
+        table-layout: auto !important;
+    }
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVENESS
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .welcome-card {
+        padding: 24px 20px !important;
+        border-radius: 20px !important;
+    }
+
+    .welcome-card h2 {
+        font-size: 28px !important;
+    }
+
+    .welcome-card p {
+        font-size: 15px !important;
+    }
+
+    .dashboard-card {
+        border-radius: 18px !important;
+    }
+
+    .dashboard-card h2 {
+        font-size: 32px !important;
+    }
+
+    .action-btn {
+        min-height: 62px;
+        border-radius: 15px !important;
+    }
+
+    .recent-bills {
+        padding: 16px !important;
+        border-radius: 20px !important;
+    }
+
+    .recent-bills table {
+        min-width: 720px !important;
+    }
+}
+/* =========================================
+   SVSS DASHBOARD - OPTION 2 DESIGN
+   FINAL OVERRIDE
+========================================= */
+
+/* Prevent dashboard from going outside screen */
+.main {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* ================= WELCOME CARD ================= */
+
+.welcome-card {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255,255,255,0.18) 0 12%, transparent 12.5%),
+        radial-gradient(circle at 45% 110%, rgba(255,255,255,0.12) 0 10%, transparent 10.5%),
+        linear-gradient(135deg, #ff6500, #c83c00) !important;
+
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.20);
+}
+
+/* Make greeting brighter and clearer */
+.welcome-card h2,
+.welcome-card h1,
+.welcome-card p,
+.welcome-card #liveDate,
+.welcome-card #liveTime {
+    position: relative;
+    z-index: 2;
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Greeting */
+.welcome-card h2,
+.welcome-card h1 {
+    font-weight: 800 !important;
+    letter-spacing: -0.5px;
+}
+
+/* Date */
+.welcome-card #liveDate {
+    font-weight: 800;
+}
+
+/* Time */
+.welcome-card #liveTime {
+    font-weight: 600;
+}
+
+/* User button */
+.admin-btn {
+    position: relative;
+    z-index: 3;
+    background: #ffffff !important;
+    color: #2864e8 !important;
+    border: none !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+    font-weight: 700;
+}
+
+/* ================= DASHBOARD CARDS ================= */
+
+.dashboard-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.65) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-card::after {
+    content: "";
+    position: absolute;
+    width: 125px;
+    height: 125px;
+    right: -45px;
+    bottom: -55px;
+    border-radius: 50%;
+    background: rgba(255, 150, 110, 0.16);
+    pointer-events: none;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.18);
+}
+
+.dashboard-card .card-details {
+    position: relative;
+    z-index: 2;
+}
+
+.dashboard-card .card-details h5 {
+    font-weight: 700;
+    color: #68758b;
+}
+
+.dashboard-card .card-details h2 {
+    font-weight: 850;
+    color: #244f91;
+}
+
+/* ================= QUICK ACTIONS ================= */
+
+.quick-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+}
+
+.quick-actions .action-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    border: none;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quick-actions .action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.20);
+}
+
+/* ================= RECENT BILLS ================= */
+
+.recent-bills {
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+}
+
+.recent-bills .section-title h3 {
+    font-weight: 800;
+    color: #244f91;
+}
+
+.recent-bills .table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120,120,120,0.45) transparent;
+}
+
+/* Chrome / Electron scrollbar */
+.recent-bills .table-responsive::-webkit-scrollbar {
+    height: 5px;
+}
+
+.recent-bills .table-responsive::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.recent-bills .table-responsive::-webkit-scrollbar-thumb {
+    background: rgba(120,120,120,0.45);
+    border-radius: 20px;
+}
+
+.recent-bills .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: rgba(120,120,120,0.65);
+}
+
+/* ================= LAPTOP FIX ================= */
+
+@media (max-width: 1200px) {
+
+    .main {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+}
+
+/* ================= TABLET ================= */
+
+@media (max-width: 992px) {
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr !important;
+    }
+
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+
+    .main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        padding: 80px 15px 25px !important;
+        overflow-x: hidden !important;
+    }
+
+    .welcome-card {
+        border-radius: 20px !important;
+    }
+
+    .welcome-card h2,
+    .welcome-card h1 {
+        font-size: 28px !important;
+        line-height: 1.2;
+    }
+
+    .welcome-card p {
+        font-size: 15px !important;
+    }
+
+    .welcome-bottom {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 18px;
+    }
+
+    .right-content {
+        width: 100%;
+        text-align: left !important;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr !important;
+    }
+
+    .quick-actions .action-btn {
+        min-height: 62px;
+    }
+
+    .recent-bills .table {
+        min-width: 760px;
+    }
+
+}
+
+/* ================= SMALL MOBILE ================= */
+
+@media (max-width: 480px) {
+
+    .welcome-card h2,
+    .welcome-card h1 {
+        font-size: 25px !important;
+    }
+
+    .dashboard-card {
+        min-height: 120px;
+    }
+
+    .quick-actions .action-btn {
+        min-height: 58px;
+        font-size: 16px;
+    }
+
+}
+/* =========================================================
+   SVSS SIDEBAR - IMAGE 1 STYLE
+   ========================================================= */
+
+:root {
+    --sidebar-width: 260px;
+}
+
+/* Main sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+
+    background:
+        linear-gradient(
+            145deg,
+            #182131 0%,
+            #101725 45%,
+            #ff4d00 100%
+        );
+
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    z-index: 1000;
+    transition: none;
+}
+
+/* Hide scrollbar inside sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 0;
+}
+
+/* Sidebar logo section */
+.sidebar-header,
+.logo-section,
+.brand-section {
+    width: 100%;
+    min-height: 135px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px 15px;
+    text-align: center;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Logo image */
+.sidebar-header img,
+.logo-section img,
+.brand-section img,
+.sidebar .logo img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+}
+
+/* Logo/name wrapper */
+.sidebar-logo,
+.logo-area,
+.brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Shop name */
+.sidebar-logo h2,
+.logo-area h2,
+.brand h2,
+.sidebar-header h2 {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+/* Subtitle */
+.sidebar-logo p,
+.logo-area p,
+.brand p,
+.sidebar-header p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Sidebar menu */
+.sidebar nav,
+.sidebar-menu,
+.nav-menu {
+    width: 100%;
+    padding: 25px 12px;
+}
+
+/* Every menu item */
+.sidebar nav a,
+.sidebar-menu a,
+.nav-menu a,
+.sidebar .nav-item {
+    width: 100%;
+    min-height: 70px;
+
+    display: flex;
+    align-items: center;
+    gap: 22px;
+
+    padding: 0 25px;
+    margin-bottom: 8px;
+
+    color: #dce3f2;
+    text-decoration: none;
+
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    transition: none;
+}
+
+/* Menu icons */
+.sidebar nav a i,
+.sidebar-menu a i,
+.nav-menu a i,
+.sidebar .nav-item i,
+.sidebar nav a svg,
+.sidebar-menu a svg {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+
+    font-size: 26px;
+    color: #dce3f2;
+}
+
+/* Menu names */
+.sidebar nav a span,
+.sidebar-menu a span,
+.nav-menu a span,
+.sidebar .nav-item span {
+    display: inline-block;
+    opacity: 1;
+    visibility: visible;
+    color: inherit;
+}
+
+/* Active menu */
+.sidebar nav a.active,
+.sidebar-menu a.active,
+.nav-menu a.active,
+.sidebar nav a[aria-current="page"],
+.sidebar .nav-item.active {
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff8500 0%,
+            #ff4d00 100%
+        );
+
+    box-shadow:
+        0 5px 18px rgba(255, 94, 0, 0.35);
+
+    border: 1px solid rgba(255, 180, 80, 0.35);
+}
+
+/* Active icon */
+.sidebar nav a.active i,
+.sidebar-menu a.active i,
+.nav-menu a.active i,
+.sidebar .nav-item.active i,
+.sidebar nav a.active svg {
+    color: #ffffff;
+}
+
+/* Logout section */
+.sidebar .logout,
+.sidebar .logout-link,
+.sidebar nav a.logout {
+    margin-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0;
+    padding-top: 25px;
+}
+
+/* Main content position */
+.main-content,
+.main,
+.content,
+.dashboard-content {
+    margin-left: var(--sidebar-width) !important;
+    width: calc(100% - var(--sidebar-width)) !important;
+    min-width: 0;
+}
+
+/* If your layout uses app-content */
+.app-content {
+    margin-left: var(--sidebar-width) !important;
+    width: calc(100% - var(--sidebar-width)) !important;
+}
+
+/* Prevent collapsed sidebar styles */
+.sidebar.collapsed {
+    width: var(--sidebar-width) !important;
+}
+
+.sidebar.collapsed nav a,
+.sidebar.collapsed .nav-item {
+    justify-content: flex-start !important;
+    padding-left: 25px !important;
+}
+
+.sidebar.collapsed nav a span,
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .brand-text {
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+}
+
+.sidebar.collapsed .sidebar-logo,
+.sidebar.collapsed .logo-area,
+.sidebar.collapsed .brand {
+    align-items: center !important;
+}
+
+/* Desktop layout */
+@media (min-width: 1200px) {
+    .sidebar {
+        width: 260px;
+    }
+
+    .main-content,
+    .main,
+    .content,
+    .dashboard-content,
+    .app-content {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+}
+/* =========================================
+   REMOVE WHITE TOP MARGIN FROM DASHBOARD
+========================================= */
+
+html,
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #111111 !important;
+}
+
+/* Keep sidebar at the very top */
+.sidebar {
+    top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Remove unwanted white gap above dashboard */
+.main {
+    margin-top: 0 !important;
+    padding-top: 28px !important;
+
+    background: #111111 !important;
+}
+
+/* Prevent any wrapper from creating the white strip */
+body > *,
+.main,
+.dashboard-container {
+    box-sizing: border-box;
+}
+/* =====================================================
+   MOBILE DASHBOARD FIX
+   Desktop and sidebar styles are not changed
+===================================================== */
+
+@media (max-width: 768px) {
+
+    /* Main dashboard area */
+    .main,
+    .dashboard-main,
+    .dashboard-container,
+    .content {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 16px 20px !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Dashboard top banner */
+    .welcome-card,
+    .welcome-banner,
+    .dashboard-banner,
+    .hero-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 355px !important;
+        padding: 24px !important;
+        margin: 0 0 28px !important;
+        border-radius: 24px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Welcome heading */
+    .welcome-card h1,
+    .welcome-banner h1,
+    .dashboard-banner h1,
+    .hero-card h1 {
+        font-size: 30px !important;
+        line-height: 1.2 !important;
+        margin-bottom: 14px !important;
+    }
+
+    /* Welcome subtitle */
+    .welcome-card p,
+    .welcome-banner p,
+    .dashboard-banner p,
+    .hero-card p {
+        font-size: 18px !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Email box */
+    .email-box,
+    .user-email,
+    .welcome-email {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 16px !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    /* Date and time */
+    .date-box,
+    .dashboard-date,
+    .date-time {
+        position: static !important;
+        width: 100% !important;
+        margin-top: 28px !important;
+        text-align: left !important;
+    }
+
+    .date-box h2,
+    .dashboard-date h2,
+    .date-time h2 {
+        font-size: 29px !important;
+        line-height: 1.3 !important;
+    }
+
+    .date-box p,
+    .dashboard-date p,
+    .date-time p {
+        font-size: 18px !important;
+    }
+
+    /* Statistics cards: one card per row */
+    .stats-grid,
+    .dashboard-stats,
+    .stats-container,
+    .row.stats-row {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+        width: 100% !important;
+        margin: 0 0 28px !important;
+    }
+
+    .stat-card,
+    .dashboard-stat-card,
+    .stats-card,
+    .card-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        min-height: 150px !important;
+        height: auto !important;
+        padding: 24px !important;
+        border-radius: 22px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Card icon */
+    .stat-card .stat-icon,
+    .dashboard-stat-card .stat-icon,
+    .stats-card .stat-icon,
+    .card-box .stat-icon {
+        width: 72px !important;
+        height: 72px !important;
+        min-width: 72px !important;
+        font-size: 32px !important;
+    }
+
+    /* Card content */
+    .stat-card h3,
+    .stat-card h6,
+    .dashboard-stat-card h3,
+    .dashboard-stat-card h6,
+    .stats-card h3,
+    .stats-card h6 {
+        font-size: 18px !important;
+    }
+
+    .stat-card h2,
+    .dashboard-stat-card h2,
+    .stats-card h2 {
+        font-size: 38px !important;
+    }
+
+    /* Quick action buttons */
+    .quick-actions,
+    .dashboard-actions,
+    .action-buttons {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        width: 100% !important;
+    }
+
+    .quick-actions button,
+    .dashboard-actions button,
+    .action-buttons button {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 62px !important;
+        font-size: 18px !important;
+    }
+
+    /* Recent bills section */
+    .recent-bills,
+    .recent-bills-card,
+    .dashboard-table-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Table can scroll horizontally inside its section */
+    .recent-bills table,
+    .recent-bills-card table,
+    .dashboard-table-card table {
+        min-width: 650px !important;
+    }
+}
+/* ==========================================
+   DASHBOARD LIGHT MODE FIX
+========================================== */
+
+/* Light mode page background */
+body.light-mode,
+html.light-mode body,
+body[data-theme="light"],
+html[data-theme="light"] body {
+    background: #f5f7fb !important;
+    color: #222222 !important;
+}
+
+/* Dashboard main content */
+body.light-mode .main-content,
+body.light-mode .content,
+body.light-mode .dashboard-container,
+body[data-theme="light"] .main-content,
+body[data-theme="light"] .content,
+body[data-theme="light"] .dashboard-container {
+    background: #f5f7fb !important;
+    color: #222222 !important;
+}
+
+/* Dashboard sections */
+body.light-mode .dashboard-card,
+body.light-mode .recent-bills,
+body.light-mode .recent-bills-section,
+body.light-mode .section-card,
+body[data-theme="light"] .dashboard-card,
+body[data-theme="light"] .recent-bills,
+body[data-theme="light"] .recent-bills-section,
+body[data-theme="light"] .section-card {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Recent Bills table body */
+body.light-mode table,
+body.light-mode tbody,
+body.light-mode tbody tr,
+body.light-mode tbody td,
+body[data-theme="light"] table,
+body[data-theme="light"] tbody,
+body[data-theme="light"] tbody tr,
+body[data-theme="light"] tbody td {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Table header keeps theme color */
+body.light-mode thead th,
+body[data-theme="light"] thead th {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+/* Dashboard headings */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body[data-theme="light"] h1,
+body[data-theme="light"] h2,
+body[data-theme="light"] h3,
+body[data-theme="light"] h4,
+body[data-theme="light"] h5 {
+    color: #222222 !important;
+}
+
+/* Recent bill rows */
+body.light-mode .bill-row,
+body.light-mode .recent-bill-row,
+body[data-theme="light"] .bill-row,
+body[data-theme="light"] .recent-bill-row {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Remove dark backgrounds */
+body.light-mode .dark-bg,
+body.light-mode .dark-section,
+body[data-theme="light"] .dark-bg,
+body[data-theme="light"] .dark-section {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+@media (min-width: 769px) {
+    .main,
+    .dashboard-container,
+    .main-content {
+        top: 0 !important;
+        transform: none !important;
+    }
+}

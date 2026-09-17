@@ -30,7 +30,36 @@ function setText(id, value) {
     }
 
 }
+// ==============================
+// CURRENCY FORMATTER
+// Always display Rs.
+// ==============================
 
+function parseAmount(value) {
+    if (value === undefined || value === null) {
+        return 0;
+    }
+
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    const cleaned = String(value)
+        .replace(/₹|Rs\.?|INR/gi, "")
+        .replace(/,/g, "")
+        .trim();
+
+    const amount = Number(cleaned);
+
+    return Number.isFinite(amount) ? amount : 0;
+}
+
+function formatCurrency(value) {
+    return "Rs. " + parseAmount(value).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
 // ==============================
 // DATABASE FUNCTIONS
 // ==============================
@@ -98,9 +127,7 @@ function displayBills(billList) {
 
     billList.forEach((bill, index) => {
 
-        const gst = parseFloat(
-            String(bill.gstTotal).replace(/[^\d.]/g, "")
-        ) || 0;
+        const gst = parseAmount(bill.gstTotal);
 
         historyTableBody.innerHTML += `
 
@@ -128,20 +155,19 @@ function displayBills(billList) {
 
     <td>Rs. ${(gst / 2).toFixed(2)}</td>
 
-    <td>${bill.gstTotal}</td>
+    <td>${formatCurrency(bill.gstTotal)}</td>
 
-    <td>${bill.grandTotal}</td>
-
-    <td>Rs. ${Number(bill.amountPaid || 0).toFixed(2)}</td>
-
-    <td>Rs. ${Number(bill.balanceDue || 0).toFixed(2)}</td>
+    <td>${formatCurrency(bill.grandTotal)}</td>
+    
+    <td>${formatCurrency(bill.amountPaid)}</td>
+    
+    <td>${formatCurrency(bill.balanceDue)}</td>
 
     <td>
 
     ${(() => {
 
-        const balance =
-            Number(bill.balanceDue) || 0;
+        const balance = parseAmount(bill.balanceDue);
 
         const status =
             balance <= 0
@@ -262,9 +288,9 @@ function viewBill(billNo) {
     setText("viewPaymentMode", selectedBill.paymentMode || "Cash");
 
     setText(
-        "viewAmountPaid",
-        "Rs. " + Number(selectedBill.amountPaid || 0).toFixed(2)
-    );
+    "viewAmountPaid",
+    formatCurrency(selectedBill.amountPaid)
+);
 
     const status =
     (Number(selectedBill.balanceDue) || 0) <= 0
@@ -282,10 +308,7 @@ function viewBill(billNo) {
 
     setText("viewSubTotal", selectedBill.subTotal);
 
-    const totalGST =
-        parseFloat(
-            String(selectedBill.gstTotal).replace(/[^\d.]/g, "")
-        ) || 0;
+    const totalGST = parseAmount(selectedBill.gstTotal);
 
     setText(
         "viewCGST",
@@ -297,26 +320,29 @@ function viewBill(billNo) {
         "Rs. " + (totalGST / 2).toFixed(2)
     );
 
-    setText("viewGST", selectedBill.gstTotal);
-
     setText(
-        "viewDiscount",
-        "Rs. " + Number(selectedBill.discount || 0).toFixed(2)
+    "viewGST",
+    formatCurrency(selectedBill.gstTotal)
     );
 
     setText(
-        "viewGrandTotal",
-        selectedBill.grandTotal
+    "viewDiscount",
+    formatCurrency(selectedBill.discount)
     );
 
     setText(
-        "viewAmountPaid2",
-        "Rs. " + Number(selectedBill.amountPaid || 0).toFixed(2)
+    "viewGrandTotal",
+    formatCurrency(selectedBill.grandTotal)
+);
+
+    setText(
+    "viewAmountPaid",
+    formatCurrency(selectedBill.amountPaid)
     );
 
     setText(
-        "viewBalanceDue2",
-        "Rs. " + Number(selectedBill.balanceDue || 0).toFixed(2)
+    "viewBalanceDue2",
+    formatCurrency(selectedBill.balanceDue)
     );
 
     setText(
@@ -352,7 +378,7 @@ function viewBill(billNo) {
             : parseInt(item.qty)
     }</td>
 
-    <td>Rs. ${Number(item.rate).toFixed(2)}</td>
+    <td>${formatCurrency(item.rate)}</td>
 
     <td>${item.cgst}%</td>
 
@@ -360,7 +386,7 @@ function viewBill(billNo) {
 
     <td>${item.gst}%</td>
 
-    <td>Rs. ${Number(item.total).toFixed(2)}</td>
+    <td>${formatCurrency(item.total)}</td>
 
 </tr>
 

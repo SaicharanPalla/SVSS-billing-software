@@ -1,0 +1,88 @@
+/* ==========================================
+   SVSS DASHBOARD LIGHT MODE FIX
+========================================== */
+
+/* Main dashboard background */
+body:not(.dark-mode) .main,
+body.light-mode .main,
+body[data-theme="light"] .main {
+    background: #f5f7fb !important;
+    color: #222222 !important;
+}
+
+/* Dashboard cards */
+body:not(.dark-mode) .dashboard-card,
+body.light-mode .dashboard-card,
+body[data-theme="light"] .dashboard-card {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Recent bills section */
+body:not(.dark-mode) .recent-bills,
+body.light-mode .recent-bills,
+body[data-theme="light"] .recent-bills {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Recent bills table */
+body:not(.dark-mode) .recent-bills table,
+body.light-mode .recent-bills table,
+body[data-theme="light"] .recent-bills table {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Table rows and cells */
+body:not(.dark-mode) .recent-bills tbody tr,
+body:not(.dark-mode) .recent-bills tbody td,
+body.light-mode .recent-bills tbody tr,
+body.light-mode .recent-bills tbody td,
+body[data-theme="light"] .recent-bills tbody tr,
+body[data-theme="light"] .recent-bills tbody td {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Table header follows theme */
+body:not(.dark-mode) .recent-bills thead th,
+body.light-mode .recent-bills thead th,
+body[data-theme="light"] .recent-bills thead th {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+/* Dashboard headings follow theme */
+body:not(.dark-mode) .section-title h3,
+body.light-mode .section-title h3,
+body[data-theme="light"] .section-title h3 {
+    color: var(--primary-color) !important;
+}
+
+/* Dashboard card values follow theme */
+body:not(.dark-mode) .dashboard-card h2,
+body.light-mode .dashboard-card h2,
+body[data-theme="light"] .dashboard-card h2 {
+    color: var(--primary-color) !important;
+}
+/* Remove black strip above dashboard - desktop only */
+@media (min-width: 769px) {
+
+    html,
+    body {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .main {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        top: 0 !important;
+    }
+
+    /* Make dashboard background start immediately */
+    body {
+        background: #f5f7fb !important;
+    }
+}

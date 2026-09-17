@@ -15,235 +15,305 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
      <!--Font Awesome-->      
-    <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">      
-
-    <link rel="stylesheet" href="../assets/css/common.css">
-<link rel="stylesheet" href="../assets/css/products.css">
-<link rel="stylesheet" href="../assets/css/product-master.css">
-<link rel="stylesheet" href="../assets/css/responsive.css">
-
-</head>
-
-<body>
-<!-- ================= MOBILE HEADER ================= -->
-
-<div class="mobile-header">
-
-    <button id="menuBtn" class="menu-btn">
-
-        <i class="bi bi-list"></i>
-
-    </button>
-
-    <div class="mobile-title">
-
-        🏪 <span>SVSS</span>
-
+        <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">      
+    
+        <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/products.css">
+    <link rel="stylesheet" href="../assets/css/product-master.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/theme-colors.css">
+    
+    </head>
+    
+    <body>
+    <!-- ================= MOBILE HEADER ================= -->
+    
+    <div class="mobile-header">
+    
+        <button id="menuBtn" class="menu-btn">
+    
+            <i class="bi bi-list"></i>
+    
+        </button>
+    
+        <div class="mobile-title">
+    
+            🏪 <span>SVSS</span>
+    
+        </div>
+    
     </div>
-
-</div>
-<!-- ================= SIDEBAR ================= -->
-
-<div class="sidebar" id="sidebar">
-
-    <div class="logo">
-
-    <i class="bi bi-shop"></i>
-
-    <div>
-
-        <h2>SVSS</h2>
-
-        <small>Billing System</small>
-
+    <!-- ================= SIDEBAR ================= -->
+    
+    <div class="sidebar" id="sidebar">
+    
+        <div class="logo">
+    
+        <i class="bi bi-shop"></i>
+    
+        <div>
+    
+            <h2>SVSS</h2>
+    
+            <small>Billing System</small>
+    
+        </div>
+    
     </div>
-
-</div>
-
-    <ul>
-        <li>
-            <a href="dashboard.html">
-                <i class="bi bi-house"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
-
-        <li class="active"> 
-            <a href="products.html">
+    
+        <ul>
+            <li>
+                <a href="dashboard.html">
+                    <i class="bi bi-house"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+    
+            <li class="active"> 
+                <a href="products.html">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+    
+            <li>
+                <a href="customers.html">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+    
+            <li>
+                <a href="billing.html">
+                    <i class="bi bi-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+    
+            <li>
+                <a href="history.html">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+    
+            <li>
+                <a href="reports.html">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+    
+            <li>
+                <a href="settings.html">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+    
+        </ul>
+        <!-- Logout Button -->
+    <div class="sidebar-footer">
+    
+        <a href="#" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    
+    </div>
+    
+    </div>
+    
+    <!-- ================= Main ================= -->
+    
+    <div class="main">
+    
+        <!-- Header -->
+    
+     <!-- ================= PRODUCT HEADER ================= -->
+    
+    <div class="header product-header">
+    
+        <div class="product-heading">
+    
+            <div class="product-heading-icon">
+    
                 <i class="bi bi-box-seam"></i>
-                <span>Products</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="customers.html">
-                <i class="bi bi-people"></i>
-                <span>Customers</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="billing.html">
-                <i class="bi bi-receipt"></i>
-                <span>Billing</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="history.html">
-                <i class="bi bi-clock-history"></i>
-                <span>Bill History</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="reports.html">
-                <i class="bi bi-bar-chart"></i>
-                <span>Reports</span>
-            </a>
-        </li>
-
-        <li>
-            <a href="settings.html">
-                <i class="bi bi-gear"></i>
-                <span>Settings</span>
-            </a>
-        </li>
-
-    </ul>
-    <!-- Logout Button -->
-<div class="sidebar-footer">
-
-    <a href="#" onclick="logout()">
-        <i class="fa-solid fa-right-from-bracket"></i>
-        <span>Logout</span>
-    </a>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ================= Main ================= -->
-
-<div class="main">
-
-    <!-- Header -->
-
-    <div class="header d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-
-        <h2>📦 Product Management</h2>
-
+    
+            </div>
+    
+            <div>
+    
+                <h2>Product Management</h2>
+    
+                <p>Manage your products and categories</p>
+    
+            </div>
+    
+        </div>
+    
         <button
-    class="btn btn-primary"
-    id="openProductModal">
-
-    <i class="bi bi-plus-circle"></i>
-    Add Product
-
-</button>
-
+            class="btn btn-primary add-product-btn"
+            id="openProductModal">
+    
+            <i class="bi bi-plus-circle"></i>
+    
+            Add Product
+    
+        </button>
+    
     </div>
 
     <!-- Dashboard Cards -->
 
-    <div class="row mt-4">
+    <!-- ================= PRODUCT STATISTICS ================= -->
+    
+    <div class="row product-stats-row mt-4">
+    
+        <!-- Total Products -->
+    
+        <div class="col-12 col-md-6">
+    
+            <div class="card-box product-stat-card">
+    
+                <div class="product-stat-icon">
+    
+                    <i class="bi bi-box-seam"></i>
+    
+                </div>
+    
+                <div class="product-stat-content">
+    
+                    <h6>Total Products</h6>
+    
+                    <h2 id="totalProducts">0</h2>
 
-        <div class="col-12 col-md-3">
-
-            <div class="card-box">
-
-                <h6>Total Products</h6>
-
-                <h2>0</h2>
-
+    
+                </div>
+    
             </div>
-
-        </div>
-
-        <div class="col-12 col-md-3">
-
-            <div class="card-box">
-
-                <h6>Categories</h6>
-
-                <h2>0</h2>
-
+    
             </div>
-
+        
+        
+            <!-- Categories -->
+        
+            <div class="col-12 col-md-6">
+        
+                <div class="card-box product-stat-card category-stat-card">
+        
+                    <div class="product-stat-icon">
+        
+                        <i class="bi bi-grid-3x3-gap"></i>
+        
+                    </div>
+        
+                    <div class="product-stat-content">
+        
+                        <h6>Total Categories</h6>
+        
+                        <h2 id="totalCategories">0</h2>
+        
+                    </div>
+        
+                </div>
+        
+            </div>
+        
         </div>
+    
+      <!-- ================= PRODUCT SEARCH + FILTER ================= -->
 
+<div class="product-filters mt-4">
+
+    <!-- Search Products -->
+    <div class="product-search-box">
+
+    <input
+        type="text"
+        id="productSearch"
+        class="form-control"
+        placeholder="Search products...">
+
+    <i class="bi bi-search search-icon"></i>
+
+     </div>
+
+    <!-- Category Filter -->
+    <div class="product-category-box">
+
+        <select
+            id="categoryFilter"
+            class="form-select">
+
+            <option value="">Choose Category</option>
+
+            <option value="Lining">Lining</option>
+
+            <option value="Langalu">Langalu</option>
+
+            <option value="Nighty">Nighty</option>
+
+            <option value="Saree Fall">Saree Fall</option>
+
+            <option value="Blouse Material">Blouse Material</option>
+
+            <option value="Lace">Lace</option>
+
+        </select>
 
     </div>
 
-    <!-- Product Table -->
-
-    <div class="table-box mt-4">
-
-        <div class="row g-3 mb-3">
-
-            <div class="col-12 col-md-4">
-
-                <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Search Product">
-
-            </div>
-
-            <div class="col-12 col-sm-6 col-lg-3">
-
-                <select id="categoryFilter" class="form-select">
-
-                    <option value="">Choose Category</option>
-                
-                    <option value="Lining">Lining</option>
-                
-                    <option value="Langalu">Langalu</option>
-                
-                    <option value="Nighty">Nighty</option>
-                
-                    <option value="Saree Fall">Saree Fall</option>
-                
-                    <option value="Blouse Material">Blouse Material</option>
-                
-                </select>
-
-            </div>
-
-        </div>
-        <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-
-    <thead class="table-primary">
-
-        <tr>
-
-            <th>Code</th>
-            <th>Product</th>
-            <th>Category</th>
-            <th>HSN Code</th>
-            <th>Rate</th>
-            <th>Unit</th>
-            <th>CGST %</th>
-            <th>SGST %</th>
-            <th>Total GST %</th>
-            <th>Action</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody id="productTableBody">
-
-    </tbody>
-
-</table>
 </div>
+
+
+<!-- ================= PRODUCT TABLE ================= -->
+
+<div class="product-table-card mt-4">
+
+    <div class="product-table-wrapper">
+
+        <table class="table table-bordered table-hover product-table">
+
+            <thead class="table-primary">
+
+                <tr>
+
+                    <th>Code</th>
+
+                    <th>Product</th>
+
+                    <th>Category</th>
+
+                    <th>HSN Code</th>
+
+                    <th>Rate</th>
+
+                    <th>Unit</th>
+
+                    <th>CGST %</th>
+
+                    <th>SGST %</th>
+
+                    <th>Total GST %</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="productTableBody">
+
+            </tbody>
+
+        </table>
+
     </div>
+
+</div>
         <!-- ================= Add Product Modal ================= -->
 
     <div
@@ -673,7 +743,7 @@
 
     <hr>
 
-    <div class="table-responsive">
+    <div class="table-responsive product-table-wrapper">
 
         <table class="table table-bordered align-middle">
 
@@ -803,7 +873,7 @@
 
     <!-- Product Table -->
 
-    <div class="table-responsive">
+    <div class="table-responsive product-table-wrapper">
 
         <table class="table table-bordered align-middle">
 
