@@ -3860,7 +3860,7 @@ body:not(.dark-mode) .product-heading-icon i{
     min-height: 55px !important;
 
     border-radius: 50% !important;
-    background: #7c3aed !important;
+    background-color: --;
 
     display: flex !important;
     align-items: center !important;
@@ -3898,4 +3898,195 @@ body:not(.dark-mode) .product-heading-icon i{
         margin: 0 !important;
     }
 
+}
+/* =========================================================
+   SVSS PRODUCT PAGE THEME SUPPORT
+   Uses existing theme.js data-theme attribute
+========================================================= */
+
+
+/* =========================================================
+   THEME COLORS
+========================================================= */
+
+body[data-theme="blue"] {
+
+    --product-primary: #2563eb;
+    --product-primary-dark: #1d4ed8;
+
+}
+
+body[data-theme="green"] {
+
+    --product-primary: #16a34a;
+    --product-primary-dark: #15803d;
+
+}
+
+body[data-theme="purple"] {
+
+    --product-primary: #9333ea;
+    --product-primary-dark: #7e22ce;
+
+}
+
+body[data-theme="orange"] {
+
+    --product-primary: #f97316;
+    --product-primary-dark: #ea580c;
+
+}
+
+
+/* =========================================================
+   PRODUCT PAGE MAIN BUTTONS
+========================================================= */
+
+.products-page .btn-primary,
+.products-page button.btn-primary,
+.product-page .btn-primary,
+.product-page button.btn-primary {
+
+    background: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+    border-color: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+    color: #ffffff !important;
+
+}
+
+
+/* =========================================================
+   ADD PRODUCT BUTTON
+========================================================= */
+
+button[onclick*="addProduct"],
+button[onclick*="openProduct"],
+.add-product-btn,
+#addProductBtn {
+
+    background: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+    border-color: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+    color: #ffffff !important;
+
+}
+
+
+/* =========================================================
+   PRODUCT TABLE HEADER
+========================================================= */
+
+.products-page table thead th,
+.product-page table thead th,
+#productsTable thead th,
+.product-table thead th {
+
+    background: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+    color: #ffffff !important;
+
+}
+
+
+/* =========================================================
+   PRODUCT ICONS
+========================================================= */
+
+.products-page .icon,
+.product-page .icon,
+.products-page .card-icon,
+.product-page .card-icon {
+
+    background: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+}
+
+
+/* =========================================================
+   PRODUCT PAGE TITLE ICON
+========================================================= */
+
+.products-page h1 i,
+.products-page h2 i,
+.product-page h1 i,
+.product-page h2 i {
+
+    color: var(
+        --product-primary,
+        #2563eb
+    ) !important;
+
+}
+
+
+/* =========================================================
+   PRODUCT BUTTON HOVER
+========================================================= */
+
+.products-page button:hover,
+.product-page button:hover {
+
+    border-color: var(
+        --product-primary-dark,
+        #1d4ed8
+    ) !important;
+
+}
+
+
+/* =========================================================
+   KEEP PRODUCT FONT COLORS
+========================================================= */
+
+.products-page h1,
+.products-page h2,
+.products-page h3,
+.products-page h4,
+.products-page h5,
+.products-page p,
+.products-page span,
+.product-page h1,
+.product-page h2,
+.product-page h3,
+.product-page h4,
+.product-page h5,
+.product-page p,
+.product-page span {
+
+    color: inherit;
+
+}
+/* Always open Add Product form from top */
+@media (max-width: 768px) {
+
+    #productModal .modal-body {
+        scroll-behavior: auto !important;
+        overflow-y: auto !important;
+        scroll-padding-top: 0 !important;
+    }
+
+    #productModal .modal-dialog {
+        margin-top: 8px !important;
+        margin-bottom: 8px !important;
+    }
 }

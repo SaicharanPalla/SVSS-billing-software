@@ -1095,12 +1095,6 @@ openProductModal.addEventListener("click", async () => {
 
     modalInstance.show();
 
-    setTimeout(() => {
-
-        Rate.focus();
-
-    }, 300);
-
 });
 
 if (productModal) {
@@ -1108,17 +1102,10 @@ if (productModal) {
     // When modal opens
     productModal.addEventListener("shown.bs.modal", function () {
 
-    setTimeout(() => {
-
-        const modalElement = document.getElementById("productModal");
-
-        modalElement.focus();
-
-        Rate.focus();
-
-        Rate.select();
-
-    }, 200);
+  setTimeout(() => {
+    const modalElement = document.getElementById("productModal");
+    modalElement.focus();
+}, 200);
 
 });
 

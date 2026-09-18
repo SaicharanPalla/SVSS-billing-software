@@ -2244,11 +2244,648 @@ body[data-theme="light"] .dark-section {
     background: #ffffff !important;
     color: #222222 !important;
 }
-@media (min-width: 769px) {
-    .main,
-    .dashboard-container,
-    .main-content {
-        top: 0 !important;
-        transform: none !important;
+/* =========================================================
+   SVSS DASHBOARD CSS
+   Dashboard-only theme support
+   Do not change theme.js
+========================================================= */
+
+
+/* =========================================================
+   DASHBOARD MAIN AREA
+========================================================= */
+
+.main {
+
+    background: #111111;
+
+}
+
+
+/* =========================================================
+   THEME VARIABLES
+========================================================= */
+
+body[data-theme="blue"] {
+
+    --dashboard-primary: #2563eb;
+    --dashboard-primary-dark: #1d4ed8;
+
+}
+
+body[data-theme="green"] {
+
+    --dashboard-primary: #16a34a;
+    --dashboard-primary-dark: #15803d;
+
+}
+
+body[data-theme="purple"] {
+
+    --dashboard-primary: #9333ea;
+    --dashboard-primary-dark: #7e22ce;
+
+}
+
+body[data-theme="orange"] {
+
+    --dashboard-primary: #ff5900;
+    --dashboard-primary-dark: #ff5900;
+
+}
+
+
+/* =========================================================
+   LIGHT MODE
+========================================================= */
+
+body.light-mode .main,
+body[data-mode="light"] .main {
+
+    background: #f5f7fb;
+
+}
+
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+body.dark-mode .main,
+body[data-mode="dark"] .main {
+
+    background: #111111;
+
+}
+
+
+/* =========================================================
+   WELCOME CARD
+========================================================= */
+
+.welcome-card {
+
+    background: linear-gradient(
+        135deg,
+        var(--dashboard-primary, #2563eb),
+        var(--dashboard-primary-dark, #1d4ed8)
+    ) !important;
+
+}
+
+
+/* =========================================================
+   DASHBOARD CARD
+========================================================= */
+
+.dashboard-card {
+
+    background: var(--card-bg, #1b1b1b);
+
+}
+
+
+
+/* =========================================================
+   DASHBOARD CARD ICON COLORS
+========================================================= */
+
+.dashboard-card .card-icon i {
+
+    color: #ffffff !important;
+
+}
+
+
+/* =========================================================
+   RECENT BILLS BOX
+========================================================= */
+
+.recent-bills {
+
+    background: var(--card-bg, #1b1b1b);
+
+}
+
+/* =========================================================
+   RECENT BILLS TABLE HEADER
+========================================================= */
+
+.recent-bills table thead th {
+
+    background: var(
+        --dashboard-primary,
+        #2563eb
+    ) !important;
+
+    color: #ffffff !important;
+
+}
+
+
+/* =========================================================
+   TABLE BORDERS
+========================================================= */
+
+.recent-bills table,
+.recent-bills th,
+.recent-bills td {
+
+    border-color: #555555;
+
+}
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+.recent-bills .badge,
+.recent-bills .status,
+.recent-bills .pending {
+
+    color: #000000 !important;
+
+}
+
+
+/* =========================================================
+   MOBILE DASHBOARD
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .welcome-card {
+
+        margin-top: 0 !important;
+
     }
+
+    .dashboard-grid {
+
+        grid-template-columns: 1fr !important;
+
+    }
+
+    .quick-actions {
+
+        grid-template-columns: 1fr !important;
+
+    }
+
+}
+/* =========================================================
+   SVSS DASHBOARD - LIGHT / DARK MODE FIX
+   Add this code at the VERY BOTTOM of dashboard.css
+========================================================= */
+
+
+/* =========================================================
+   LIGHT MODE
+========================================================= */
+
+body:not(.dark-mode) .main,
+body.light-mode .main {
+    background: #f5f7fb !important;
+    color: #222222 !important;
+}
+
+/* Welcome card keeps selected theme color */
+body:not(.dark-mode) .welcome-card,
+body.light-mode .welcome-card {
+    background: var(--primary-color, #2563eb) !important;
+    color: #ffffff !important;
+}
+
+/* Dashboard cards */
+body:not(.dark-mode) .dashboard-card,
+body.light-mode .dashboard-card {
+    background: #ffffff !important;
+    color: #222222 !important;
+    border: 1px solid #d9dee7 !important;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Card heading text */
+body:not(.dark-mode) .dashboard-card h5,
+body.light-mode .dashboard-card h5 {
+    color: #64748b !important;
+}
+
+/* Card numbers */
+body:not(.dark-mode) .dashboard-card h2,
+body.light-mode .dashboard-card h2 {
+    color: #244f91 !important;
+}
+
+/* Keep icons in selected theme colors */
+body:not(.dark-mode) .dashboard-card .card-icon,
+body.light-mode .dashboard-card .card-icon {
+    color: #ffffff !important;
+}
+
+/* Recent bills white card */
+body:not(.dark-mode) .recent-bills,
+body.light-mode .recent-bills {
+    background: #ffffff !important;
+    color: #222222 !important;
+    border: 1px solid #d9dee7 !important;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Recent bills title */
+body:not(.dark-mode) .recent-bills .section-title h3,
+body.light-mode .recent-bills .section-title h3 {
+    color: var(--primary-color, #2563eb) !important;
+}
+
+/* Recent bills table */
+body:not(.dark-mode) .recent-bills table,
+body.light-mode .recent-bills table {
+    background: #ffffff !important;
+    color: #222222 !important;
+}
+
+/* Table header follows selected theme color */
+body:not(.dark-mode) .recent-bills thead th,
+body.light-mode .recent-bills thead th {
+    background: var(--primary-color, #2563eb) !important;
+    color: #ffffff !important;
+}
+
+/* Table body */
+body:not(.dark-mode) .recent-bills tbody td,
+body.light-mode .recent-bills tbody td {
+    background: #ffffff !important;
+    color: #222222 !important;
+    border-color: #e1e5eb !important;
+}
+
+/* Table hover */
+body:not(.dark-mode) .recent-bills tbody tr:hover td,
+body.light-mode .recent-bills tbody tr:hover td {
+    background: #f1f5f9 !important;
+    color: #222222 !important;
+}
+
+/* Admin button */
+body:not(.dark-mode) .admin-btn,
+body.light-mode .admin-btn {
+    background: #ffffff !important;
+    color: var(--primary-color, #2563eb) !important;
+}
+
+/* Quick action buttons */
+body:not(.dark-mode) .action-btn,
+body.light-mode .action-btn {
+    color: #ffffff !important;
+}
+
+/* Keep each action button's original purpose */
+body:not(.dark-mode) .action-btn.blue,
+body.light-mode .action-btn.blue {
+    background: #2563eb !important;
+}
+
+body:not(.dark-mode) .action-btn.green,
+body.light-mode .action-btn.green {
+    background: #16a34a !important;
+}
+
+body:not(.dark-mode) .action-btn.orange,
+body.light-mode .action-btn.orange {
+    background: #f59e0b !important;
+}
+
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+body.dark-mode .main {
+    background: #111111 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .welcome-card {
+    background: var(--primary-color, #2563eb) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .dashboard-card {
+    background: #1b1b1b !important;
+    color: #ffffff !important;
+    border: 1px solid #444444 !important;
+}
+
+body.dark-mode .dashboard-card h5 {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .dashboard-card h2 {
+    color: var(--primary-color, #3b82f6) !important;
+}
+
+body.dark-mode .recent-bills {
+    background: #1b1b1b !important;
+    color: #ffffff !important;
+    border: 1px solid #444444 !important;
+}
+
+body.dark-mode .recent-bills .section-title h3 {
+    color: var(--primary-color, #3b82f6) !important;
+}
+
+body.dark-mode .recent-bills table {
+    background: #1b1b1b !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .recent-bills thead th {
+    background: var(--primary-color, #3b82f6) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .recent-bills tbody td {
+    background: #242424 !important;
+    color: #ffffff !important;
+    border-color: #444444 !important;
+}
+
+body.dark-mode .recent-bills tbody tr:hover td {
+    background: #303030 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .admin-btn {
+    background: #ffffff !important;
+    color: var(--primary-color, #3b82f6) !important;
+}
+
+
+/* =========================================================
+   THEME COLOR SUPPORT
+   theme.js uses data-theme
+========================================================= */
+
+body[data-theme="blue"] {
+    --primary-color: #2563eb;
+}
+
+body[data-theme="green"] {
+    --primary-color: #16a34a;
+}
+
+body[data-theme="purple"] {
+    --primary-color: #9333ea;
+}
+
+body[data-theme="orange"] {
+    --primary-color: #f97316;
+}
+
+
+/* =========================================================
+   MOBILE SUPPORT
+========================================================= */
+
+@media (max-width: 768px) {
+
+    body:not(.dark-mode) .main,
+    body.light-mode .main {
+        background: #f5f7fb !important;
+    }
+
+    body.dark-mode .main {
+        background: #111111 !important;
+    }
+
+    body:not(.dark-mode) .dashboard-card,
+    body.light-mode .dashboard-card {
+        background: #ffffff !important;
+    }
+
+    body.dark-mode .dashboard-card {
+        background: #1b1b1b !important;
+    }
+
+    body:not(.dark-mode) .recent-bills,
+    body.light-mode .recent-bills {
+        background: #ffffff !important;
+    }
+
+}
+/* =========================================
+   FIX RECENT BILLS BOX BLANK SPACE
+   ========================================= */
+
+.recent-bills {
+    margin-top: 16px !important;
+    padding: 16px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+}
+
+.recent-bills .section-title {
+    margin: 0 0 10px 0 !important;
+    padding: 0 !important;
+}
+
+.recent-bills .section-title h3 {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.recent-bills .table-responsive {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+.recent-bills table {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.recent-bills thead,
+.recent-bills tbody,
+.recent-bills tr {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.recent-bills th,
+.recent-bills td {
+    padding: 14px 16px !important;
+    vertical-align: middle !important;
+}
+
+.recent-bills tbody tr:first-child td {
+    border-top: none !important;
+}
+
+.recent-bills tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Remove Bootstrap table extra spacing */
+.recent-bills .table > :not(caption) > * > * {
+    box-shadow: none !important;
+}
+
+/* Mobile fix */
+@media (max-width: 768px) {
+
+    .recent-bills {
+        margin-top: 12px !important;
+        padding: 12px !important;
+        border-radius: 20px !important;
+    }
+
+    .recent-bills .section-title {
+        margin-bottom: 8px !important;
+    }
+
+    .recent-bills .table-responsive {
+        overflow-x: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .recent-bills table {
+        min-width: 700px !important;
+        margin: 0 !important;
+    }
+
+    .recent-bills th,
+    .recent-bills td {
+        padding: 12px 16px !important;
+        white-space: nowrap !important;
+    }
+}
+/* =====================================================
+   DASHBOARD - REMOVE BLACK ROW MARKINGS IN LIGHT MODE
+   ===================================================== */
+
+body:not(.dark-mode) .recent-bills table,
+body:not(.dark-mode) .recent-bills tbody,
+body:not(.dark-mode) .recent-bills tbody tr,
+body:not(.dark-mode) .recent-bills tbody tr:nth-child(even),
+body:not(.dark-mode) .recent-bills tbody tr:nth-child(odd) {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* Remove Bootstrap table striping */
+body:not(.dark-mode) .recent-bills .table-striped > tbody > tr:nth-of-type(odd) > *,
+body:not(.dark-mode) .recent-bills .table-striped > tbody > tr:nth-of-type(even) > * {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* Remove dark row backgrounds from table cells */
+body:not(.dark-mode) .recent-bills table tbody tr td {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Keep text visible */
+body:not(.dark-mode) .recent-bills table tbody tr td,
+body:not(.dark-mode) .recent-bills table tbody tr td * {
+    color: #1f2937 !important;
+}
+
+/* Remove hover dark effect */
+body:not(.dark-mode) .recent-bills .table-hover > tbody > tr:hover > * {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* Keep status badge yellow */
+body:not(.dark-mode) .recent-bills .badge,
+body:not(.dark-mode) .recent-bills .status-badge {
+    background: #fbbf24 !important;
+    color: #000000 !important;
+}
+/* =========================================
+   DASHBOARD DECORATIVE CIRCLE MOBILE FIX
+========================================= */
+
+.card-box {
+    position: relative !important;
+    overflow: hidden !important;
+    isolation: isolate;
+}
+
+/* Keep card content above the circles */
+.card-box > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* Decorative circles */
+.card-box::before,
+.card-box::after {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    pointer-events: none !important;
+}
+
+/* Mobile adjustment */
+@media (max-width: 768px) {
+
+    .card-box::before,
+    .card-box::after {
+        width: 120px !important;
+        height: 120px !important;
+        right: -45px !important;
+        bottom: -35px !important;
+    }
+
+}
+/* =========================================
+   DASHBOARD CARD CIRCLE MOBILE FIX
+========================================= */
+
+.dashboard-card {
+    position: relative !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+}
+
+/* Keep card content above decorative circles */
+.dashboard-card .card-icon,
+.dashboard-card .card-details {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* Decorative circles stay inside the card */
+.dashboard-card::before,
+.dashboard-card::after {
+    pointer-events: none !important;
+    z-index: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+/* Mobile size and position */
+@media (max-width: 768px) {
+
+    .dashboard-card::before,
+    .dashboard-card::after {
+        width: 100px !important;
+        height: 100px !important;
+        right: -35px !important;
+        bottom: -30px !important;
+    }
+
 }

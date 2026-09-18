@@ -336,13 +336,13 @@ function viewBill(billNo) {
 );
 
     setText(
-    "viewAmountPaid",
+    "viewAmountPaid2",
     formatCurrency(selectedBill.amountPaid)
     );
-
+    
     setText(
-    "viewBalanceDue2",
-    formatCurrency(selectedBill.balanceDue)
+        "viewBalanceDue2",
+        formatCurrency(selectedBill.balanceDue)
     );
 
     setText(

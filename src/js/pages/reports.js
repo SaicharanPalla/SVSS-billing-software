@@ -863,47 +863,80 @@ function loadPaymentChart(reportBills) {
     let card = 0;
     let credit = 0;
 
-   reportBills.forEach(bill => {
+    reportBills.forEach(bill => {
 
-    // Payment chart must show collected amount,
-    // not the full bill amount.
-    const amount = getBillPaid(bill);
+        const paidAmount = Math.max(
+            0,
+            Number(getBillPaid(bill)) || 0
+        );
 
-    switch (
-        String(bill.paymentMode || "")
-            .trim()
-            .toLowerCase()
-    ) {
+        const balanceAmount = Math.max(
+            0,
+            Number(getBillBalance(bill)) || 0
+        );
 
-            case "cash":
-                cash += amount;
-                break;
+        const mode = String(
+            bill.paymentMode ||
+            bill.paymentMethod ||
+            bill.paymentStatus ||
+            ""
+        ).trim().toLowerCase();
 
-            case "upi":
-                upi += amount;
-                break;
+        if (mode === "cash") {
 
-            case "card":
-                card += amount;
-                break;
+            cash += paidAmount;
 
-            default:
-                credit += amount;
-                break;
+        } else if (mode === "upi") {
+
+            upi += paidAmount;
+
+        } else if (mode === "card") {
+
+            card += paidAmount;
+
+        } else if (
+            mode === "credit" ||
+            mode === "due" ||
+            mode === "credit / due" ||
+            mode === "credit/due"
+        ) {
+
+            // Credit chart must show pending balance
+            credit += balanceAmount;
+
+        } else {
+
+            // If payment mode is missing,
+            // use pending balance as Credit
+            if (balanceAmount > 0) {
+                credit += balanceAmount;
+            } else {
+                cash += paidAmount;
+            }
 
         }
 
     });
 
+    console.log("PAYMENT CHART VALUES:", {
+        cash,
+        upi,
+        card,
+        credit
+    });
+
     if (paymentChart) {
-
         paymentChart.destroy();
-
     }
 
-    const ctx = document
-        .getElementById("paymentChart")
-        .getContext("2d");
+    const canvas = document.getElementById("paymentChart");
+
+    if (!canvas) {
+        console.error("paymentChart canvas not found");
+        return;
+    }
+
+    const ctx = canvas.getContext("2d");
 
     paymentChart = new Chart(ctx, {
 
@@ -912,42 +945,30 @@ function loadPaymentChart(reportBills) {
         data: {
 
             labels: [
-
                 "Cash",
-
                 "UPI",
-
                 "Card",
-
                 "Credit"
-
             ],
 
             datasets: [{
 
                 data: [
-
                     cash,
-
                     upi,
-
                     card,
-
                     credit
-
                 ],
 
                 backgroundColor: [
-
                     "#16a34a",
-
                     "#2563eb",
-
                     "#f59e0b",
-
                     "#dc2626"
+                ],
 
-                ]
+                borderColor: "#ffffff",
+                borderWidth: 2
 
             }]
 
@@ -956,14 +977,30 @@ function loadPaymentChart(reportBills) {
         options: {
 
             responsive: true,
-
             maintainAspectRatio: false,
 
             plugins: {
 
                 legend: {
-
                     position: "bottom"
+                },
+
+                tooltip: {
+
+                    callbacks: {
+
+                        label: function(context) {
+
+                            const value =
+                                Number(context.raw || 0);
+
+                            return context.label +
+                                ": " +
+                                formatCurrency(value);
+
+                        }
+
+                    }
 
                 }
 

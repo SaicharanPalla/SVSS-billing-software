@@ -1,0 +1,5 @@
+git status
+git add .
+git commit -m "Update product statistics text size"
+git push origin main
+git push origin master

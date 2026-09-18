@@ -1050,3 +1050,52 @@ h1{
     }
 
 }
+/* =========================================
+   ADD CUSTOMER MODAL - MOBILE FIX
+========================================= */
+
+@media (max-width: 768px) {
+
+    #addCustomerModal {
+        padding: 0 !important;
+        overflow-y: auto !important;
+    }
+
+    #addCustomerModal .modal-dialog {
+        width: calc(100% - 20px) !important;
+        max-width: none !important;
+
+        /* Position from top */
+        margin: 70px auto 15px !important;
+
+        transform: none !important;
+    }
+
+    #addCustomerModal .modal-content {
+        width: 100% !important;
+        max-height: calc(100vh - 85px) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+
+    #addCustomerModal .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    #addCustomerModal .modal-body {
+        max-height: calc(100vh - 210px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 16px !important;
+    }
+
+    #addCustomerModal .modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: white !important;
+    }
+
+}

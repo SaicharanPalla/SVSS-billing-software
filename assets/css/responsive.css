@@ -85,248 +85,6 @@
 }
 
 /* ==========================
-   Mobile (768px and below)
-========================== */
-
-@media (max-width:768px){
-
-    /* Mobile Header */
-
-    .mobile-header{
-
-        display:flex;
-
-        align-items:center;
-        justify-content:flex-start;
-
-        gap:15px;
-
-        position:fixed;
-
-        top:0;
-        left:0;
-
-        width:100%;
-        height:60px;
-
-        background:var(--theme);
-
-        color:#fff;
-
-        padding:0 15px;
-
-        z-index:1100;
-
-    }
-
-    .menu-btn{
-
-        background:none;
-
-        border:none;
-
-        color:#fff;
-
-        font-size:28px;
-
-        cursor:pointer;
-
-    }
-
-    .mobile-logo{
-
-        font-size:22px;
-
-        font-weight:700;
-
-    }
-
-    /* Sidebar */
-
-    .sidebar{
-
-        top:60px;
-
-        left:-230px;
-
-        width:220px;
-
-        height:calc(100vh - 60px);
-
-        overflow-y:auto;
-
-        padding:16px 14px;
-
-        transition:left .3s ease;
-
-    }
-
-    .sidebar.show{
-
-        left:0;
-
-    }
-
-    .logo{
-
-        gap:12px;
-
-        padding-bottom:18px;
-
-        margin-bottom:18px;
-
-    }
-
-    .logo i{
-
-        font-size:34px;
-
-        min-width:34px;
-
-    }
-
-    .logo h2{
-
-        font-size:18px;
-
-    }
-
-    .logo small{
-
-        font-size:11px;
-
-    }
-
-    .sidebar ul li a{
-
-        padding:12px 14px;
-
-        font-size:15px;
-
-    }
-
-    .sidebar-footer a{
-
-        padding:12px 14px;
-
-    }
-
-    /* Main */
-
-    .main{
-
-        margin-left:0 !important;
-
-        width:100% !important;
-
-        padding:80px 15px 20px;
-
-    }
-
-    /* Header */
-
-    .header{
-
-        flex-direction:column;
-
-        align-items:flex-start;
-
-        gap:15px;
-
-    }
-
-    /* Dashboard */
-
-    .dashboard-grid{
-
-        grid-template-columns:1fr;
-
-        gap:15px;
-
-    }
-
-    .quick-actions{
-
-        display:flex;
-
-        flex-direction:column;
-
-        gap:12px;
-
-    }
-
-    .quick-actions button{
-
-        width:100%;
-
-    }
-
-    /* Forms */
-
-    input,
-    select,
-    textarea{
-
-        font-size:16px;
-
-    }
-
-    .input-group{
-        display:flex;
-        flex-direction:column;
-        gap: 10px;
-
-    }
-    .input-group .form-control{
-    width:100%;
-    }
-    
-    .input-group .btn{
-        width:100%;
-        margin-top:0;
-    }
-    #amountPaid,
-    #balanceDue,
-    #paymentStatus{
-        width:100%;
-    }
-    .input-group>.btn{
-
-        width:100%;
-
-        margin-top:10px;
-
-    }
-
-    .d-flex.justify-content-end{
-
-        flex-direction:column;
-
-        gap:12px;
-
-    }
-
-    .d-flex.justify-content-end .btn{
-
-        width:100%;
-
-    }
-
-    .modal-dialog{
-
-        margin:10px;
-
-    }
-
-    .table-responsive{
-
-        overflow-x:auto;
-
-    }
-
-}
-
-/* ==========================
    Small Mobile (480px)
 ========================== */
 
@@ -467,26 +225,6 @@
         padding: 0;
         overflow-x: hidden;
         background: #101010;
-    }
-
-    /* ================= MOBILE HEADER ================= */
-
-    .mobile-header {
-        display: flex !important;
-        width: 100%;
-        height: 76px;
-        margin: 0;
-        padding: 0 20px;
-        align-items: center;
-        gap: 18px;
-        box-sizing: border-box;
-        background: linear-gradient(
-            135deg,
-            #ff6500 0%,
-            #f04400 100%
-        );
-        position: relative;
-        z-index: 2000;
     }
 
     .menu-btn {
@@ -725,34 +463,6 @@
         overflow-x: auto;
     }
 }
-/* REMOVE BLACK SPACE ABOVE MOBILE HEADER */
-
-@media (max-width: 768px) {
-
-    .mobile-header {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-
-        width: 100% !important;
-        height: 76px !important;
-
-        margin: 0 !important;
-        padding: 0 20px !important;
-
-        z-index: 9999 !important;
-    }
-
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .main {
-        margin-top: 76px !important;
-        padding-top: 20px !important;
-    }
-}
 /* =====================================================
    FINAL MOBILE SIDEBAR FIX
    Desktop sidebar will not be affected
@@ -769,24 +479,6 @@
         margin: 0 !important;
         padding: 0 !important;
         overflow-x: hidden !important;
-    }
-
-    /* Mobile header */
-    .mobile-header {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-
-        width: 100% !important;
-        height: 76px !important;
-
-        display: flex !important;
-        align-items: center !important;
-
-        padding: 0 20px !important;
-        margin: 0 !important;
-
-        z-index: 2000 !important;
     }
 
     /* Mobile sidebar */
@@ -1070,6 +762,142 @@
         margin-top: 10px !important;
         margin-bottom: 15px !important;
         padding-top: 15px !important;
+    }
+
+}
+/*=====================================
+   MOBILE HEADER
+===================================== */
+
+@media (max-width: 768px) {
+
+    .mobile-header {
+        display: flex !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 80px !important;
+        align-items: center;
+        gap: 15px;
+        padding: 0 15px;
+        background: var(--theme);
+        color: #fff;
+        z-index: 2000 !important;
+    }
+
+}
+/* =====================================
+   DESKTOP HEADER CONTROL
+===================================== */
+
+@media (min-width: 769px) {
+
+    .mobile-header {
+        display: none !important;
+    }
+
+}
+/* =====================================
+   FIX CONTENT HIDDEN UNDER HAMBURGER
+===================================== */
+
+/* Final mobile page spacing */
+@media (max-width: 992px) {
+    .main {
+        margin: 0 !important;
+        padding: 80px 15px 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
+/* =========================================
+   SMALL MOBILE HEADER / MENU BAR
+========================================= */
+
+@media (max-width: 768px) {
+
+    .mobile-header {
+        height: 60px !important;
+        min-height: 60px !important;
+        padding: 0 16px !important;
+
+        display: flex !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+    }
+
+    .menu-btn {
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        font-size: 28px !important;
+    }
+
+    .mobile-title {
+        font-size: 28px !important;
+        line-height: 1 !important;
+        gap: 8px !important;
+    }
+
+    .mobile-title span {
+        font-size: 28px !important;
+    }
+
+    /* Move page content below the smaller header */
+    .main {
+        padding-top: 75px !important;
+    }
+
+    .sidebar {
+        top: 60px !important;
+        height: calc(100vh - 60px) !important;
+    }
+}
+
+/* Extra-small screens */
+@media (max-width: 480px) {
+
+    .mobile-header {
+        height: 56px !important;
+        min-height: 56px !important;
+        padding: 0 12px !important;
+    }
+
+    .menu-btn {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 25px !important;
+    }
+
+    .mobile-title,
+    .mobile-title span {
+        font-size: 25px !important;
+    }
+
+    .main {
+        padding-top: 70px !important;
+    }
+
+    .sidebar {
+        top: 56px !important;
+        height: calc(100vh - 56px) !important;
+    }
+}
+/* =========================================
+   MOBILE ACTIVE MENU - ALL PAGES
+========================================= */
+
+@media (max-width: 768px) {
+
+    .sidebar ul li.active > a span,
+    .sidebar ul li.active > a i {
+        color: var(--theme) !important;
     }
 
 }
