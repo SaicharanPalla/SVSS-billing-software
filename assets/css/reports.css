@@ -1466,3 +1466,262 @@ body.dark-mode .reports-header p{
     overflow: hidden;
     box-sizing: border-box;
 }
+/* =========================================================
+   SVSS REPORTS PAGE - MOBILE ONLY
+   Desktop / normal ratio will not be affected
+   ========================================================= */
+
+
+/* =========================================================
+   MOBILE SCREEN - 768px AND BELOW
+   ========================================================= */
+
+@media screen and (max-width: 768px) {
+
+    body:has(#salesReportBody) {
+        overflow-x: hidden !important;
+        background: #f4f7fb !important;
+    }
+
+    body:has(#salesReportBody) .main {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 15px !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* All report boxes */
+    body:has(#salesReportBody) .dashboard-card {
+        display: block !important;
+        box-sizing: border-box !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        height: auto !important;
+        min-height: 0 !important;
+
+        margin: 0 0 20px 0 !important;
+        padding: 20px !important;
+
+        border-radius: 22px !important;
+        overflow: hidden !important;
+    }
+
+    /* Box title */
+    body:has(#salesReportBody) .card-title {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+
+        width: 100% !important;
+        min-width: 0 !important;
+
+        margin: 0 0 18px 0 !important;
+        padding: 0 !important;
+
+        font-size: 21px !important;
+        font-weight: 800 !important;
+        line-height: 1.3 !important;
+
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+    }
+
+    body:has(#salesReportBody) .card-title i {
+        flex: 0 0 auto !important;
+        font-size: 23px !important;
+    }
+
+    /* Buttons */
+    body:has(#salesReportBody) .dashboard-card button,
+    body:has(#salesReportBody) .dashboard-card .btn {
+        position: static !important;
+
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+
+        width: auto !important;
+        max-width: 100% !important;
+
+        margin: 0 0 18px 0 !important;
+        padding: 11px 15px !important;
+
+        font-size: 14px !important;
+        line-height: 1.3 !important;
+
+        white-space: normal !important;
+        text-align: center !important;
+    }
+
+    /* Table wrapper */
+    body:has(#salesReportBody) .table-responsive {
+        display: block !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Tables remain scrollable only inside their box */
+    body:has(#salesReportBody) table {
+        width: 100% !important;
+        min-width: 500px !important;
+        margin: 0 !important;
+        table-layout: auto !important;
+    }
+
+    body:has(#salesReportBody) table thead th {
+        white-space: nowrap !important;
+        font-size: 14px !important;
+        padding: 12px 14px !important;
+    }
+
+    body:has(#salesReportBody) table tbody td {
+        white-space: nowrap !important;
+        font-size: 14px !important;
+        padding: 12px 14px !important;
+        vertical-align: middle !important;
+    }
+
+    /* Chart boxes */
+    body:has(#salesReportBody) .chart-card,
+    body:has(#salesReportBody) .chart-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    body:has(#salesReportBody) canvas {
+        display: block !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+
+        height: 250px !important;
+        max-height: 250px !important;
+    }
+
+    /* Bootstrap rows */
+    body:has(#salesReportBody) .row {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Bootstrap columns become one column */
+    body:has(#salesReportBody) .row > [class*="col-"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        flex: 0 0 100% !important;
+
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+
+        margin-bottom: 20px !important;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE - 480px AND BELOW
+   ========================================================= */
+
+@media screen and (max-width: 480px) {
+
+    body:has(#salesReportBody) .main {
+        padding: 10px !important;
+    }
+
+    body:has(#salesReportBody) .dashboard-card {
+        padding: 16px !important;
+        margin-bottom: 18px !important;
+        border-radius: 18px !important;
+    }
+
+    body:has(#salesReportBody) .card-title {
+        font-size: 19px !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+
+    body:has(#salesReportBody) .card-title i {
+        font-size: 21px !important;
+    }
+
+    body:has(#salesReportBody) canvas {
+        height: 220px !important;
+        max-height: 220px !important;
+    }
+
+    body:has(#salesReportBody) table {
+        min-width: 480px !important;
+    }
+
+    body:has(#salesReportBody) table thead th,
+    body:has(#salesReportBody) table tbody td {
+        font-size: 13px !important;
+        padding: 11px 12px !important;
+    }
+}
+/* =========================================================
+   REPORT BOX SPACING REDUCTION ONLY
+   ========================================================= */
+
+body:has(#salesReportBody) .dashboard-card {
+    margin-bottom: 10px !important;
+}
+
+/* Reduce Bootstrap row gaps */
+body:has(#salesReportBody) .row {
+    --bs-gutter-y: 10px !important;
+}
+
+/* Remove extra bottom space from report columns */
+body:has(#salesReportBody) .row > [class*="col-"] {
+    margin-bottom: 10px !important;
+}
+
+/* Reduce spacing between chart/report sections */
+body:has(#salesReportBody) .mb-4 {
+    margin-bottom: 10px !important;
+}
+
+/* Mobile spacing */
+@media screen and (max-width: 768px) {
+
+    body:has(#salesReportBody) .dashboard-card {
+        margin-bottom: 10px !important;
+    }
+
+    body:has(#salesReportBody) .row > [class*="col-"] {
+        margin-bottom: 10px !important;
+    }
+
+    body:has(#salesReportBody) .mb-4 {
+        margin-bottom: 10px !important;
+    }
+}
