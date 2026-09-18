@@ -1,5 +1,116 @@
 // ==========================================
-// SVSS Dashboard
+// SVSS DASHBOARD
+// ==========================================
+
+
+// ==========================================
+// DASHBOARD CURRENCY FORMATTER
+// Example: RS 3,69,180.00
+// ==========================================
+
+function formatDashboardAmount(value) {
+
+    const amount = Number(value) || 0;
+
+    return `Rs.  ${amount.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })}`;
+
+}
+
+
+// ==========================================
+// GET BILL AMOUNT SAFELY
+// ==========================================
+
+function getDashboardBillAmount(bill) {
+
+    if (!bill || typeof bill !== "object") {
+        return 0;
+    }
+
+    const possibleFields = [
+
+        "grandTotal",
+        "grand_total",
+
+        "grandTotalAmount",
+        "grand_total_amount",
+
+        "totalAmount",
+        "total_amount",
+
+        "netAmount",
+        "net_amount",
+
+        "finalAmount",
+        "final_amount",
+
+        "billAmount",
+        "bill_amount",
+
+        "amount",
+        "total",
+
+        "payableAmount",
+        "payable_amount",
+
+        "subTotal",
+        "subtotal",
+        "sub_total"
+
+    ];
+
+    for (const field of possibleFields) {
+
+        if (
+            bill[field] !== undefined &&
+            bill[field] !== null &&
+            bill[field] !== ""
+        ) {
+
+            let value = bill[field];
+
+            if (typeof value === "object") {
+
+                value =
+                    value.amount ??
+                    value.value ??
+                    value.total ??
+                    value.grandTotal ??
+                    0;
+
+            }
+
+            if (typeof value === "string") {
+
+                value = value
+                    .replace(/Rs. /gi, "")
+                    .replace(/Rs. \./gi, "")
+                    .replace(/₹/g, "")
+                    .replace(/,/g, "")
+                    .trim();
+
+            }
+
+            const amount = Number(value);
+
+            if (Number.isFinite(amount)) {
+                return amount;
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+
+// ==========================================
+// PAGE LOAD
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -12,8 +123,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 });
 
+
 // ==========================================
-// Load Dashboard
+// LOAD DASHBOARD
 // ==========================================
 
 async function loadDashboard() {
@@ -26,8 +138,9 @@ async function loadDashboard() {
 
 }
 
+
 // ==========================================
-// Load Logged User
+// LOAD LOGGED USER
 // ==========================================
 
 async function loadLoggedUser() {
@@ -37,9 +150,7 @@ async function loadLoggedUser() {
         const db = await window.api.getDatabase();
 
         if (!db.settings) {
-
             db.settings = {};
-
         }
 
         const username =
@@ -47,7 +158,8 @@ async function loadLoggedUser() {
             db.settings.username ||
             "Admin";
 
-        const userElement = document.getElementById("loggedUser");
+        const userElement =
+            document.getElementById("loggedUser");
 
         if (userElement) {
 
@@ -57,63 +169,106 @@ async function loadLoggedUser() {
 
     } catch (err) {
 
-        console.error("Error loading username:", err);
+        console.error(
+            "Error loading username:",
+            err
+        );
 
     }
 
 }
 
+
 // ==========================================
-// Dashboard Cards
+// DASHBOARD CARDS
 // ==========================================
 
 async function loadCards() {
 
-    document.getElementById("todaySales").innerHTML =
-        formatCurrency(await getTodaySales());
+    const todaySales =
+        await getTodaySales();
 
-    document.getElementById("todayBills").innerHTML =
-        (await getTodayBills()).length;
+    const todaySalesElement =
+        document.getElementById("todaySales");
 
-    document.getElementById("totalCustomers").innerHTML =
+    if (todaySalesElement) {
+
+        todaySalesElement.textContent =
+            formatDashboardAmount(todaySales);
+
+    }
+
+    const todayBills =
+        await getTodayBills();
+
+    const todayBillsElement =
+        document.getElementById("todayBills");
+
+    if (todayBillsElement) {
+
+        todayBillsElement.textContent =
+            todayBills.length;
+
+    }
+
+    const totalCustomers =
         await getCustomerCount();
 
-    document.getElementById("totalProducts").innerHTML =
+    const totalCustomersElement =
+        document.getElementById("totalCustomers");
+
+    if (totalCustomersElement) {
+
+        totalCustomersElement.textContent =
+            totalCustomers;
+
+    }
+
+    const totalProducts =
         await getProductCount();
+
+    const totalProductsElement =
+        document.getElementById("totalProducts");
+
+    if (totalProductsElement) {
+
+        totalProductsElement.textContent =
+            totalProducts;
+
+    }
 
 }
 
-// ==========================================
-// Recent Bills
-// ==========================================
 
 // ==========================================
-// Recent Bills
+// RECENT BILLS
 // ==========================================
 
 async function loadRecentBills() {
 
-    const tbody = document.getElementById("recentBillsBody");
+    const tbody =
+        document.getElementById("recentBillsBody");
 
     if (!tbody) return;
 
     tbody.innerHTML = "";
 
-    const bills = await getRecentBills();
+    const bills =
+        await getRecentBills();
 
     if (!bills || bills.length === 0) {
 
         tbody.innerHTML = `
 
-        <tr>
+            <tr>
 
-            <td colspan="5" class="text-center">
+                <td colspan="5" class="text-center">
 
-                No Bills Found
+                    No Bills Found
 
-            </td>
+                </td>
 
-        </tr>
+            </tr>
 
         `;
 
@@ -123,85 +278,110 @@ async function loadRecentBills() {
 
     bills.forEach(bill => {
 
-        // ==========================================
-        // GET ACTUAL BILL PAYMENT STATUS
-        // ==========================================
+        // ==================================
+        // PAYMENT STATUS
+        // ==================================
 
         const paymentStatus =
             bill.paymentStatus ||
+            bill.payment_status ||
             bill.status ||
             "Pending";
 
-
-        // ==========================================
-        // NORMALIZE STATUS
-        // ==========================================
-
         const status =
-            String(paymentStatus).trim().toLowerCase();
+            String(paymentStatus)
+                .trim()
+                .toLowerCase();
 
 
-        // ==========================================
+        // ==================================
         // STATUS BADGE
-        // ==========================================
+        // ==================================
 
-        let badgeClass = "bg-warning text-dark";
+        let badgeClass =
+            "bg-warning text-dark";
 
-        let badgeText = "Pending";
-
+        let badgeText =
+            "Pending";
 
         if (status === "paid") {
 
-            badgeClass = "bg-success";
+            // Green Paid badge
+            badgeClass =
+                "paid-status";
 
-            badgeText = "Paid";
+            badgeText =
+                "Paid";
 
         }
 
         else if (status === "cancelled") {
 
-            badgeClass = "bg-danger";
+            badgeClass =
+                "bg-danger";
 
-            badgeText = "Cancelled";
-
-        }
-
-        else if (status === "pending") {
-
-            badgeClass = "bg-warning text-dark";
-
-            badgeText = "Pending";
+            badgeText =
+                "Cancelled";
 
         }
 
 
-        // ==========================================
+        // ==================================
+        // BILL AMOUNT
+        // ==================================
+
+        const billAmount =
+            getDashboardBillAmount(bill);
+
+
+        // ==================================
         // DISPLAY BILL
-        // ==========================================
+        // ==================================
 
         tbody.innerHTML += `
 
-        <tr>
+            <tr>
 
-            <td>${bill.billNo || ""}</td>
+                <td>
+                    ${bill.billNo || bill.bill_no || ""}
+                </td>
 
-            <td>${bill.customer || ""}</td>
+                <td>
+                    ${
+                        bill.customer ||
+                        bill.customerName ||
+                        bill.customer_name ||
+                        ""
+                    }
+                </td>
 
-            <td>${bill.grandTotal || "0.00"}</td>
+                <td>
+                    ${formatDashboardAmount(billAmount)}
+                </td>
 
-            <td>${formatDisplayDate(bill.date)}</td>
+                <td>
+                    ${
+                        formatDisplayDate(
+                            bill.date ||
+                            bill.billDate ||
+                            bill.bill_date ||
+                            bill.createdAt ||
+                            bill.created_at
+                        )
+                    }
+                </td>
 
-            <td>
+                <td>
 
-                <span class="badge ${badgeClass}">
+                    <span class="badge ${badgeClass}">
 
-                    ${badgeText}
+                        ${badgeText}
 
-                </span>
+                    </span>
 
-            </td>
+                </td>
 
-        </tr>
+            </tr>
 
         `;
 
@@ -209,15 +389,17 @@ async function loadRecentBills() {
 
 }
 
+
 // ==========================================
-// Live Date & Time
+// LIVE DATE & TIME
 // ==========================================
 
 function startClock() {
 
     function updateClock() {
 
-        const now = new Date();
+        const now =
+            new Date();
 
         const dateOptions = {
 
@@ -236,20 +418,29 @@ function startClock() {
 
         };
 
-        const liveDate = document.getElementById("liveDate");
-        const liveTime = document.getElementById("liveTime");
+        const liveDate =
+            document.getElementById("liveDate");
+
+        const liveTime =
+            document.getElementById("liveTime");
 
         if (liveDate) {
 
             liveDate.innerHTML =
-                now.toLocaleDateString("en-IN", dateOptions);
+                now.toLocaleDateString(
+                    "en-IN",
+                    dateOptions
+                );
 
         }
 
         if (liveTime) {
 
             liveTime.innerHTML =
-                now.toLocaleTimeString("en-IN", timeOptions);
+                now.toLocaleTimeString(
+                    "en-IN",
+                    timeOptions
+                );
 
         }
 
@@ -257,44 +448,62 @@ function startClock() {
 
     updateClock();
 
-    setInterval(updateClock, 1000);
+    setInterval(
+        updateClock,
+        1000
+    );
 
 }
 
 
 // ==========================================
-// Greeting
+// GREETING
 // ==========================================
 
 function setGreeting() {
 
-    const hour = new Date().getHours();
+    const hour =
+        new Date().getHours();
 
-    let greeting = "Good Evening 🌙";
+    let greeting =
+        "Good Evening 🌙";
 
     if (hour < 12) {
 
-        greeting = "Good Morning 👋";
-
-    } else if (hour < 17) {
-
-        greeting = "Good Afternoon ☀️";
+        greeting =
+            "Good Morning 👋";
 
     }
 
-    const greetingEl = document.getElementById("greeting");
+    else if (hour < 17) {
 
-    if (greetingEl) {
+        greeting =
+            "Good Afternoon ☀️";
 
-        greetingEl.innerHTML = greeting;
+    }
+
+    const greetingElement =
+        document.getElementById("greeting");
+
+    if (greetingElement) {
+
+        greetingElement.innerHTML =
+            greeting;
 
     }
 
 }
-// =====================================
-// LOGOUT MODAL
-// =====================================
 
-const logoutModal = document.getElementById("logoutModal");
-const confirmLogout = document.getElementById("confirmLogout");
-const cancelLogout = document.getElementById("cancelLogout");
+
+// ==========================================
+// LOGOUT MODAL
+// ==========================================
+
+const logoutModal =
+    document.getElementById("logoutModal");
+
+const confirmLogout =
+    document.getElementById("confirmLogout");
+
+const cancelLogout =
+    document.getElementById("cancelLogout");

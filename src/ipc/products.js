@@ -228,7 +228,7 @@ productName.addEventListener("change", async () => {
             <td>${product.cgst}%</td>
             <td>${product.sgst}%</td>
             <td>${product.gst}%</td>
-            <td>₹${Number(product.Rate).toFixed(2)}</td>
+            <td>Rs. ${Number(product.Rate).toFixed(2)}</td>
             <td>
                 <button class="btn btn-warning btn-sm editBtn" data-code="${product.code}">
                     <i class="bi bi-pencil"></i>

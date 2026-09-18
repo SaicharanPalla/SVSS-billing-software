@@ -1,0 +1,163 @@
+/* ==========================================
+   SVSS DASHBOARD FIXES
+   ========================================== */
+
+
+/* Today's Sales amount */
+
+#todaySales {
+
+    display: block;
+
+    width: 100%;
+
+    white-space: nowrap;
+
+    font-size: 32px !important;
+
+    line-height: 1.15;
+
+    letter-spacing: -0.5px;
+
+    overflow: visible;
+
+}
+
+
+/* Today's Sales card spacing */
+
+.dashboard-card .card-details {
+
+    min-width: 0;
+
+    flex: 1;
+
+}
+
+.dashboard-card .card-details h5 {
+
+    white-space: nowrap;
+
+}
+
+
+/* Recent bill amount */
+
+.dashboard-bill-amount {
+
+    white-space: nowrap;
+
+    font-weight: 500;
+
+}
+
+
+/* Paid badge must always be green */
+
+.svss-paid-badge {
+
+    background-color: #198754 !important;
+
+    background: #198754 !important;
+
+    color: #ffffff !important;
+
+    border: none !important;
+
+    opacity: 1 !important;
+
+}
+
+
+/* Pending badge */
+
+.svss-pending-badge {
+
+    background-color: #ffbd22 !important;
+
+    background: #ffbd22 !important;
+
+    color: #000000 !important;
+
+    border: none !important;
+
+}
+
+
+/* Cancelled badge */
+
+.svss-cancelled-badge {
+
+    background-color: #dc3545 !important;
+
+    background: #dc3545 !important;
+
+    color: #ffffff !important;
+
+    border: none !important;
+
+}
+/* ==========================================
+   SVSS DASHBOARD FINAL FIXES
+   ========================================== */
+
+/* Remove black top gap */
+html,
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f4f6fa !important;
+}
+
+/* Main dashboard should start from top */
+.main {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    background: #f4f6fa !important;
+}
+
+/* Fix Today's Sales amount alignment */
+#todaySales {
+    display: block !important;
+    white-space: nowrap !important;
+    font-size: 34px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -1px !important;
+}
+
+/* Keep sales card content inside the card */
+.dashboard-card .card-details {
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Paid button must always be green */
+.paid-status {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+/* Pending button */
+.pending-status {
+    background-color: #ffbd20 !important;
+    color: #000000 !important;
+    border: none !important;
+}
+
+/* Cancelled button */
+.cancelled-status {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+/* Paid status button - green */
+#recentBillsBody .paid-status {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+#todaySales {
+    font-size: 22px !important;
+    letter-spacing: -1px !important;
+}

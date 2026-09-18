@@ -3,7 +3,21 @@
 // Customers Module
 // Part 3 - Database + Load + Display
 // ==========================================
+// ==========================================
+// CUSTOMER CURRENCY FORMAT
+// ==========================================
+function formatCurrency(value) {
 
+    const amount = Number(value) || 0;
+
+    return "Rs. " + Number(value || 0).toLocaleString("en-IN", {
+
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+
+    });
+
+}
 document.addEventListener("DOMContentLoaded", async () => {
 
     // ==============================
@@ -84,7 +98,7 @@ db.customers.forEach((customer, dbIndex) => {
     .trim();
     
     const key =
-    customer.name.trim() + "_" + mobile;
+    customer.name.trim().toLowerCase() + "_" + mobile;
 
     customers[key] = {
 
@@ -146,7 +160,6 @@ db.customers.forEach((customer, dbIndex) => {
 // Try to find existing customer by customerId
 // OR by matching customer name and mobile number
 const existingKey = Object.keys(customers).find(k => {
-
     const existingCustomer = customers[k];
 
     const sameCustomerId =
@@ -156,19 +169,48 @@ const existingKey = Object.keys(customers).find(k => {
         String(bill.customerId).trim();
 
     const sameName =
-        String(existingCustomer.name || "").trim().toLowerCase() ===
-        String(name || "").trim().toLowerCase();
+        String(existingCustomer.name || "")
+            .trim()
+            .toLowerCase() ===
+        String(name || "")
+            .trim()
+            .toLowerCase();
+
+    const existingMobile =
+        String(existingCustomer.mobile || "")
+            .trim();
+
+    const billMobile =
+        String(mobile || "")
+            .trim();
 
     const sameMobile =
-        String(existingCustomer.mobile || "").trim() ===
-        String(mobile || "").trim();
+        existingMobile !== "" &&
+        billMobile !== "" &&
+        existingMobile === billMobile;
 
-    const sameNameAndMobile =
-        sameName &&
-        sameMobile &&
-        mobile !== "";
-
-    return sameCustomerId || sameNameAndMobile;
+    /*
+     * Match in this order:
+     * 1. Same customer ID
+     * 2. Same name and same mobile
+     * 3. Same name when mobile/customer ID is missing
+     *
+     * This combines old bills whose customer details
+     * were saved with different or missing mobile values.
+     */
+    return (
+        sameCustomerId ||
+        (sameName && sameMobile) ||
+        (
+            sameName &&
+            (
+                !existingCustomer.customerId ||
+                !bill.customerId ||
+                existingMobile === "" ||
+                billMobile === ""
+            )
+        )
+    );
 });
 
 if (existingKey) {
@@ -335,19 +377,22 @@ if (existingKey) {
 
                 <td class="purchase">
 
-                    ₹${customer.totalPurchase.toFixed(2)}
+                    ${formatCurrency(customer.totalPurchase)}
 
                 </td>
 
                 <td class="paid">
 
-                    ₹${customer.totalPaid.toFixed(2)}
+                    Rs. ${Number(customer.totalPaid || 0).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
 
                 </td>
 
                 <td class="balance">
 
-                    ₹${customer.totalBalance.toFixed(2)}
+                    ${formatCurrency(customer.totalBalance)}
 
                 </td>
 
@@ -785,13 +830,13 @@ showCustomer(customer);
             customer.address;
 
         document.getElementById("customerPurchase").textContent =
-            "Rs. " + customer.totalPurchase.toFixed(2);
+        formatCurrency(customer.totalPurchase);
 
         document.getElementById("customerPaid").textContent =
-            "Rs. " + customer.totalPaid.toFixed(2);
-
+            formatCurrency(customer.totalPaid);
+        
         document.getElementById("customerBalance").textContent =
-            "Rs. " + customer.totalBalance.toFixed(2);
+            formatCurrency(customer.totalBalance);
 
         loadBillHistory(customer);
 

@@ -583,40 +583,51 @@ async function syncToCloud(db) {
             try {
 
                 let localData;
-
-                // =========================================
-                // BUSINESS SETTINGS
-                // =========================================
-
-                if (collection === "businessSettings") {
-
-                    localData =
-                        db.data.settings || {};
-
-                    const recordId = "business-settings";
-
-                    const expectedUpdatedAt =
-                        meta.lastCloudUpdatedAt || null;
-
-                    const saved = await saveToCloud(
-                        collection,
-                        recordId,
-                        localData,
-                        expectedUpdatedAt
-                    );
-
-                    meta.lastCloudUpdatedAt =
-                        saved.updated_at;
-
-                    meta.localUpdatedAt = null;
-                    meta.pendingSync = false;
-
-                    results[collection] = {
-                        success: true
-                    };
-
-                    continue;
-                }
+            
+            // =========================================
+            // BUSINESS SETTINGS
+            // =========================================
+            
+            if (collection === "businessSettings") {
+            
+                localData =
+                    db.data.settings || {};
+            
+                const recordId =
+                    "SVSS_BUSINESS_SETTINGS";
+            
+                /*
+                 * BUSINESS SETTINGS CONFLICT POLICY:
+                 * Local laptop settings are the source of truth.
+                 *
+                 * Passing null disables the old timestamp
+                 * comparison for this intentional local-first upload.
+                 */
+            
+                const saved = await saveToCloud(
+                    collection,
+                    recordId,
+                    localData,
+                    null
+                );
+            
+                meta.lastCloudUpdatedAt =
+                    saved.updated_at;
+            
+                meta.localUpdatedAt = null;
+            
+                meta.pendingSync = false;
+            
+                results[collection] = {
+                    success: true
+                };
+            
+                log.info(
+                    "SVSS Cloud: businessSettings synchronized successfully."
+                );
+            
+                continue;
+            }
 
                 // =========================================
                 // NORMAL COLLECTIONS
@@ -717,17 +728,11 @@ async function syncToCloud(db) {
 // =========================================================
 
 module.exports = {
-
     CLOUD_TABLES,
-
     ensureCloudSession,
-
     saveToCloud,
-
     deleteFromCloud,
-
     deleteRecordsFromCloud,
-
-    getFromCloud
-
+    getFromCloud,
+    syncToCloud
 };

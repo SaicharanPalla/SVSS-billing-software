@@ -1,0 +1,812 @@
+You are continuing development of my existing project called:
+
+SVSS BILLING SOFTWARE
+Shop Name: Sri Venkata Siva Sai Cloth & Matchings
+Subtitle: GST Billing System
+Location: Chirala, Andhra Pradesh
+
+IMPORTANT:
+This is an existing working project. Do not rebuild it from zero.
+Do not randomly change files.
+Do not guess my code.
+First understand my current project structure and existing code.
+If I provide a file, inspect the complete file before suggesting changes.
+
+==================================================
+1. PROJECT PURPOSE
+==================================================
+
+This is a cloth and matching-center billing application.
+
+The application is used for:
+
+- Creating customer bills
+- Adding products to bills
+- Managing products
+- Managing customers
+- Viewing bill history
+- Editing saved bills
+- Printing/reprinting bills
+- Downloading invoice PDFs
+- Storing bills safely
+- Local laptop storage
+- Cloud migration and cloud backup
+- GST calculation
+- Piece-based and meter-based products
+
+The application should be simple, fast, responsive, and usable on desktop and mobile screens.
+
+==================================================
+2. MAIN TECHNOLOGY STACK
+==================================================
+
+Current technology:
+
+- HTML
+- CSS
+- JavaScript
+- Bootstrap 5.3.3
+- Bootstrap Icons
+- Electron
+- Electron Builder
+- Electron Updater
+- LowDB local database
+- Supabase cloud database
+- Browser mode for testing
+- Python HTTP server for local browser testing
+
+Important versions previously used:
+
+- Electron 38/39
+- electron-builder 26.15.3
+- electron-updater 6.8.9
+- LowDB v7
+- @supabase/supabase-js
+
+Project package information:
+
+- Project name: billing_software
+- Product name: SVSS Billing Software
+- App ID: com.svss.billing
+
+==================================================
+3. IMPORTANT PROJECT HISTORY
+==================================================
+
+Originally, the application used LowDB for local storage.
+
+The local database was stored through:
+
+window.api.getDatabase()
+window.api.saveDatabase(db)
+
+The local database structure included:
+
+- products
+- customers
+- bills
+- settings
+
+The application later started migration to Supabase cloud storage.
+
+Supabase work already completed:
+
+- Supabase project created
+- Supabase JavaScript package installed
+- Supabase connection tested
+- Authentication tested
+- User/shop connection tested
+- Shop ID created
+- Products tested in Supabase
+- Customers migration prepared
+- Customer migration SQL generated
+- Cloud development folder created
+- Login + Supabase tested successfully
+- Auth + shop tested successfully
+- Login + shop + products tested successfully
+
+There was previously a duplicate-key error during product insertion.
+Do not insert duplicate test records again without checking existing records.
+
+The project supports local and browser/cloud modes.
+
+Existing code uses logic similar to:
+
+if (window.api.isBrowser) {
+    await window.api.saveBills(bills);
+}
+
+Do not remove this dual-mode behavior.
+
+==================================================
+4. CURRENT PROJECT DEVELOPMENT LOCATION
+==================================================
+
+The cloud development work was done inside a folder similar to:
+
+Documents
+└── SVSS_CLOUD_DEVELOPMENT
+    └── BILLING_SOFTWARE
+
+The project was moved into a src-based structure.
+
+The package main entry was changed previously to:
+
+src/main.js
+
+Important:
+The user has specifically requested not to change main.js casually.
+
+Do not modify main.js unless:
+
+1. The user specifically asks for it, or
+2. The issue cannot be fixed without it, and
+3. You clearly explain why the change is required.
+
+Prefer fixing HTML, CSS, renderer JavaScript, services, or database logic first.
+
+==================================================
+5. IMPORTANT APPLICATION PAGES
+==================================================
+
+The application contains these main pages/modules:
+
+1. Dashboard
+2. Products
+3. Customers
+4. Billing
+5. Bill History
+6. Reports
+7. Settings
+8. Login/Auth
+9. Shop setup/cloud connection
+
+The sidebar contains:
+
+- Dashboard
+- Products
+- Customers
+- Billing
+- Bill History
+- Reports
+- Settings
+- Logout
+
+==================================================
+6. PRODUCT REQUIREMENTS
+==================================================
+
+Product categories include:
+
+- Lining
+- Langalu
+- Nighty
+- Fall
+- Blouse Material
+- Lace
+
+Products may be sold by:
+
+- Piece
+- Meter
+
+Important business rule:
+
+Lining products should automatically use:
+
+unit = "Meter"
+
+Meter quantities must support decimals:
+
+- 1.50
+- 5.25
+- 25.50
+
+Piece quantities should normally use whole numbers:
+
+- 1
+- 5
+- 75
+
+The quantity input should use:
+
+For Meter:
+
+step="0.01"
+
+For Piece:
+
+step="1"
+
+Do not break this unit-based quantity behavior.
+
+Product fields may include:
+
+- Product Name
+- Product Code
+- Category
+- HSN Code
+- Size
+- Purchase Price
+- Selling Price
+- GST
+- CGST
+- SGST
+- Unit
+
+The user does not currently need stock-management functionality.
+Do not add stock features unless requested.
+
+==================================================
+7. BILLING REQUIREMENTS
+==================================================
+
+Billing must support:
+
+- Customer selection
+- Customer name
+- Mobile number
+- Address
+- Bill number
+- Bill Book number
+- Date
+- Payment mode
+- Product code
+- Product name
+- HSN code
+- Unit
+- Quantity
+- Rate
+- CGST
+- SGST
+- GST
+- Discount
+- Grand total
+- Amount paid
+- Balance due
+- Payment status
+- Printing
+- PDF generation
+
+Calculation logic:
+
+basic amount = quantity × rate
+
+CGST amount = basic amount × CGST percentage / 100
+
+SGST amount = basic amount × SGST percentage / 100
+
+Total GST = CGST amount + SGST amount
+
+Grand Total = subtotal + total GST - discount
+
+Balance Due = grand total - amount paid
+
+Balance Due must not be negative.
+
+Payment status:
+
+If balance due <= 0:
+    Paid
+
+Otherwise:
+    Pending
+
+==================================================
+8. BILL HISTORY MODULE
+==================================================
+
+The Bill History page displays:
+
+- S.No
+- Bill No
+- Bill Book No
+- Customer
+- CGST
+- SGST
+- GST Total
+- Grand Total
+- Amount Paid
+- Balance Due
+- Status
+- Actions
+
+Actions include:
+
+- View bill
+- Edit bill
+- Delete bill
+
+The current history.js uses:
+
+let db = {};
+let bills = [];
+let selectedBill = null;
+
+Database loading uses:
+
+db = await window.api.getDatabase();
+bills = db.bills || [];
+
+The bill history uses:
+
+displayBills(bills)
+
+The search supports:
+
+- Bill number
+- Customer name
+- Mobile number
+
+==================================================
+9. IMPORTANT HISTORY.JS DETAILS
+==================================================
+
+The current history.js contains these important functions:
+
+- setText()
+- parseAmount()
+- formatCurrency()
+- refreshDatabase()
+- saveDatabase()
+- loadBills()
+- displayBills()
+- viewBill()
+- renderEditBillItems()
+- calculateEditBillTotals()
+
+The safe text helper is:
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+
+    if (el) {
+        el.textContent = value ?? "";
+    } else {
+        console.error("Element not found:", id);
+    }
+}
+
+Currency formatting is:
+
+function formatCurrency(value) {
+    return "Rs. " + parseAmount(value).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+Important DOM IDs in Bill Details:
+
+- viewBillNo
+- viewBillBookNo
+- viewCustomer
+- viewMobile
+- viewAddress
+- viewDate
+- viewPaymentMode
+- viewAmountPaid
+- viewPaymentStatus
+- viewSubTotal
+- viewCGST
+- viewSGST
+- viewGST
+- viewDiscount
+- viewGrandTotal
+- viewAmountPaid2
+- viewBalanceDue2
+- viewPaymentStatus2
+- viewItems
+- billModal
+
+Important previous bug:
+
+The top Amount Paid used:
+
+viewAmountPaid
+
+The bottom summary table used:
+
+viewAmountPaid2
+
+The bug happened because JavaScript was updating viewAmountPaid twice instead of updating viewAmountPaid2.
+
+The correct code is:
+
+setText(
+    "viewAmountPaid2",
+    formatCurrency(selectedBill.amountPaid)
+);
+
+Do not remove the top assignment:
+
+setText(
+    "viewAmountPaid",
+    formatCurrency(selectedBill.amountPaid)
+);
+
+Both must be updated.
+
+==================================================
+10. CURRENT BILL DETAILS SUMMARY STRUCTURE
+==================================================
+
+The Bill Details modal contains:
+
+Top information:
+
+- Date
+- Payment Mode
+- Amount Paid
+- Status
+
+Product table:
+
+- S.No
+- Code
+- Product
+- Unit
+- Qty
+- Rate
+- CGST
+- SGST
+- GST
+- Total
+
+Bottom summary table:
+
+- Subtotal
+- CGST
+- SGST
+- Total GST
+- Discount
+- Grand Total
+- Amount Paid
+- Balance Due
+- Status
+
+The Amount Paid bottom value must use:
+
+id="viewAmountPaid2"
+
+The Balance Due bottom value must use:
+
+id="viewBalanceDue2"
+
+The bottom Status value must use:
+
+id="viewPaymentStatus2"
+
+==================================================
+11. PDF AND PRINTING
+==================================================
+
+The application has invoice printing and PDF generation.
+
+Previous work included:
+
+- Invoice logo
+- Shop name
+- Shop address
+- GSTIN
+- Bill number
+- Bill Book number
+- Customer details
+- Payment mode
+- Payment status
+- Amount paid
+- Amount in words
+- Authorized signature
+- Dotted line
+- Subtotal
+- GST
+- Discount
+- Grand total
+- Balance due
+- Product table
+- PDF file naming
+- Print layout
+- Border and spacing corrections
+
+Important:
+The PDF was showing Amount Paid correctly even when the Bill Details screen was not showing the bottom Amount Paid value.
+
+When debugging, compare:
+
+1. The screen HTML ID
+2. The JavaScript assignment
+3. The PDF data field
+4. The actual saved bill object
+
+Do not assume a PDF issue is the same as a screen issue.
+
+==================================================
+12. DATA FIELD NAMES
+==================================================
+
+Common bill fields used in the current code include:
+
+- billNo
+- billBookNo
+- customer
+- mobile
+- address
+- date
+- paymentMode
+- amountPaid
+- balanceDue
+- subtotal or subTotal
+- gstTotal
+- discount
+- grandTotal
+- items
+- paymentStatus
+- status
+
+Before changing field names, inspect the actual bill creation code and database records.
+
+Do not blindly replace:
+
+subTotal with subtotal
+
+or:
+
+amountPaid with paidAmount
+
+unless the existing saved data confirms that change.
+
+If a field may have multiple old names, use safe fallback logic only when necessary.
+
+==================================================
+13. RESPONSIVE DESIGN REQUIREMENTS
+==================================================
+
+The application must work properly on:
+
+- Laptop
+- Desktop
+- Tablet
+- Mobile
+
+Previous responsive issues included:
+
+- Table columns not fitting on mobile
+- Bill Details modal content overflowing
+- Product table horizontal scrolling
+- Summary table moving to the right
+- Buttons not fitting
+- Font sizes being too large or too small
+- Sidebar layout problems
+- Modal width and height problems
+
+Do not remove horizontal scrolling from wide product tables.
+For tables with many columns, use:
+
+overflow-x: auto;
+
+Do not use global CSS that breaks other pages.
+
+Always scope CSS to the relevant page or modal.
+
+Example:
+
+#billModal .modal-body { }
+
+instead of changing all:
+
+.modal-body { }
+
+==================================================
+14. CSS FILES
+==================================================
+
+The application has CSS files similar to:
+
+- common.css
+- dashboard.css
+- dashboard-modern.css
+- theme-colors.css
+- responsive.css
+- bill-history.css
+- product CSS
+- billing CSS
+- theme override CSS, if present
+
+The HTML may load multiple CSS files.
+
+Important:
+Check the order of CSS files before suggesting changes.
+
+The last loaded CSS file can override earlier rules.
+
+Avoid duplicate CSS imports.
+If the same stylesheet is loaded twice, identify whether the duplicate should be removed.
+
+Do not use broad rules such as:
+
+* {
+    display: block !important;
+}
+
+Do not use global !important rules unless absolutely necessary.
+
+==================================================
+15. CURRENT COMPLETED WORK
+==================================================
+
+Completed or previously worked-on features include:
+
+- Electron application setup
+- Local LowDB storage
+- Product management
+- Customer management
+- Billing page
+- Bill creation
+- Bill history
+- Bill viewing
+- Bill editing
+- Bill deletion
+- Product unit handling
+- Meter decimal quantity handling
+- GST calculation
+- Discount calculation
+- Amount Paid
+- Balance Due
+- Payment status
+- Bill Book number
+- Invoice printing
+- PDF generation
+- Logo and invoice formatting
+- Responsive layout work
+- Search functionality
+- Supabase project setup
+- Supabase package installation
+- Authentication testing
+- Shop setup
+- Product cloud testing
+- Customer migration preparation
+- Local and cloud storage logic
+- Bill History Amount Paid bottom-field fix
+
+==================================================
+16. IMPORTANT USER PREFERENCES
+==================================================
+
+The user prefers:
+
+- Clear step-by-step instructions
+- Exact file names
+- Exact code replacements
+- Complete updated code when required
+- No unnecessary theory
+- No guessing
+- No changing unrelated files
+- No changing main.js without permission
+- Simple language
+- Direct explanation of the actual bug
+- Preserve existing design and functionality
+- Explain exactly where to paste code
+- Mention what code should be removed and what should remain
+
+Use a friendly style such as “bro”, but keep the technical instructions accurate.
+
+==================================================
+17. HOW TO HANDLE FUTURE BUGS
+==================================================
+
+When I report a bug:
+
+1. Ask for the exact related file only if it is not already available.
+2. Inspect the actual code.
+3. Identify the exact cause.
+4. Tell me whether the issue is:
+   - HTML
+   - CSS
+   - JavaScript
+   - Database
+   - Electron preload/API
+   - Supabase
+   - PDF/print logic
+5. Give the exact lines or block to replace.
+6. Do not invent IDs, classes, or function names.
+7. Do not change unrelated code.
+8. Preserve existing working features.
+9. Explain how to test the fix.
+10. If the issue involves saved data, check the real data field names first.
+
+When giving a fix, use this format:
+
+- Problem
+- Exact cause
+- File to edit
+- Find this code
+- Replace with this code
+- What not to change
+- Testing steps
+
+==================================================
+18. CLOUD MIGRATION CONTINUATION
+==================================================
+
+The next development work may involve completing or improving:
+
+- Supabase database integration
+- Authentication
+- Shop-based data separation
+- Products cloud sync
+- Customers cloud sync
+- Bills cloud sync
+- Settings cloud sync
+- Offline/local fallback
+- Duplicate prevention
+- Data backup
+- Restore functionality
+- Migration validation
+- Row Level Security
+- User/shop relationship
+- Cloud error handling
+- Loading indicators
+- Sync status
+- Backup/export options
+
+Before changing Supabase code, inspect:
+
+- supabase.js
+- productService.js
+- customer service files
+- bill service files
+- authentication code
+- shop setup code
+- SQL table structure
+- Row Level Security policies
+- current database schema
+
+Do not create a new schema without checking the existing Supabase tables.
+
+==================================================
+19. DATA SAFETY REQUIREMENTS
+==================================================
+
+This application contains important customer and bill records.
+
+Never:
+
+- Delete all bills during testing
+- Reset the database without confirmation
+- Replace production data with test data
+- Run destructive SQL without warning
+- Change primary keys casually
+- Remove old records
+- Overwrite cloud data blindly
+
+Before migration or database changes:
+
+- Take a backup
+- Export existing bills
+- Export customers
+- Export products
+- Verify record counts
+- Test with sample data
+- Check duplicate records
+- Confirm the final data
+
+The user previously experienced lost bills, so data safety is a major priority.
+
+==================================================
+20. FIRST ACTION IN A NEW CHAT
+==================================================
+
+When I paste this prompt, first reply with:
+
+1. A short understanding of the project
+2. The current architecture you understood
+3. The files you need to inspect for the next task
+4. A statement that you will not change main.js or unrelated files without permission
+
+Then wait for me to provide the next task or code.
+
+Do not immediately rewrite the whole application.
+
+==================================================
+END OF PROJECT CONTEXT
+==================================================

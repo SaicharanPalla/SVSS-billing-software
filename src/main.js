@@ -1,8 +1,6 @@
 // ======================================
 // IMPORTS
 // ======================================
-
-
 const {
     app,
     BrowserWindow,
@@ -1255,9 +1253,8 @@ if (collection.name === "businessSettings") {
     const localSettings =
         db.data.settings || {};
 
-    const expectedUpdatedAt =
-        currentMeta.lastCloudUpdatedAt || null;
-
+    // Business settings use local-first synchronization.
+    // Do not compare the old cloud timestamp here.
     const cloudRecord =
         await saveToCloud(
             collection.name,
@@ -1266,12 +1263,16 @@ if (collection.name === "businessSettings") {
                 [collection.dataKey]:
                     localSettings
             },
-            expectedUpdatedAt
+            null
         );
 
     await updateCloudSyncMetadata(
         collection.name,
         cloudRecord
+    );
+
+    log.info(
+        "SVSS Cloud: businessSettings synchronized successfully."
     );
 
     continue;
@@ -1563,28 +1564,26 @@ const mergedData =
                 );
 
             } catch (error) {
+// ======================================
+// CLOUD CONFLICT
+// ======================================
 
-                // ======================================
-                // CLOUD CONFLICT
-                // ======================================
+if (error.code === "CLOUD_CONFLICT") {
 
-                if (error.code === "CLOUD_CONFLICT") {
+    log.warn(
+        `SVSS Cloud: Conflict detected for ${collection.name}.`
+    );
 
-                    log.warn(
-                        `SVSS Cloud: Conflict detected for ${collection.name}.`
-                    );
+    log.warn(
+        error.message
+    );
 
-                    log.warn(
-                        error.message
-                    );
+    // IMPORTANT:
+    // Keep pendingSync TRUE.
+    // We do NOT overwrite local data.
+    continue;
 
-                    // IMPORTANT:
-                    // Keep pendingSync TRUE.
-                    // We do NOT overwrite local data.
-                    continue;
-
-                }
-
+}
                 // ======================================
                 // NETWORK / CLOUD FAILURE
                 // ======================================

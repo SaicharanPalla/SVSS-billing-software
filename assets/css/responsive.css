@@ -901,3 +901,428 @@
     }
 
 }
+/* ==========================================
+   SVSS DASHBOARD RESPONSIVE CSS
+   Works with your dashboard.html classes
+   ========================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+body {
+    min-width: 0;
+}
+
+/* ==========================================
+   MOBILE HEADER
+   ========================================== */
+
+.mobile-header {
+    display: none;
+}
+
+/* ==========================================
+   DESKTOP MAIN AREA
+   ========================================== */
+
+.main {
+    min-width: 0;
+}
+
+/* ==========================================
+   MOBILE SCREEN
+   ========================================== */
+
+@media screen and (max-width: 768px) {
+
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Mobile header */
+    .mobile-header {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 72px;
+        z-index: 2000;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 18px;
+        padding: 0 18px;
+        background: #ff5b00;
+        color: #ffffff;
+    }
+
+    .menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #ffffff;
+        font-size: 34px;
+        cursor: pointer;
+    }
+
+    .mobile-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    /* Sidebar hidden by default on mobile */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -290px;
+        width: 270px;
+        height: 100vh;
+        z-index: 3000;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+    }
+
+    /* Sidebar opens through menu button */
+    .sidebar.show {
+        left: 0;
+    }
+
+    /* Main content */
+    .main {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-left: 0 !important;
+        padding: 88px 14px 24px;
+        overflow-x: hidden;
+    }
+
+    /* Welcome card */
+    .welcome-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: 390px;
+        padding: 28px 22px;
+        margin: 0 0 22px;
+        border-radius: 28px;
+        overflow: hidden;
+    }
+
+    .welcome-left {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .welcome-left h2,
+    #greeting {
+        font-size: 32px;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        overflow-wrap: anywhere;
+    }
+
+    .welcome-left p {
+        font-size: 18px;
+        line-height: 1.5;
+        margin-bottom: 28px;
+    }
+
+    .welcome-bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        width: 100%;
+    }
+
+    .left-content,
+    .right-content {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .admin-btn {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    #loggedUser {
+        overflow-wrap: anywhere;
+    }
+
+    #liveDate {
+        font-size: 23px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    #liveTime {
+        font-size: 17px;
+    }
+
+    /* ==========================================
+       DASHBOARD CARDS
+       ========================================== */
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        gap: 16px;
+        margin: 0;
+    }
+
+    .dashboard-card {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 136px;
+        padding: 20px;
+        margin: 0;
+        border-radius: 22px;
+        overflow: hidden;
+    }
+
+    .card-icon {
+        flex: 0 0 82px;
+        width: 82px;
+        height: 82px;
+        margin-right: 18px;
+    }
+
+    .card-details {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .card-details h5 {
+        font-size: 17px;
+        line-height: 1.3;
+        margin-bottom: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .card-details h2 {
+        max-width: 100%;
+        font-size: 29px;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    /* ==========================================
+       QUICK ACTIONS
+       ========================================== */
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 20px;
+    }
+
+    .action-btn {
+        width: 100%;
+        min-height: 52px;
+    }
+
+    /* ==========================================
+       RECENT BILLS
+       ========================================== */
+
+    .recent-bills {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-top: 22px;
+        overflow: hidden;
+    }
+
+    .section-title {
+        width: 100%;
+    }
+
+    .section-title h3 {
+        font-size: 22px;
+    }
+
+    .table-responsive {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .recent-bills table {
+        min-width: 650px;
+        margin-bottom: 0;
+    }
+
+}
+
+
+/* ==========================================
+   SMALL MOBILE DEVICES
+   ========================================== */
+
+@media screen and (max-width: 480px) {
+
+    .mobile-header {
+        height: 64px;
+        padding: 0 12px;
+        gap: 12px;
+    }
+
+    .menu-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 30px;
+    }
+
+    .mobile-title {
+        font-size: 27px;
+    }
+
+    .main {
+        padding: 78px 10px 20px;
+    }
+
+    .welcome-card {
+        min-height: 350px;
+        padding: 24px 18px;
+        border-radius: 24px;
+    }
+
+    .welcome-left h2,
+    #greeting {
+        font-size: 27px;
+    }
+
+    .welcome-left p {
+        font-size: 16px;
+    }
+
+    #liveDate {
+        font-size: 20px;
+    }
+
+    #liveTime {
+        font-size: 16px;
+    }
+
+    .dashboard-card {
+        min-height: 120px;
+        padding: 16px;
+    }
+
+    .card-icon {
+        flex-basis: 64px;
+        width: 64px;
+        height: 64px;
+        margin-right: 13px;
+    }
+
+    .card-details h5 {
+        font-size: 15px;
+    }
+
+    .card-details h2 {
+        font-size: 25px;
+    }
+
+}
+/* ==========================================
+   FINAL FIX - HEADER OVERLAPPING DASHBOARD
+   ========================================== */
+
+@media screen and (max-width: 1100px) {
+
+    /* Header should take normal space */
+    .mobile-header {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
+        height: 72px !important;
+        z-index: 2000 !important;
+    }
+
+    /* Remove extra top space from main */
+    .main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        padding: 16px 14px 25px !important;
+    }
+
+    /* Keep welcome card fully visible */
+    .welcome-card {
+        position: relative !important;
+        top: auto !important;
+        margin-top: 0 !important;
+        transform: none !important;
+    }
+}
+
+@media screen and (max-width: 500px) {
+
+    .mobile-header {
+        height: 64px !important;
+    }
+
+    .main {
+        padding: 14px 10px 20px !important;
+    }
+}
+/* MOVE DASHBOARD CONTENT DOWN */
+
+@media screen and (max-width: 1100px) {
+
+    .welcome-card {
+        margin-top: 45px !important;
+    }
+
+}
+/* NORMAL DESKTOP */
+
+@media screen and (min-width: 1101px) {
+
+    .welcome-card {
+        margin-top: 45px !important;
+    }
+
+}
