@@ -852,9 +852,9 @@ function loadSalesChart(reportBills) {
 
 }
 
-// ----------------------------
+// ===========================================
 // PAYMENT CHART
-// ----------------------------
+// ===========================================
 
 function loadPaymentChart(reportBills) {
 
@@ -878,45 +878,47 @@ function loadPaymentChart(reportBills) {
         const mode = String(
             bill.paymentMode ||
             bill.paymentMethod ||
-            bill.paymentStatus ||
             ""
         ).trim().toLowerCase();
 
-        if (mode === "cash") {
-
-            cash += paidAmount;
-
-        } else if (mode === "upi") {
-
-            upi += paidAmount;
-
-        } else if (mode === "card") {
-
-            card += paidAmount;
-
-        } else if (
-            mode === "credit" ||
-            mode === "due" ||
-            mode === "credit / due" ||
-            mode === "credit/due"
-        ) {
-
-            // Credit chart must show pending balance
-            credit += balanceAmount;
-
-        } else {
-
-            // If payment mode is missing,
-            // use pending balance as Credit
-            if (balanceAmount > 0) {
-                credit += balanceAmount;
-            } else {
+        // =================================
+        // PAYMENT METHOD
+        // ONLY FULLY PAID BILLS
+        // =================================
+        
+        if (balanceAmount <= 0) {
+        
+            if (mode === "cash") {
+        
                 cash += paidAmount;
+        
+            } else if (mode === "upi") {
+        
+                upi += paidAmount;
+        
+            } else if (mode === "card") {
+        
+                card += paidAmount;
+        
             }
-
+        
         }
 
+
+        // =================================
+        // CREDIT / PENDING
+        // =================================
+        // IMPORTANT:
+        // Credit must ALWAYS equal the
+        // outstanding balance of the bill.
+        //
+        // Do NOT depend on paymentMode here.
+        // =================================
+
+        credit += balanceAmount;
+
     });
+
 
     console.log("PAYMENT CHART VALUES:", {
         cash,
@@ -925,18 +927,34 @@ function loadPaymentChart(reportBills) {
         credit
     });
 
+
+    // =================================
+    // DESTROY OLD CHART
+    // =================================
+
     if (paymentChart) {
         paymentChart.destroy();
     }
 
-    const canvas = document.getElementById("paymentChart");
+
+    const canvas =
+        document.getElementById("paymentChart");
 
     if (!canvas) {
-        console.error("paymentChart canvas not found");
+        console.error(
+            "paymentChart canvas not found"
+        );
         return;
     }
 
-    const ctx = canvas.getContext("2d");
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    // =================================
+    // CREATE CHART
+    // =================================
 
     paymentChart = new Chart(ctx, {
 
@@ -968,15 +986,18 @@ function loadPaymentChart(reportBills) {
                 ],
 
                 borderColor: "#ffffff",
+
                 borderWidth: 2
 
             }]
 
         },
 
+
         options: {
 
             responsive: true,
+
             maintainAspectRatio: false,
 
             plugins: {
@@ -992,7 +1013,9 @@ function loadPaymentChart(reportBills) {
                         label: function(context) {
 
                             const value =
-                                Number(context.raw || 0);
+                                Number(
+                                    context.raw || 0
+                                );
 
                             return context.label +
                                 ": " +
@@ -1171,12 +1194,12 @@ Object.keys(salesMap)
 
 const totalBillsElement =
     document.getElementById(
-        "salesReportTotalBills"
+        "salesTotalBills"
     );
 
 const totalAmountElement =
     document.getElementById(
-        "salesReportTotalAmount"
+        "salesTotalAmount"
     );
 
 
@@ -1276,90 +1299,283 @@ if (totalAmountElement) {
 function loadCreditStatement(reportBills) {
 
     const body =
-        document.getElementById("creditStatementBody");
+        document.getElementById(
+            "creditStatementBody"
+        );
 
     if (!body) return;
 
     body.innerHTML = "";
 
+
     const customerMap = {};
+
+
+    let totalCreditBills = 0;
+    let totalCreditPurchase = 0;
+    let totalCreditPaid = 0;
+    let totalCreditBalance = 0;
+
 
     reportBills.forEach(bill => {
 
-        const total = getBillTotal(bill);
-        const paid = getBillPaid(bill);
-        const balance = getBillBalance(bill);
+        const total =
+            getBillTotal(bill);
 
-        // Show only customers who still have balance
-        if (balance <= 0) return;
+        const paid =
+            getBillPaid(bill);
 
-        const customer =
-            bill.customer || "Walk-in Customer";
+        const balance =
+            getBillBalance(bill);
 
-        if (!customerMap[customer]) {
-            customerMap[customer] = {
-                bills: 0,
-                purchase: 0,
-                paid: 0,
-                balance: 0
-            };
+
+        // Only outstanding bills
+        if (balance <= 0) {
+            return;
         }
 
+
+        const customer =
+            bill.customer ||
+            "Walk-in Customer";
+
+
+        if (!customerMap[customer]) {
+
+            customerMap[customer] = {
+
+                bills: 0,
+
+                purchase: 0,
+
+                paid: 0,
+
+                balance: 0
+
+            };
+
+        }
+
+
         customerMap[customer].bills += 1;
-        customerMap[customer].purchase += total;
-        customerMap[customer].paid += paid;
-        customerMap[customer].balance += balance;
+
+        customerMap[customer].purchase +=
+            total;
+
+        customerMap[customer].paid +=
+            paid;
+
+        customerMap[customer].balance +=
+            balance;
+
+
+        // TOTALS
+
+        totalCreditBills += 1;
+
+        totalCreditPurchase +=
+            total;
+
+        totalCreditPaid +=
+            paid;
+
+        totalCreditBalance +=
+            balance;
+
     });
+
 
     const customers =
         Object.entries(customerMap)
-            .sort((a, b) =>
-                b[1].balance - a[1].balance
+            .sort(
+                (a, b) =>
+                    b[1].balance -
+                    a[1].balance
             );
 
+
     if (customers.length === 0) {
+
         body.innerHTML = `
             <tr>
-                <td colspan="6"
+
+                <td
+                    colspan="6"
                     class="text-center text-muted py-4">
+
                     No Credit Customers
+
                 </td>
+
             </tr>
         `;
+
+
+        updateCreditTotals(
+            0,
+            0,
+            0,
+            0
+        );
+
         return;
+
     }
 
-    customers.forEach(([name, data], index) => {
 
-        const row = document.createElement("tr");
+    customers.forEach(
+        ([name, data], index) => {
 
-        row.innerHTML = `
-            <td>${index + 1}</td>
+            const row =
+                document.createElement("tr");
 
-            <td>
-                <strong>${name}</strong>
-            </td>
 
-            <td>${data.bills}</td>
+            row.innerHTML = `
 
-            <td>
-                ${formatCurrency(data.purchase)}
-            </td>
+                <td>
+                    ${index + 1}
+                </td>
 
-            <td>
-                ${formatCurrency(data.paid)}
-            </td>
+                <td>
+                    <strong>
+                        ${name}
+                    </strong>
+                </td>
 
-            <td class="text-danger fw-bold">
-                ${formatCurrency(data.balance)}
-            </td>
-        `;
+                <td>
+                    ${data.bills}
+                </td>
 
-        body.appendChild(row);
-    });
+                <td>
+                    ${formatCurrency(
+                        data.purchase
+                    )}
+                </td>
+
+                <td>
+                    ${formatCurrency(
+                        data.paid
+                    )}
+                </td>
+
+                <td
+                    class="text-danger fw-bold">
+
+                    ${formatCurrency(
+                        data.balance
+                    )}
+
+                </td>
+
+            `;
+
+
+            body.appendChild(row);
+
+        }
+    );
+
+
+    // UPDATE CREDIT FOOTER
+
+    updateCreditTotals(
+
+        totalCreditBills,
+
+        totalCreditPurchase,
+
+        totalCreditPaid,
+
+        totalCreditBalance
+
+    );
+
+
+    console.log(
+        "CREDIT STATEMENT TOTAL:",
+        {
+            bills:
+                totalCreditBills,
+
+            purchase:
+                totalCreditPurchase,
+
+            paid:
+                totalCreditPaid,
+
+            balance:
+                totalCreditBalance
+        }
+    );
+
+}
+
+// ===========================================
+// UPDATE CREDIT TOTAL FOOTER
+// ===========================================
+
+function updateCreditTotals(
+    bills,
+    purchase,
+    paid,
+    balance
+) {
+
+    const billsElement =
+        document.getElementById(
+            "creditTotalBills"
+        );
+
+    const purchaseElement =
+        document.getElementById(
+            "creditTotalPurchase"
+        );
+
+    const paidElement =
+        document.getElementById(
+            "creditTotalPaid"
+        );
+
+    const balanceElement =
+        document.getElementById(
+            "creditTotalBalance"
+        );
+
+
+    if (billsElement) {
+
+        billsElement.textContent =
+            bills;
+
+    }
+
+
+    if (purchaseElement) {
+
+        purchaseElement.textContent =
+            formatCurrency(purchase);
+
+    }
+
+
+    if (paidElement) {
+
+        paidElement.textContent =
+            formatCurrency(paid);
+
+    }
+
+
+    if (balanceElement) {
+
+        balanceElement.textContent =
+            formatCurrency(balance);
+
+    }
+
 }
 // ===========================================
-// PAID BILL STATEMENT
+// PAID BILLS STATEMENT
 // ===========================================
 
 function loadPaidStatement(reportBills) {
@@ -1377,16 +1593,19 @@ function loadPaidStatement(reportBills) {
     const paidBills =
         reportBills.filter(
             bill =>
-                parseAmount(
-                    bill.balanceDue
-                ) <= 0
+                getBillBalance(bill) <= 0
         );
+
+
+    let totalPaidAmount = 0;
+
+    const totalPaidBills =
+        paidBills.length;
 
 
     if (paidBills.length === 0) {
 
         body.innerHTML = `
-
             <tr>
 
                 <td
@@ -1398,8 +1617,13 @@ function loadPaidStatement(reportBills) {
                 </td>
 
             </tr>
-
         `;
+
+
+        updatePaidStatementTotals(
+            0,
+            0
+        );
 
         return;
 
@@ -1408,6 +1632,14 @@ function loadPaidStatement(reportBills) {
 
     paidBills.forEach(
         (bill, index) => {
+
+            const amount =
+                getBillTotal(bill);
+
+
+            totalPaidAmount +=
+                amount;
+
 
             const row =
                 document.createElement("tr");
@@ -1421,7 +1653,7 @@ function loadPaidStatement(reportBills) {
 
                 <td>
                     <strong>
-                        ${bill.billNo}
+                        ${bill.billNo || "-"}
                     </strong>
                 </td>
 
@@ -1447,12 +1679,11 @@ function loadPaidStatement(reportBills) {
 
                 </td>
 
-                <td class="text-success fw-bold">
+                <td
+                    class="text-success fw-bold">
 
                     ${formatCurrency(
-                        parseAmount(
-                            bill.grandTotal
-                        )
+                        amount
                     )}
 
                 </td>
@@ -1465,7 +1696,50 @@ function loadPaidStatement(reportBills) {
         }
     );
 
+
+    updatePaidStatementTotals(
+        totalPaidBills,
+        totalPaidAmount
+    );
+
+}
+
+// ===========================================
+// UPDATE PAID STATEMENT TOTAL
+// ===========================================
+
+function updatePaidStatementTotals(
+    bills,
+    amount
+) {
+
+    const billsElement =
+        document.getElementById(
+            "paidTotalBills"
+        );
+
+    const amountElement =
+        document.getElementById(
+            "paidTotalAmount"
+        );
+
+
+    if (billsElement) {
+
+        billsElement.textContent =
+            `${bills} Bills`;
+
     }
+
+
+    if (amountElement) {
+
+        amountElement.textContent =
+            formatCurrency(amount);
+
+    }
+
+}
     // ===========================================
     // PART 6 STARTS HERE
     // ===========================================

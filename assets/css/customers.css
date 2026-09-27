@@ -1099,3 +1099,1046 @@ h1{
     }
 
 }
+/* =========================================================
+   SVSS - RECEIVE PAYMENT MODAL
+   CONCEPT 4
+========================================================= */
+
+/* =========================
+   MODAL SIZE
+========================= */
+
+#paymentModal .payment-dialog {
+
+    max-width: 455px;
+
+    margin: 1.75rem auto;
+
+}
+
+
+/* =========================
+   MAIN MODAL
+========================= */
+
+#paymentModal .payment-modal {
+
+    border: none;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.22);
+
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+#paymentModal .payment-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 18px 22px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #eeeeee;
+
+}
+
+
+/* TITLE AREA */
+
+#paymentModal .payment-title-area {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+}
+
+
+#paymentModal .payment-title-icon {
+
+    width: 46px;
+
+    height: 46px;
+
+    border-radius: 13px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #ff6a00;
+
+    color: #ffffff;
+
+    font-size: 21px;
+
+    box-shadow:
+        0 7px 18px rgba(255, 106, 0, 0.22);
+
+}
+
+
+#paymentModal .payment-title-area h5 {
+
+    margin: 0;
+
+    color: #17345f;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+
+}
+
+
+#paymentModal .payment-title-area span {
+
+    display: block;
+
+    margin-top: 3px;
+
+    color: #7b8798;
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+}
+
+
+/* CLOSE ICON */
+
+#paymentModal .payment-close {
+
+    width: 36px;
+
+    height: 36px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #738095;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 17px;
+
+    border-radius: 50%;
+
+    transition: .2s ease;
+
+}
+
+
+#paymentModal .payment-close:hover {
+
+    background: #f1f4f8;
+
+    color: #26384f;
+
+}
+
+
+/* =========================
+   BODY
+========================= */
+
+#paymentModal .payment-body {
+
+    padding: 20px 22px 22px;
+
+    background: #ffffff;
+
+}
+
+
+/* =========================
+   CUSTOMER CARD
+========================= */
+
+#paymentModal .payment-customer-card {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 15px 16px;
+
+    border-radius: 13px;
+
+    background: #eef7ff;
+
+    border: 1px solid #dcecf9;
+
+}
+
+
+/* CUSTOMER SIDE */
+
+#paymentModal .payment-customer-info {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    min-width: 0;
+
+}
+
+
+#paymentModal .payment-avatar {
+
+    width: 40px;
+
+    height: 40px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #d8ebff;
+
+    color: #1769aa;
+
+    font-size: 19px;
+
+}
+
+
+#paymentModal .payment-customer-info small,
+#paymentModal .payment-balance-info small {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #52647a;
+
+    font-size: 11px;
+
+    font-weight: 500;
+
+}
+
+
+#paymentModal .payment-customer-info strong {
+
+    display: block;
+
+    color: #16345b;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+}
+
+
+/* DIVIDER */
+
+#paymentModal .payment-divider {
+
+    width: 1px;
+
+    height: 40px;
+
+    background: #cbdceb;
+
+}
+
+
+/* BALANCE */
+
+#paymentModal .payment-balance-info {
+
+    text-align: right;
+
+}
+
+
+#paymentModal .payment-balance-info strong {
+
+    display: block;
+
+    color: #ff4b1f;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================
+   FORM FIELD
+========================= */
+
+#paymentModal .payment-field {
+
+    margin-top: 17px;
+
+}
+
+
+#paymentModal .payment-field label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #18263a !important;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+#paymentModal .payment-field label span {
+
+    color: #8a96a6;
+
+    font-weight: 400;
+
+}
+
+
+/* =========================
+   INPUT WRAPPER
+========================= */
+
+#paymentModal .payment-input {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 46px;
+
+    border: 1px solid #d5dde7;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    transition: .2s ease;
+
+}
+
+
+#paymentModal .payment-input:focus-within {
+
+    border-color: #ff6a00;
+
+    box-shadow:
+        0 0 0 3px rgba(255, 106, 0, 0.10);
+
+}
+
+
+/* =========================
+   NORMAL INPUTS
+========================= */
+
+#paymentModal .payment-input .form-control,
+#paymentModal .payment-input .form-select {
+
+    height: 44px;
+
+    border: none !important;
+
+    outline: none !important;
+
+    box-shadow: none !important;
+
+    background: transparent !important;
+
+    color: #172b46 !important;
+
+    font-size: 14px;
+
+}
+
+
+#paymentModal .payment-input .form-control::placeholder {
+
+    color: #9aa6b5 !important;
+
+}
+
+
+/* =========================
+   PAYMENT AMOUNT
+========================= */
+
+#paymentModal .payment-amount-input {
+
+    border-color: #b9d7fa;
+
+    background: #f7fbff;
+
+}
+
+
+#paymentModal .payment-amount-input .form-control {
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+}
+
+
+#paymentModal .rupee-icon {
+
+    width: 44px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #174f88;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    flex-shrink: 0;
+
+}
+
+
+/* =========================
+   TWO COLUMN SECTION
+========================= */
+
+#paymentModal .payment-two-column {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 14px;
+
+}
+
+
+/* =========================
+   PAYMENT MODE
+========================= */
+
+#paymentModal .payment-input > i {
+
+    margin-left: 13px;
+
+    color: #53657b;
+
+    font-size: 15px;
+
+    flex-shrink: 0;
+
+}
+
+
+#paymentModal .payment-input .form-select {
+
+    appearance: none;
+
+    -webkit-appearance: none;
+
+    padding-left: 10px;
+
+    padding-right: 32px;
+
+}
+
+
+#paymentModal .select-arrow {
+
+    position: absolute;
+
+    right: 12px;
+
+    margin: 0 !important;
+
+    pointer-events: none;
+
+    font-size: 12px !important;
+
+    color: #66758a !important;
+
+}
+
+
+/* =========================
+   REMARKS
+========================= */
+
+#paymentModal .remarks-input {
+
+    min-height: 46px;
+
+    align-items: flex-start;
+
+}
+
+
+#paymentModal .remarks-input > i {
+
+    margin-top: 14px;
+
+}
+
+
+#paymentModal .remarks-input textarea {
+
+    height: 72px !important;
+
+    min-height: 72px !important;
+
+    resize: none;
+
+    padding-top: 12px;
+
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+#paymentModal .payment-footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 14px 22px;
+
+    background: #fafbfc;
+
+    border-top: 1px solid #e8edf2;
+
+}
+
+
+/* CLOSE BUTTON */
+
+#paymentModal .payment-close-btn {
+
+    height: 42px;
+
+    min-width: 105px;
+
+    padding: 0 18px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #dce3eb;
+
+    color: #24405f;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    transition: .2s ease;
+
+}
+
+
+#paymentModal .payment-close-btn:hover {
+
+    background: #cbd4df;
+
+}
+
+
+/* SAVE BUTTON */
+
+#paymentModal .payment-save-btn {
+
+    height: 42px;
+
+    min-width: 170px;
+
+    padding: 0 20px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #079447;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    transition: .2s ease;
+
+}
+
+
+#paymentModal .payment-save-btn:hover {
+
+    background: #067b3b;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 16px rgba(7, 148, 71, .20);
+
+}
+
+
+#paymentModal .payment-save-btn:active {
+
+    transform: translateY(0);
+
+}
+
+
+/* =========================
+   MODAL ANIMATION
+========================= */
+
+#paymentModal .payment-modal {
+
+    animation: svssPaymentPopup .22s ease;
+
+}
+
+
+@keyframes svssPaymentPopup {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(10px) scale(.98);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0) scale(1);
+
+    }
+
+}
+
+
+/* =========================
+   BACKDROP
+========================= */
+
+#paymentModal.show {
+
+    backdrop-filter: blur(3px);
+
+}
+
+
+#paymentModal.show::before {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(8, 18, 32, .18);
+
+    pointer-events: none;
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 576px) {
+
+    #paymentModal .payment-dialog {
+
+        margin: 10px;
+
+        max-width: none;
+
+    }
+
+
+    #paymentModal .payment-header {
+
+        padding: 16px;
+
+    }
+
+
+    #paymentModal .payment-body {
+
+        padding: 16px;
+
+    }
+
+
+    #paymentModal .payment-customer-card {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    #paymentModal .payment-divider {
+
+        width: 100%;
+
+        height: 1px;
+
+    }
+
+
+    #paymentModal .payment-balance-info {
+
+        text-align: left;
+
+    }
+
+
+    #paymentModal .payment-two-column {
+
+        grid-template-columns: 1fr;
+
+        gap: 0;
+
+    }
+
+
+    #paymentModal .payment-footer {
+
+        padding: 13px 16px;
+
+    }
+
+
+    #paymentModal .payment-close-btn,
+    #paymentModal .payment-save-btn {
+
+        flex: 1;
+
+        min-width: 0;
+
+    }
+
+}
+/* ==========================================
+   PAYMENT BALANCE DISPLAY
+========================================== */
+
+#paymentModal #payBalance {
+
+    display: block;
+
+    color: #dc3545;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+}
+
+
+/* Zero balance */
+
+#paymentModal #payBalance.zero-balance {
+
+    color: #198754;
+
+}
+/* ==========================================
+   RECEIVE PAYMENT MODAL - MOBILE POSITION
+   Keep Concept 4 below mobile header
+========================================== */
+
+@media screen and (max-width: 768px) {
+
+    #paymentModal {
+        padding-top: 80px !important;
+        padding-bottom: 10px !important;
+        overflow-y: auto !important;
+    }
+
+    #paymentModal .modal-dialog {
+        width: calc(100% - 24px) !important;
+        max-width: none !important;
+
+        margin: 0 auto 15px !important;
+
+        transform: none !important;
+    }
+
+    #paymentModal .modal-content {
+        width: 100% !important;
+        max-height: calc(100vh - 85px) !important;
+
+        border-radius: 18px !important;
+        overflow: hidden !important;
+    }
+
+    #paymentModal .modal-body {
+        max-height: calc(100vh - 230px) !important;
+
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+}
+/* ==========================================
+   CUSTOMER DETAILS MODAL - MOBILE FIX
+   Keep modal below mobile header
+========================================== */
+
+@media screen and (max-width: 768px) {
+
+    /* Modal overlay */
+    #customerModal {
+        padding-top: 78px !important;
+        padding-bottom: 10px !important;
+        overflow-y: auto !important;
+    }
+
+    /* Modal box */
+    #customerModal .modal-dialog {
+        width: calc(100% - 20px) !important;
+        max-width: none !important;
+
+        height: calc(100vh - 78px) !important;
+
+        margin: 0 auto 10px !important;
+
+        transform: none !important;
+    }
+
+    /* Main modal */
+    #customerModal .modal-content {
+        width: 100% !important;
+
+        height: 100% !important;
+        max-height: 100% !important;
+
+        border-radius: 16px !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        overflow: hidden !important;
+    }
+
+    /* ======================================
+       HEADER
+    ====================================== */
+
+    #customerModal .modal-header {
+        flex-shrink: 0 !important;
+
+        min-height: 58px !important;
+
+        padding: 14px 18px !important;
+
+        position: relative !important;
+
+        z-index: 5 !important;
+    }
+
+    #customerModal .modal-title {
+        font-size: 20px !important;
+        line-height: 1.2 !important;
+
+        white-space: nowrap !important;
+    }
+
+    /* ======================================
+       BODY
+    ====================================== */
+
+    #customerModal .modal-body {
+        flex: 1 !important;
+
+        min-height: 0 !important;
+
+        height: auto !important;
+        max-height: none !important;
+
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+
+        padding: 18px !important;
+    }
+
+    /* Customer information */
+    #customerModal .modal-body > .row {
+        margin-bottom: 18px !important;
+    }
+
+    #customerModal .modal-body strong,
+    #customerModal .modal-body span {
+        font-size: 15px !important;
+    }
+
+    /* ======================================
+       TABLE
+    ====================================== */
+
+    #customerModal .table-responsive {
+        width: 100% !important;
+
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #customerModal .table {
+        min-width: 650px !important;
+
+        margin-bottom: 12px !important;
+    }
+
+    #customerModal .table th,
+    #customerModal .table td {
+        white-space: nowrap !important;
+        padding: 12px 10px !important;
+        font-size: 14px !important;
+    }
+
+    /* ======================================
+       FOOTER
+    ====================================== */
+
+    #customerModal .modal-footer {
+        flex-shrink: 0 !important;
+
+        padding: 10px 14px !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 8px !important;
+
+        background: #ffffff !important;
+    }
+
+    #customerModal .modal-footer button {
+        width: 100% !important;
+
+        min-height: 44px !important;
+
+        margin: 0 !important;
+
+        border-radius: 10px !important;
+
+        font-size: 16px !important;
+        font-weight: 600 !important;
+    }
+
+}
+
+/* Customer Details modal - height & spacing only */
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+
+    #customerModal .modal-content {
+        margin-top: 80px !important;
+        margin-bottom: 25px !important;
+
+        max-height: calc(90vh - 50px) !important;
+    }
+
+}
+/* =========================================================
+   RECEIVE PAYMENT MODAL
+   769px - 1200px SCREEN
+   HEIGHT + MARGIN ONLY
+========================================================= */
+
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+
+    #paymentModal .modal-content {
+        margin-top: 80px !important;
+        margin-bottom: 25px !important;
+
+        max-height: calc(90vh - 50px) !important;
+    }
+
+}

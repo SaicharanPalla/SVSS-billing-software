@@ -1727,6 +1727,7 @@ function showToast(message, type = "success") {
 
 async function saveCurrentBill() {
 
+    calculateTotals();
     calculateBalance();
 
     if (billItems.length === 0) {
@@ -1962,141 +1963,206 @@ saveBill.addEventListener("click", async function () {
 
 async function printInvoice() {
 
-    // Save current bill first
+    // ==========================================
+    // SAVE CURRENT BILL FIRST
+    // ==========================================
+
     const saved = await saveCurrentBill();
 
     if (!saved) {
         return;
     }
 
-    // Reload latest database (settings, bills, etc.)
+    // Reload latest database
     await refreshDatabase();
+
+
+    // ==========================================
+    // CREATE PDF
+    // ==========================================
 
     const { jsPDF } = window.jspdf;
 
-    const doc = new jsPDF();
-
-    
-
-// ======================================
-// PAGE
-// ======================================
-
-const pageWidth = doc.internal.pageSize.getWidth();
-const pageHeight = doc.internal.pageSize.getHeight();
-const centerX = pageWidth / 2;
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+    });
 
 
-function drawPageBorder() {
+    const pageWidth =
+        doc.internal.pageSize.getWidth();
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageHeight =
+        doc.internal.pageSize.getHeight();
 
-    // Outer Border
-    doc.setDrawColor(255,193,7);
-    doc.setLineWidth(1.2);
-    doc.rect(
-        5,
-        5,
-        pageWidth - 10,
-        pageHeight - 10
-    );
-
-    // Inner Border
-    doc.setLineWidth(0.4);
-    doc.rect(
-        8,
-        8,
-        pageWidth - 16,
-        pageHeight - 16
-    );
-    doc.setFontSize(8);
-doc.setTextColor(120);
-
-doc.text(
-    `Page ${doc.getCurrentPageInfo().pageNumber}`,
-    pageWidth - 18,
-    pageHeight - 6
-);
-
-doc.setTextColor(0);
-
-}
-
-// ✅ ADD THIS
-drawPageBorder();
+    const centerX =
+        pageWidth / 2;
 
 
-// ======================================
-// SHOP DETAILS
-// ======================================
 
-const SHOP_NAME =
-    settings.shopName ||
-    "Sri Venkata Siva Sai Cloth & Matching Center";
+    // ==========================================
+    // COLORS
+    // ==========================================
 
-const SHOP_ADDRESS =
-    settings.shopAddress ||
-    "Opp Sai Lodge, R.R.Road, Chirala-523155";
+    const GOLD = [255, 193, 7];
 
-const SHOP_PHONE =
-    settings.shopMobile || "";
+    const LIGHT_GOLD = [255, 248, 220];
 
-const SHOP_GST =
-    settings.shopGST || "";
+    const BLACK = [0, 0, 0];
+
+    const RED = [220, 53, 69];
 
 
-// ======================================
-// LOGO
-// ======================================
 
-try{
+    // ==========================================
+    // MONEY FORMAT
+    // ==========================================
 
-    const logo =
-        document.getElementById("shopLogo");
+    function formatInvoiceMoney(value) {
 
-    if(
-        logo &&
-        logo.complete &&
-        logo.naturalWidth > 0
-    ){
+        const amount =
+            Number(
+                String(value ?? 0)
+                    .replace(/[^\d.-]/g, "")
+            ) || 0;
 
-        doc.addImage(
-            logo,
-            "PNG",
-            10,
-            10,
-            24,
-            24
-        );
-
+        return "Rs. " +
+            amount.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
     }
 
-}catch(e){
 
-    console.log("Logo not found");
+    function formatInvoiceTableMoney(value) {
 
-}
+        const amount =
+            Number(
+                String(value ?? 0)
+                    .replace(/[^\d.-]/g, "")
+            ) || 0;
+
+        return amount.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+
+
+    // ==========================================
+    // PAGE BORDER
+    // ==========================================
+
+    function drawPageBorder() {
+
+        // Outer border
+        doc.setDrawColor(...GOLD);
+
+        doc.setLineWidth(1.5);
+
+        doc.roundedRect(
+            4,
+            4,
+            pageWidth - 8,
+            pageHeight - 8,
+            5,
+            5
+        );
+
+
+        // Inner border
+        doc.setLineWidth(0.45);
+
+        doc.roundedRect(
+            8,
+            8,
+            pageWidth - 16,
+            pageHeight - 16,
+            4,
+            4
+        );
+    }
+
+
+    drawPageBorder();
+
+
+
+    // ==========================================
+    // SHOP DETAILS
+    // ==========================================
+
+    const SHOP_NAME =
+        settings.shopName ||
+        "Sri Venkata Siva Sai Cloth & Matchings";
+
+    const SHOP_ADDRESS =
+        settings.shopAddress ||
+        "Opp Sai Lodge, R.R. Road, Chirala - 523155, Andhra Pradesh";
+
+    const SHOP_PHONE =
+        settings.shopMobile || "";
+
+    const SHOP_GST =
+        settings.shopGST || "";
+
+
+
+    // ==========================================
+    // LOGO
+    // ==========================================
+
+    try {
+
+        const logo =
+            document.getElementById("shopLogo");
+
+        if (
+            logo &&
+            logo.complete &&
+            logo.naturalWidth > 0
+        ) {
+
+            doc.addImage(
+                logo,
+                "PNG",
+                13,
+                11,
+                29,
+                29
+            );
+        }
+
+    } catch (e) {
+
+        console.log(
+            "Invoice logo not found"
+        );
+    }
 
 
 // ======================================
 // SHOP HEADER
 // ======================================
 
+const headerCenterX = centerX + 10;
+
 doc.setFont("helvetica","bold");
-doc.setFontSize(16);
+doc.setFontSize(20);
 
 doc.text(
     SHOP_NAME,
-    centerX,
-    16,
+    headerCenterX,
+    22,
     {
         align:"center"
     }
 );
 
 doc.setFont("helvetica","normal");
-doc.setFontSize(10);
+doc.setFontSize(12);
 
 const shopAddressLines =
     doc.splitTextToSize(
@@ -2106,793 +2172,1560 @@ const shopAddressLines =
 
 doc.text(
     shopAddressLines,
-    centerX,
-    23,
+    headerCenterX,
+    29,
     {
         align:"center"
     }
 );
 
 const phoneY =
-    24 + (shopAddressLines.length * 5);
+    32 + (shopAddressLines.length * 5);
 
 doc.text(
     "Phone : " +
     SHOP_PHONE +
     "   |   GSTIN : " +
     SHOP_GST,
-    centerX,
+    headerCenterX,
     phoneY,
     {
         align:"center"
     }
 );
 
+    // ==========================================
+    // TAX INVOICE DECORATIVE LINE
+    // ==========================================
 
-// ======================================
-// HEADER LINE
-// ======================================
+    doc.setDrawColor(...GOLD);
 
-const headerBottom =
-    phoneY + 8;
-
-doc.setDrawColor(255,193,7);
-
-doc.setLineWidth(0.8);
-
-doc.line(
-    10,
-    headerBottom,
-    200,
-    headerBottom
-);
+    doc.setLineWidth(0.8);
 
 
-// ======================================
-// TAX INVOICE
-// ======================================
-
-const invoiceY =
-    headerBottom + 10;
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(17);
-
-doc.setTextColor(255,193,7);
-
-doc.text(
-    "TAX INVOICE",
-    centerX,
-    invoiceY,
-    {
-        align:"center"
-    }
-);
-
-doc.setTextColor(0);
-
-
-// ======================================
-// CUSTOMER DETAILS
-// ======================================
-
-const detailsY =
-    invoiceY + 12;
-
-const addressLines =
-    doc.splitTextToSize(
-        address.value || "-",
-        70
+    // Left line
+    doc.line(
+        12,
+        47,
+        76,
+        47
     );
 
-const customerBoxHeight =
-    30 + (addressLines.length * 7);
 
-doc.setDrawColor(255,193,7);
-
-doc.roundedRect(
-    10,
-    detailsY-6,
-    190,
-    customerBoxHeight,
-    2,
-    2
-);
-
-
-// ---------- LEFT ----------
-
-const leftLabelX = 14;
-const leftColonX = 35;
-const leftValueX = 44;
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(11);
-
-doc.text("Bill No", leftLabelX, detailsY);
-doc.text("Customer", leftLabelX, detailsY + 8);
-doc.text("Mobile", leftLabelX, detailsY + 16);
-doc.text("Address", leftLabelX, detailsY + 24);
-
-doc.setFont("helvetica","normal");
-
-doc.text(":", leftColonX, detailsY);
-doc.text(":", leftColonX, detailsY + 8);
-doc.text(":", leftColonX, detailsY + 16);
-doc.text(":", leftColonX, detailsY + 24);
-
-doc.text(
-    billNo.value,
-    leftValueX,
-    detailsY
-);
-
-const customer =
-    customerName.value.trim() || "Walk-in Customer";
-
-doc.text(
-    customer,
-    leftValueX,
-    detailsY + 8
-);
-
-doc.text(
-    mobile.value || "-",
-    leftValueX,
-    detailsY + 16
-);
-
-doc.text(
-    addressLines,
-    leftValueX,
-    detailsY + 24
-);
-
-//------Right------------
-const rightLabelX = 142;
-const rightColonX = 171;
-const rightValueX = 178;
-
-doc.setFont("helvetica","bold");
-
-doc.text("Date", rightLabelX, detailsY);
-doc.text("Payment", rightLabelX, detailsY + 8);
-doc.text("Bill Book No", rightLabelX, detailsY + 16);
-
-doc.setFont("helvetica","normal");
-
-
-doc.text(":", rightColonX, detailsY);
-doc.text(":", rightColonX, detailsY + 8);
-doc.text(":", rightColonX, detailsY + 16);
-
-doc.text(
-    formatDisplayDate(billDate.value),
-    rightValueX,
-    detailsY
-);
-
-doc.text(
-    paymentMode.value,
-    rightValueX,
-    detailsY + 8
-);
-
-doc.text(
-    billBookNo.value || "-",
-    rightValueX,
-    detailsY + 16
-);
-
-
-// ======================================
-// PRODUCT TABLE START POSITION
-// ======================================
-
-const tableY =
-    detailsY +
-    customerBoxHeight +
-    4;
-
-
-// ======================================
-// PRODUCT TABLE
-// ======================================
-
-const rows = billItems.map((item, index) => [
-
-    index + 1,
-
-    item.code,
-
-    item.productName,
-
-    item.hsnCode || "",
-
-    item.unit,
-
-    item.unit === "Meter"
-        ? Number(item.qty).toFixed(2)
-        : parseInt(item.qty),
-
-    item.rate.toFixed(2),
-
-    item.basic.toFixed(2),
-
-    item.cgst + "%",
-
-    item.sgst + "%",
-
-    item.gst + "%",
-
-    item.total.toFixed(2)
-
-]);
-
-doc.autoTable({
-    tableWidth: "wrap",
-    
-    margin: {
-        left: 10,
-        right: 10
-    },
-
-    startY: tableY,
-
-    theme: "grid",
-
-    head: [[
-        "Sl",
-        "Code",
-        "Product",
-        "HSN",
-        "Unit",
-        "Qty",
-        "Rate",
-        "Taxable",
-        "CGST",
-        "SGST",
-        "GST",
-        "Total"
-    ]],
-
-    body: rows,
-
-    styles: {
-
-        font: "helvetica",
-
-        fontSize: 9,
-
-        cellPadding: 2,
-
-        halign: "center",
-
-        valign: "middle",
-
-        lineColor: [255,193,7],
-
-        lineWidth: 0.2
-
-    },
-
-    headStyles: {
-
-        fillColor: [255,193,7],
-
-        textColor: [0,0,0],
-
-        fontStyle: "bold",
-
-        fontSize: 10,
-
-        halign: "center"
-
-    },
-
-    columnStyles: {
-
-    0:  { cellWidth: 7 },   // Sl
-    1:  { cellWidth: 15 },  // Code
-    2:  { cellWidth: 28 },  // Product
-    3:  { cellWidth: 15 },  // HSN
-    4:  { cellWidth: 15 },  // Unit
-    5:  { cellWidth: 12 },  // Qty
-    6:  { cellWidth: 15 },  // Rate
-    7:  { cellWidth: 18 },  // Taxable
-    8:  { cellWidth: 15 },  // CGST
-    9:  { cellWidth: 15 },  // SGST
-    10: { cellWidth: 15 },  // GST
-    11: { cellWidth: 20 }   // Total
-
-}
-
-});
-
-
-// ======================================
-// AMOUNT IN WORDS
-// ======================================
-
-// ======================================
-// CHECK AVAILABLE SPACE AFTER TABLE
-// ======================================
-
-const currentPage =
-    doc.internal.getNumberOfPages();
-
-doc.setPage(currentPage);
-
-let y =
-    doc.lastAutoTable.finalY;
-
-// Total height needed for payment section + footer
-const requiredHeight = 130;
-
-// If not enough space, continue on next page
-if (y + requiredHeight > pageHeight - 15) {
-
-    doc.addPage();
-
-    drawPageBorder();
-
-    y = 20;
-
-} else {
-
-    // Keep payment section close to the table
-    y += 8;
-
-}
-
-// ==========================
-// PAYMENT BOX (LEFT)
-// ==========================
-
-const paymentBoxX = 14;
-const paymentBoxY = y;
-const paymentBoxW = 72;
-const paymentBoxH = 34;
-
-doc.setDrawColor(255,193,7);
-doc.setLineWidth(0.5);
-
-doc.roundedRect(
-    paymentBoxX,
-    paymentBoxY,
-    paymentBoxW,
-    paymentBoxH,
-    2,
-    2
-);
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(10);
-let py = paymentBoxY + 8;
-
-function paymentRow(label, value) {
-
-    doc.setFont("helvetica", "bold");
-    doc.text(label, paymentBoxX + 3, py);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(":", paymentBoxX + 31, py);
-
-    if (value) {
-
-        doc.text(value, paymentBoxX + 35, py);
-
-    } else {
-
-        doc.line(
-            paymentBoxX + 35,
-            py,
-            paymentBoxX + 66,
-            py
-        );
-
-    }
-
-    py += 7;
-
-}
-
-paymentRow(
-    "Payment",
-    paymentMode.value
-);
-
-paymentRow(
-    "Paid",
-    "Rs. " + Number(amountPaid.value || 0).toFixed(2)
-);
-
-paymentRow(
-    "Balance",
-    balanceDue.value.replace("₹","Rs. ")
-);
-
-doc.setFont("helvetica","bold");
-
-doc.text(
-    "Status",
-    paymentBoxX+3,
-    py
-);
-
-doc.setFont("helvetica", "normal");
-doc.text(":", paymentBoxX + 31, py);
-
-if (paymentStatus.value === "Paid") {
-
-    doc.setTextColor(0, 150, 0);
-
-} else {
-
-    doc.setTextColor(220, 53, 69);
-
-}
-
-doc.text(
-    paymentStatus.value,
-    paymentBoxX + 35,
-    py
-);
-
-doc.setTextColor(0);
-
-py += 8;
-
-// ==========================
-// TRANSPORT DETAILS
-// ==========================
-
-let infoY = paymentBoxY + paymentBoxH + 10;
-
-function infoRow(label, value) {
-
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(11);
-
-    doc.text(label, 14, infoY);
-
-    doc.setFont("helvetica","normal");
-
-    doc.text(":", 40, infoY);
-
-    doc.text(value || "", 44, infoY);
-
-    infoY += 8;
-
-}
-
-infoRow("No. of Bales", noOfBales.value);
-
-infoRow("Transport", transport.value);
-
-infoRow("L.R. No", lrNo.value);
-
-infoRow("Delivery Shop No", deliveryShopNo.value);
-
-
-// ======================================
-// AMOUNT IN WORDS
-// ======================================
-
-const amountWordsY = infoY + 6;
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(11);
-
-doc.text(
-    "Amount In Words :",
-    14,
-    amountWordsY
-);
-
-doc.setFont("helvetica","normal");
-
-const amountWords = numberToWords(
-    parseFloat(
-        grandTotal.innerText.replace(/[^\d.]/g,"")
-    ) || 0
-);
-
-const amountLines = doc.splitTextToSize(amountWords,110);
-
-doc.text(
-    amountLines,
-    14,
-    amountWordsY + 7
-);
-
-// ==========================
-// BANK DETAILS
-// ==========================
-
-const bankY =
-    amountWordsY +
-    (amountLines.length * 6) +
-    12;
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(12);
-
-doc.text("Bank Details",14,bankY);
-
-doc.setFont("helvetica","normal");
-doc.setFontSize(11);
-
-doc.text("Axis Bank, Chirala Branch",14,bankY+7);
-doc.text("A/c No : 917020033692459",14,bankY+14);
-doc.text("IFSC   : UTIB0001017",14,bankY+21);
-
-
-// ==========================
-// SUMMARY (RIGHT)
-// ==========================
-const boxX = 132;
-const boxY = paymentBoxY;
-
-doc.setDrawColor(255,193,7);
-doc.setLineWidth(0.5);
-
-const summaryBoxH = 34;
-
-doc.roundedRect(
-    boxX - 6,
-    paymentBoxY,
-    70,
-    summaryBoxH,
-    2,
-    2
-);
-
-
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(10);
-
-let sy = boxY + 9;
-
-function summaryRow(label,value){
-
-    doc.setFont("helvetica","bold");
-
-    doc.text(
-        label,
-        boxX,
-        sy
+    // Right line
+    doc.line(
+        134,
+        47,
+        pageWidth - 12,
+        47
     );
 
-    doc.setFont("helvetica","normal");
 
-    doc.text(
-        ":",
-        boxX+28,
-        sy
+    // Left diamond
+    doc.setLineWidth(0.7);
+
+    doc.rect(
+        78,
+        45,
+        4,
+        4,
+        "S"
     );
 
+
+    // Right diamond
+    doc.rect(
+        pageWidth - 82,
+        45,
+        4,
+        4,
+        "S"
+    );
+
+
+
+    // ==========================================
+    // TAX INVOICE BOX
+    // ==========================================
+
+    doc.setFillColor(...GOLD);
+
+    doc.roundedRect(
+        78,
+        42,
+        54,
+        10,
+        3,
+        3,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(15);
+
     doc.text(
-        value,
-        195,
-        sy,
+        "TAX INVOICE",
+        centerX,
+        49,
         {
-            align:"right"
+            align: "center"
         }
     );
 
-    sy += 7;
-
-}
-
-summaryRow(
-    "Sub Total",
-    subTotal.innerText.replace("₹","Rs. ")
-);
-
-const totalGST =
-    parseFloat(
-        gstTotal.innerText.replace(/[^\d.]/g,"")
-    ) || 0;
-
-summaryRow(
-    "CGST (2.5%)",
-    "Rs. " + (totalGST/2).toFixed(2)
-);
-
-summaryRow(
-    "SGST (2.5%)",
-    "Rs. " + (totalGST/2).toFixed(2)
-);
 
 
-// Dotted Line
+    // ==========================================
+    // CUSTOMER + INVOICE DETAILS
+    // ==========================================
+
+    const detailsY = 57;
+
+    const detailsH = 42;
+
+    const leftX = 11;
+
+    const gap = 5;
+
+    const boxW =
+        (pageWidth - 22 - gap) / 2;
+
+    const rightX =
+        leftX + boxW + gap;
 
 
-doc.line(
-    boxX,
-    sy-2,
-    195,
-    sy-2
-);
+
+    // ==========================================
+    // CUSTOMER DETAILS BOX
+    // ==========================================
+
+    doc.setDrawColor(...GOLD);
+
+    doc.setLineWidth(0.6);
+
+    doc.roundedRect(
+        leftX,
+        detailsY,
+        boxW,
+        detailsH,
+        3,
+        3
+    );
 
 
-sy += 3;
+    // Header background
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
 
-
-summaryRow(
-    "Total GST",
-    gstTotal.innerText.replace("₹","Rs. ")
-);
-doc.setDrawColor(255,193,7);
-doc.setLineWidth(0.5);
-
-doc.line(
-    boxX - 6,
-    sy - 3,
-    boxX + 64,
-    sy - 3
-);
-
-doc.line(
-    boxX,
-    sy-3,
-    195,
-    sy-3
-);
-
-sy += 3;
-
-summaryRow(
-    "Discount",
-    "Rs. " +
-    Number(discount.value || 0).toFixed(2)
-);
-
-// ==========================
-// ROUND OFF
-// ==========================
-
-const roundOffValue =
-    Number(grandTotal.dataset.roundOff || 0);
-
-summaryRow(
-    "Round Off",
-    (roundOffValue > 0 ? "+" : "") +
-    roundOffValue.toFixed(2)
-);
-// ==========================
-// NET AMOUNT
-// ==========================
-const roundedAmount =
-    parseFloat(
-        grandTotal.innerText.replace(/[^\d.]/g, "")
-    ) || 0;
-
-// Grand Total Highlight
-
-doc.setFillColor(255,248,220);
-
-doc.rect(
-    boxX-2,
-    sy-6,
-    65,
-    9,
-    "F"
-);
-
-doc.setFont("helvetica","bold");
-
-doc.text(
-    "Grand Total",
-    boxX,
-    sy
-);
-
-doc.text(
-    grandTotal.innerText.replace("₹", "Rs. "),
-    195,
-    sy,
-    {
-        align: "right"
-    }
-);
-
-sy += 10;
-// ======================================
-// SIGNATURE & FOOTER LAYOUT
-// ======================================
-
-// Fixed positions near bottom of page
-const signY = pageHeight - 45;
-
-const footerLineY = pageHeight - 20;
-const footerTextY = pageHeight - 16;
-
-
-// ==========================
-// AUTHORIZED SIGNATURE
-// ==========================
-
-doc.setDrawColor(255,193,7);
-doc.setLineWidth(0.6);
-
-doc.line(
-    145,
-    signY,
-    198,
-    signY
-);
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(10);
-
-doc.text(
-    "Authorized Signature",
-    171.5,
-    signY + 6,
-    {
-        align:"center"
-    }
-);
-
-
-// ==========================
-// FOOTER
-// ==========================
-
-doc.setDrawColor(255,193,7);
-doc.setLineWidth(0.6);
-
-doc.line(
-    10,
-    footerLineY,
-    200,
-    footerLineY
-);
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(11);
-
-doc.text(
-    "Thank You For Shopping With Us!",
-    pageWidth / 2,
-    footerTextY,
-    {
-        align:"center"
-    }
-);
-
-doc.setFont("helvetica","normal");
-doc.setFontSize(8);
-
-doc.text(
-    "Computer Generated Invoice",
-    pageWidth / 2,
-    footerTextY + 5,
-    { align: "center" }
-);
-
-
-// ==========================
-// SAVE PDF
-// ==========================
-
-// PDF File Name
-const pdfFileName = `${billNo.value}_${billDate.value}.pdf`;
-
-doc.save(pdfFileName);
-
-await refreshDatabase();
-
-await resetBillForm();
-
-showToast(
-    "Bill Saved & Printed Successfully.",
-    "success"
-);
+    doc.roundedRect(
+        leftX + 0.5,
+        detailsY + 0.5,
+        boxW - 1,
+        10,
+        2.5,
+        2.5,
+        "F"
+    );
     
+
+    // Header title
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+        "CUSTOMER DETAILS",
+        leftX + 5,
+        detailsY + 7
+    );
+
+
+    // Customer GST
+    const customerGST =
+        customerName.dataset.customerGst ||
+        "-";
+
+
+    const customerNameValue =
+        customerName.value.trim() ||
+        "Walk-in Customer";
+
+
+    const customerMobile =
+        mobile.value.trim() ||
+        "-";
+
+
+    const customerAddress =
+        address.value.trim() ||
+        "-";
+
+
+    const customerRows = [
+
+        [
+            "Customer",
+            customerNameValue
+        ],
+
+        [
+            "Mobile",
+            customerMobile
+        ],
+
+        [
+            "GST No.",
+            customerGST
+        ],
+
+        [
+            "Address",
+            customerAddress
+        ]
+
+    ];
+
+
+    let customerY =
+        detailsY + 17;
+
+
+    customerRows.forEach(
+        ([label, value]) => {
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.setFontSize(9.5);
+
+            doc.text(
+                label,
+                leftX + 5,
+                customerY
+            );
+
+            doc.text(
+                ":",
+                leftX + 34,
+                customerY
+            );
+
+            doc.text(
+                String(value || "-"),
+                leftX + 40,
+                customerY
+            );
+
+            customerY += 7;
+        }
+    );
+
+
+
+    // ==========================================
+    // INVOICE DETAILS BOX
+    // ==========================================
+
+    doc.setDrawColor(...GOLD);
+
+    doc.roundedRect(
+        rightX,
+        detailsY,
+        boxW,
+        detailsH,
+        3,
+        3
+    );
+
+
+    // Header background
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        rightX + 0.5,
+        detailsY + 0.5,
+        boxW - 1,
+        10,
+        2.5,
+        2.5,
+        "F"
+    );
+
+
+    // Header title
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+        "INVOICE DETAILS",
+        rightX + 5,
+        detailsY + 7
+    );
+
+
+    const invoiceRows = [
+
+        [
+            "Bill No.",
+            billNo.value || "-"
+        ],
+
+        [
+            "Date",
+            formatDisplayDate(
+                billDate.value
+            )
+        ],
+
+        [
+            "Payment",
+            paymentMode.value || "-"
+        ],
+
+        [
+            "Bill Book No.",
+            billBookNo.value || "-"
+        ]
+
+    ];
+
+
+    let invoiceY =
+        detailsY + 17;
+
+
+    invoiceRows.forEach(
+        ([label, value]) => {
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.setFontSize(9.5);
+
+            doc.text(
+                label,
+                rightX + 5,
+                invoiceY
+            );
+
+            doc.text(
+                ":",
+                rightX + 39,
+                invoiceY
+            );
+
+            doc.text(
+                String(value || "-"),
+                rightX + 45,
+                invoiceY
+            );
+
+            invoiceY += 7;
+        }
+    );
+
+
+
+    // ==========================================
+    // PRODUCT TABLE
+    // ==========================================
+
+    const tableY =
+        detailsY +
+        detailsH +
+        4;
+
+
+    const rows =
+        billItems.map(
+            (item, index) => [
+
+                index + 1,
+
+                item.code || "-",
+
+                item.productName || "-",
+
+                item.hsnCode || "-",
+
+                item.unit || "-",
+
+                item.unit === "Meter"
+                    ? Number(item.qty).toFixed(2)
+                    : parseInt(item.qty) || 0,
+
+                formatInvoiceTableMoney(
+                    item.rate
+                ),
+
+                formatInvoiceTableMoney(
+                    item.basic
+                ),
+
+                (item.cgst || 0) + "%",
+
+                (item.sgst || 0) + "%",
+
+                (item.gst || 0) + "%",
+
+                formatInvoiceTableMoney(
+                    item.total
+                )
+            ]
+        );
+
+
+    doc.autoTable({
+
+        startY: tableY,
+
+        margin: {
+            left: 11,
+            right: 10
+        },
+
+        tableWidth: "auto",
+
+        theme: "grid",
+
+        head: [[
+
+            "Sl",
+
+            "Code",
+
+            "Product",
+
+            "HSN",
+
+            "Unit",
+
+            "Qty",
+
+            "Rate\n(Rs.)",
+
+            "Taxable\n(Rs.)",
+
+            "CGST\n2.5%",
+
+            "SGST\n2.5%",
+
+            "GST\n5%",
+
+            "Total\n(Rs.)"
+
+        ]],
+
+        body: rows,
+
+        styles: {
+
+            font: "helvetica",
+
+            fontSize: 7.4,
+
+            cellPadding: 2,
+
+            halign: "center",
+
+            valign: "middle",
+
+            lineColor: GOLD,
+
+            lineWidth: 0.25,
+
+            textColor: BLACK
+        },
+
+        headStyles: {
+
+            fillColor: GOLD,
+
+            textColor: BLACK,
+
+            fontStyle: "bold",
+
+            fontSize: 7.4,
+
+            halign: "center",
+
+            valign: "middle"
+        },
+
+        bodyStyles: {
+
+            minCellHeight: 10
+        },
+
+        columnStyles: {
+
+            0: {
+                cellWidth: 8
+            },
+
+            1: {
+                cellWidth: 15
+            },
+
+            2: {
+                cellWidth: 29
+            },
+
+            3: {
+                cellWidth: 12
+            },
+
+            4: {
+                cellWidth: 15
+            },
+
+            5: {
+                cellWidth: 11
+            },
+
+            6: {
+                cellWidth: 15
+            },
+
+            7: {
+                cellWidth: 19
+            },
+
+            8: {
+                cellWidth: 15
+            },
+
+            9: {
+                cellWidth: 15
+            },
+
+            10: {
+                cellWidth: 12
+            },
+
+            11: {
+                cellWidth: 22
+            }
+        }
+    });
+
+
+
+    // ==========================================
+    // POSITION AFTER TABLE
+    // ==========================================
+
+    let y =
+        doc.lastAutoTable.finalY + 5;
+
+
+    // New page if required
+    if (
+        y + 105 >
+        pageHeight - 15
+    ) {
+
+        doc.addPage();
+
+        drawPageBorder();
+
+        y = 18;
+    }
+
+
+
+    // ==========================================
+    // PAYMENT DETAILS
+    // ==========================================
+
+    const paymentX = 11;
+
+    const paymentW = 83;
+
+    const paymentH = 42;
+
+
+    doc.setDrawColor(...GOLD);
+
+    doc.roundedRect(
+        paymentX,
+        y,
+        paymentW,
+        paymentH,
+        3,
+        3
+    );
+
+
+    // Header
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        paymentX + 0.5,
+        y + 0.5,
+        paymentW - 1,
+        10,
+        2.5,
+        2.5,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+        "PAYMENT DETAILS",
+        paymentX + 5,
+        y + 7
+    );
+
+
+    const paymentRows = [
+
+        [
+            "Payment",
+            paymentMode.value || "-"
+        ],
+
+        [
+            "Paid",
+            formatInvoiceMoney(
+                amountPaid.value
+            )
+        ],
+
+        [
+            "Balance",
+            formatInvoiceMoney(
+                balanceDue.value
+            )
+        ]
+
+    ];
+
+
+    let paymentY =
+        y + 18;
+
+
+    paymentRows.forEach(
+        ([label, value]) => {
+
+            doc.setFont(
+                "helvetica",
+                "bold"
+            );
+
+            doc.setFontSize(9.5);
+
+            doc.text(
+                label,
+                paymentX + 5,
+                paymentY
+            );
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.text(
+                ":",
+                paymentX + 33,
+                paymentY
+            );
+
+            doc.text(
+                String(value),
+                paymentX + 39,
+                paymentY
+            );
+
+            paymentY += 7;
+        }
+    );
+
+
+    // Status
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.text(
+        "Status",
+        paymentX + 5,
+        paymentY
+    );
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.text(
+        ":",
+        paymentX + 33,
+        paymentY
+    );
+
+
+    if (
+        paymentStatus.value === "Paid"
+    ) {
+
+        doc.setTextColor(
+            0,
+            150,
+            0
+        );
+
+    } else {
+
+        doc.setTextColor(
+            ...RED
+        );
+    }
+
+
+    doc.text(
+        paymentStatus.value || "-",
+        paymentX + 39,
+        paymentY
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+
+
+    // ==========================================
+    // AMOUNT DETAILS
+    // ==========================================
+
+    const amountX =
+        paymentX +
+        paymentW +
+        5;
+
+    const amountW =
+        pageWidth -
+        amountX -
+        11;
+
+    const amountH =
+        86;
+
+
+    doc.setDrawColor(...GOLD);
+
+    doc.roundedRect(
+        amountX,
+        y,
+        amountW,
+        amountH,
+        3,
+        3
+    );
+
+
+    // Header
+
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        amountX + 0.5,
+        y + 0.5,
+        amountW - 1,
+        10,
+        2.5,
+        2.5,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+        "AMOUNT DETAILS",
+        amountX + 5,
+        y + 7
+    );
+
+
+    // ==========================================
+    // AMOUNT VALUES
+    // ==========================================
+
+    const subTotalValue =
+        Number(
+            String(
+                subTotal.innerText || 0
+            )
+                .replace(
+                    /[^\d.-]/g,
+                    ""
+                )
+        ) || 0;
+
+
+    const totalGST =
+        Number(
+            String(
+                gstTotal.innerText || 0
+            )
+                .replace(
+                    /[^\d.-]/g,
+                    ""
+                )
+        ) || 0;
+
+
+    const discountValue =
+        Number(
+            String(
+                discount.value || 0
+            )
+                .replace(
+                    /[^\d.-]/g,
+                    ""
+                )
+        ) || 0;
+
+
+    const cgstValue =
+        totalGST / 2;
+
+
+    const sgstValue =
+        totalGST / 2;
+
+
+    const roundOffValue =
+        Number(
+            grandTotal.dataset.roundOff || 0
+        );
+
+
+    const grandTotalValue =
+        Number(
+            String(
+                grandTotal.innerText || 0
+            )
+                .replace(
+                    /[^\d.-]/g,
+                    ""
+                )
+        ) || 0;
+
+
+    let amountY =
+        y + 18;
+
+
+
+    // ==========================================
+    // AMOUNT ROW FUNCTION
+    // ==========================================
+
+    function amountRow(
+        label,
+        value,
+        bold = false
+    ) {
+
+        doc.setFont(
+            "helvetica",
+            bold
+                ? "bold"
+                : "normal"
+        );
+
+        doc.setFontSize(
+            bold ? 10 : 9.5
+        );
+
+
+        doc.text(
+            label,
+            amountX + 5,
+            amountY
+        );
+
+
+        doc.setFont(
+            "helvetica",
+            "normal"
+        );
+
+        doc.text(
+            ":",
+            amountX + 39,
+            amountY
+        );
+
+
+        doc.text(
+            value,
+            amountX + amountW - 5,
+            amountY,
+            {
+                align: "right"
+            }
+        );
+
+
+        amountY += 7;
+    }
+
+
+
+    // Sub Total
+
+    amountRow(
+        "Sub Total",
+        formatInvoiceMoney(
+            subTotalValue
+        )
+    );
+
+
+    // CGST
+
+    amountRow(
+        "CGST (2.5%)",
+        formatInvoiceMoney(
+            cgstValue
+        )
+    );
+
+
+    // SGST
+
+    amountRow(
+        "SGST (2.5%)",
+        formatInvoiceMoney(
+            sgstValue
+        )
+    );
+
+
+    // Divider
+
+    doc.setDrawColor(...GOLD);
+
+    doc.setLineWidth(0.4);
+
+    doc.line(
+        amountX + 4,
+        amountY - 3,
+        amountX + amountW - 4,
+        amountY - 3
+    );
+
+
+    amountY += 2;
+
+
+    // Total GST
+
+    amountRow(
+        "Total GST",
+        formatInvoiceMoney(
+            totalGST
+        )
+    );
+
+
+    // Divider
+
+    doc.line(
+        amountX + 4,
+        amountY - 3,
+        amountX + amountW - 4,
+        amountY - 3
+    );
+
+
+    amountY += 2;
+
+
+    // Discount
+
+    amountRow(
+        "Discount",
+        formatInvoiceMoney(
+            discountValue
+        )
+    );
+
+
+    // Round Off
+
+    let roundOffDisplay =
+        "0.00";
+
+
+    if (roundOffValue > 0) {
+
+        roundOffDisplay =
+            "+" +
+            formatInvoiceTableMoney(
+                roundOffValue
+            );
+
+    } else if (
+        roundOffValue < 0
+    ) {
+
+        roundOffDisplay =
+            "-" +
+            formatInvoiceTableMoney(
+                Math.abs(
+                    roundOffValue
+                )
+            );
+    }
+
+
+    amountRow(
+        "Round Off",
+        roundOffDisplay
+    );
+
+
+
+    // ==========================================
+    // GRAND TOTAL
+    // ==========================================
+
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        amountX + 3,
+        amountY - 5,
+        amountW - 6,
+        10,
+        2,
+        2,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(10.5);
+
+
+    doc.text(
+        "Grand Total",
+        amountX + 5,
+        amountY + 2
+    );
+
+
+    doc.text(
+        formatInvoiceMoney(
+            grandTotalValue
+        ),
+        amountX + amountW - 5,
+        amountY + 2,
+        {
+            align: "right"
+        }
+    );
+
+
+
+    // ==========================================
+    // TRANSPORT DETAILS
+    // ==========================================
+
+    const transportY =
+        y +
+        paymentH +
+        5;
+
+    const transportH =
+        39;
+
+
+    doc.setDrawColor(...GOLD);
+
+    doc.roundedRect(
+        paymentX,
+        transportY,
+        paymentW,
+        transportH,
+        3,
+        3
+    );
+
+
+    // Header
+
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        paymentX + 0.5,
+        transportY + 0.5,
+        paymentW - 1,
+        10,
+        2.5,
+        2.5,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(10.5);
+
+    doc.text(
+        "TRANSPORT DETAILS",
+        paymentX + 5,
+        transportY + 7
+    );
+
+
+    const transportRows = [
+
+        [
+            "No. of Bales",
+            noOfBales.value || ""
+        ],
+
+        [
+            "Transport",
+            transport.value || ""
+        ],
+
+        [
+            "L.R. No",
+            lrNo.value || ""
+        ],
+
+        [
+            "Delivery Shop No",
+            deliveryShopNo.value || ""
+        ]
+
+    ];
+
+
+    let transportTextY =
+        transportY + 18;
+
+
+    transportRows.forEach(
+        ([label, value]) => {
+
+            doc.setFont(
+                "helvetica",
+                "bold"
+            );
+
+            doc.setFontSize(8.7);
+
+            doc.text(
+                label,
+                paymentX + 5,
+                transportTextY
+            );
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.text(
+                ":",
+                paymentX + 43,
+                transportTextY
+            );
+
+            doc.text(
+                String(value),
+                paymentX + 48,
+                transportTextY
+            );
+
+            transportTextY += 6;
+        }
+    );
+
+
+
+    // ==========================================
+    // AMOUNT IN WORDS
+    // ==========================================
+
+    const wordsY =
+        transportY +
+        transportH +
+        5;
+
+    const wordsH =
+        22;
+
+
+    doc.setDrawColor(...GOLD);
+
+    doc.roundedRect(
+        11,
+        wordsY,
+        pageWidth - 22,
+        wordsH,
+        3,
+        3
+    );
+
+
+    // Header background
+
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        11.5,
+        wordsY + 0.5,
+        pageWidth - 23,
+        9,
+        2.5,
+        2.5,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(10.5);
+
+    doc.text(
+        "AMOUNT IN WORDS",
+        16,
+        wordsY + 7
+    );
+
+
+    // Amount in words
+
+    const amountWords =
+        numberToWords(
+            grandTotalValue
+        );
+
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setFontSize(9.5);
+
+
+    const amountLines =
+        doc.splitTextToSize(
+            amountWords,
+            pageWidth - 45
+        );
+
+
+    doc.text(
+        amountLines,
+        16,
+        wordsY + 16
+    );
+
+
+    // ==========================================
+    // BANK DETAILS
+    // ==========================================
+
+    const bankY =
+        wordsY +
+        wordsH +
+        5;
+
+
+    const bankW =
+        98;
+
+    const bankH =
+        34;
+
+
+    doc.setDrawColor(...GOLD);
+
+    doc.roundedRect(
+        11,
+        bankY,
+        bankW,
+        bankH,
+        3,
+        3
+    );
+
+
+    // Header
+
+    doc.setFillColor(
+        ...LIGHT_GOLD
+    );
+
+    doc.roundedRect(
+        11.5,
+        bankY + 0.5,
+        bankW - 1,
+        9,
+        2.5,
+        2.5,
+        "F"
+    );
+
+
+    doc.setTextColor(...BLACK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(10.5);
+
+    doc.text(
+        "BANK DETAILS",
+        16,
+        bankY + 7
+    );
+
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setFontSize(9.5);
+
+
+    doc.text(
+        "Axis Bank, Chirala Branch",
+        16,
+        bankY + 16
+    );
+
+
+    doc.text(
+        "A/c No    :    917020033692459",
+        16,
+        bankY + 23
+    );
+
+
+    doc.text(
+        "IFSC       :    UTIB0001017",
+        16,
+        bankY + 30
+    );
+
+
+
+    // ==========================================
+    // AUTHORIZED SIGNATURE
+    // ==========================================
+    
+    const signatureXOffset = 10;
+    
+    const signatureX =
+        pageWidth - 62 + signatureXOffset;
+    
+    
+    const signatureY =
+        bankY + 22;
+    
+    
+    doc.setDrawColor(...GOLD);
+    
+    doc.setLineWidth(0.4);
+    
+    
+    doc.line(
+        signatureX - 27,
+        signatureY,
+        signatureX + 27,
+        signatureY
+    );
+    
+    
+    doc.setTextColor(...BLACK);
+    
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+    
+    doc.setFontSize(11);
+    
+    
+    doc.text(
+        "Authorized Signature",
+        signatureX,
+        signatureY + 7,
+        {
+            align: "center"
+        }
+    );
+
+    // ==========================================
+    // FOOTER
+    // ==========================================
+
+    const footerY =
+        pageHeight - 20;
+
+    // Thank you
+
+    doc.setTextColor(
+        75,
+        20,
+        15
+    );
+
+    doc.setFont(
+        "helvetica",
+        "bolditalic"
+    );
+
+    doc.setFontSize(10);
+
+
+    doc.text(
+        "Thank You For Shopping With Us!",
+        centerX,
+        footerY + 9,
+        {
+            align: "center"
+        }
+    );
+
+
+    // Computer generated
+
+    doc.setTextColor(
+        40,
+        40,
+        60
+    );
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setFontSize(7);
+
+
+    doc.text(
+        "C O M P U T E R   G E N E R A T E D   I N V O I C E",
+        centerX,
+        footerY + 14.5,
+        {
+            align: "center"
+        }
+    );
+
+
+
+    // ==========================================
+    // SAVE PDF
+    // ==========================================
+
+    const pdfFileName =
+        `${billNo.value}_${billDate.value}.pdf`;
+
+
+    doc.save(
+        pdfFileName
+    );
+
+
+
+    // ==========================================
+    // REFRESH + RESET
+    // ==========================================
+
+    await refreshDatabase();
+
+    await resetBillForm();
+
+
+    showToast(
+        "Bill Saved & Printed Successfully.",
+        "success"
+    );
 }
 
 // ==============================

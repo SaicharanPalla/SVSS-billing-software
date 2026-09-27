@@ -1725,3 +1725,70 @@ body:has(#salesReportBody) .mb-4 {
         margin-bottom: 10px !important;
     }
 }
+/* ==========================================
+   PAID STATEMENT TOTAL - STICKY FOOTER
+========================================== */
+
+#paidStatementTable tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+}
+
+#paidStatementTable tfoot tr {
+    background: #d1e7dd !important;
+}
+
+#paidStatementTable tfoot td {
+    background: #d1e7dd !important;
+    font-weight: 700;
+    border-top: 2px solid #198754;
+}
+/* ==========================================
+   CREDIT STATEMENT TOTAL - STICKY FOOTER
+========================================== */
+
+#creditStatementTable tfoot {
+
+    position: sticky;
+
+    bottom: 0;
+
+    z-index: 5;
+
+}
+
+#creditStatementTable tfoot tr {
+
+    background: #d1e7dd !important;
+
+}
+
+#creditStatementTable tfoot td {
+
+    background: #d1e7dd !important;
+
+    font-weight: 700;
+
+    border-top: 2px solid #198754;
+
+}
+/* ==========================================
+   SALES REPORT TOTAL - STICKY FOOTER
+========================================== */
+
+#salesReportTable tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+}
+
+#salesReportTable tfoot tr {
+    background: #d1e7dd !important;
+}
+
+#salesReportTable tfoot td {
+    background: #d1e7dd !important;
+    font-weight: 700;
+    border-top: 2px solid #198754;
+}

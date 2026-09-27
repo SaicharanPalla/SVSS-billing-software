@@ -4,6 +4,33 @@
 // Part 3 - Database + Load + Display
 // ==========================================
 // ==========================================
+// CUSTOMER CONTACT DISPLAY
+// GST HAS PRIORITY OVER MOBILE
+// ==========================================
+
+function getCustomerContact(customer) {
+
+    const gst =
+        String(customer?.gst || "")
+            .trim();
+
+    const mobile =
+        String(customer?.mobile || "")
+            .trim();
+
+    // GST gets first priority
+    if (gst && gst !== "-") {
+        return gst;
+    }
+
+    // Mobile gets second priority
+    if (mobile && mobile !== "-") {
+        return mobile;
+    }
+
+    return "-";
+}
+// ==========================================
 // CUSTOMER CURRENCY FORMAT
 // ==========================================
 function formatCurrency(value) {
@@ -80,11 +107,159 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load Customers
     // ==============================
 
-    async function loadCustomers() {
+   async function loadCustomers() {
 
-        await refreshDatabase();
+    await refreshDatabase();
 
-        const customers = {};
+    // Repair old/inconsistent bill balances
+    await repairLegacyBillTotals();
+
+    const customers = {};
+    // ==========================================
+// REPAIR OLD BILL TOTALS / BALANCES
+// ==========================================
+
+async function repairLegacyBillTotals() {
+
+    let changed = false;
+
+    bills.forEach(bill => {
+
+        // ------------------------------------------
+        // READ EXISTING VALUES
+        // ------------------------------------------
+
+        let grandTotal =
+            Number(
+                String(bill.grandTotal || "")
+                    .replace(/[^\d.]/g, "")
+            ) || 0;
+
+        const paid =
+            Number(bill.amountPaid) || 0;
+
+        const oldBalance =
+            Number(bill.balanceDue) || 0;
+
+
+        // ------------------------------------------
+        // REPAIR OLD BILLS WHERE GRAND TOTAL IS 0
+        // ------------------------------------------
+        // If Grand Total is missing/0 but Paid or Balance
+        // exists, the original bill total can be recovered:
+        //
+        // Purchase = Paid + Balance
+        // ------------------------------------------
+
+        if (
+            grandTotal <= 0 &&
+            (paid > 0 || oldBalance > 0)
+        ) {
+
+            grandTotal =
+                Number(
+                    (paid + oldBalance).toFixed(2)
+                );
+
+            bill.grandTotal =
+                "Rs. " + grandTotal.toFixed(2);
+
+            changed = true;
+
+            console.log(
+                "SVSS: Recovered old bill total:",
+                bill.billNo,
+                "Purchase:",
+                grandTotal
+            );
+        }
+
+
+        // ------------------------------------------
+        // NOTHING TO REPAIR
+        // ------------------------------------------
+
+        if (grandTotal <= 0) {
+            return;
+        }
+
+
+        // ------------------------------------------
+        // ALWAYS CALCULATE BALANCE FROM:
+        //
+        // Purchase - Paid
+        // ------------------------------------------
+
+        const correctBalance =
+            Math.max(
+                Number(
+                    (grandTotal - paid).toFixed(2)
+                ),
+                0
+            );
+
+
+        // ------------------------------------------
+        // REPAIR WRONG BALANCE
+        // ------------------------------------------
+
+        if (
+            Math.abs(
+                oldBalance - correctBalance
+            ) > 0.01
+        ) {
+
+            console.log(
+                "SVSS: Repairing old bill balance:",
+                bill.billNo,
+                "Old Balance:",
+                oldBalance,
+                "Correct Balance:",
+                correctBalance
+            );
+
+            bill.balanceDue =
+                correctBalance;
+
+            bill.paymentStatus =
+                correctBalance <= 0
+                    ? "Paid"
+                    : "Pending";
+
+            changed = true;
+        }
+
+    });
+
+
+    // ------------------------------------------
+    // SAVE REPAIRED BILLS
+    // ------------------------------------------
+
+    if (changed) {
+
+        db.bills = bills;
+
+        await window.api.saveDatabase(db);
+
+        try {
+
+            await window.api.saveBills(bills);
+
+            console.log(
+                "SVSS: Old bill purchase/paid/balance values repaired and synchronized."
+            );
+
+        } catch (cloudError) {
+
+            console.warn(
+                "SVSS: Cloud sync after legacy bill repair failed.",
+                cloudError
+            );
+
+        }
+    }
+}
 
 // --------------------------
 // Manual Customers
@@ -261,26 +436,76 @@ if (existingKey) {
     };
 
 }
+           
+    // ==========================================
+// BILL TOTAL CALCULATION
+// ==========================================
 
-                const grandTotal =
-                    Number(
-                        String(bill.grandTotal)
-                        .replace(/[^\d.]/g, "")
-                    ) || 0;
+// Read stored Grand Total
+let grandTotal =
+    Number(
+        String(bill.grandTotal || "")
+            .replace(/[^\d.]/g, "")
+    ) || 0;
 
-                const paid =
-                    Number(bill.amountPaid) || 0;
+// Read paid amount
+const paid =
+    Number(bill.amountPaid) || 0;
 
-                const balance =
-                    Number(bill.balanceDue) || 0;
+// Read balance amount
+const balance =
+    Number(bill.balanceDue) || 0;
 
-                customers[key].bills.push(bill);
 
-                customers[key].totalPurchase += grandTotal;
+// ==========================================
+// IMPORTANT
+// ==========================================
+// Every bill MUST have a Purchase amount.
+//
+// If old bill has Grand Total = 0,
+// recover Purchase from:
+//
+// Purchase = Paid + Balance
+//
+// Examples:
+//
+// ₹39,060 bill
+// Paid ₹0
+// Balance ₹39,060
+// Purchase = ₹39,060
+//
+// ₹37,866.15 bill
+// Paid ₹37,866.15
+// Balance ₹0
+// Purchase = ₹37,866.15
+// ==========================================
 
-                customers[key].totalPaid += paid;
+if (grandTotal <= 0 && (paid > 0 || balance > 0)) {
 
-                customers[key].totalBalance += balance;
+    grandTotal =
+        Number(
+            (paid + balance).toFixed(2)
+        );
+
+}
+
+
+// ==========================================
+// ADD BILL
+// ==========================================
+
+customers[key].bills.push(bill);
+
+
+// ==========================================
+// CUSTOMER TOTALS
+// ==========================================
+
+customers[key].totalPurchase += grandTotal;
+
+customers[key].totalPaid += paid;
+
+customers[key].totalBalance += balance;
 
 
             });
@@ -358,7 +583,7 @@ if (existingKey) {
 
                 <td>
 
-                    ${customer.mobile || customer.gst || "-"}
+                    ${getCustomerContact(customer)}
 
 
                 </td>
@@ -824,7 +1049,7 @@ showCustomer(customer);
             customer.name;
 
        document.getElementById("viewCustomerMobile").textContent =
-            customer.mobile || customer.gst || "-";
+          getCustomerContact(customer);
 
         document.getElementById("viewCustomerAddress").textContent =
             customer.address;
@@ -981,7 +1206,7 @@ deleteCustomerName.textContent =
     customer.name;
 
 deleteCustomerMobile.textContent =
-    customer.mobile || customer.gst || "-";
+    getCustomerContact(customer);
 
 
 // Show modal
@@ -1122,17 +1347,29 @@ showToast(
 
             const row = document.createElement("tr");
 
-            const total =
-                Number(
-                    String(bill.grandTotal)
-                    .replace(/[^\d.]/g, "")
-                ) || 0;
+            let total =
+    Number(
+        String(bill.grandTotal || "")
+            .replace(/[^\d.]/g, "")
+    ) || 0;
 
-            const paid =
-                Number(bill.amountPaid) || 0;
+const paid =
+    Number(bill.amountPaid) || 0;
 
-            const balance =
-                Number(bill.balanceDue) || 0;
+const balance =
+    Number(bill.balanceDue) || 0;
+
+
+// If stored Grand Total is missing,
+// recover the actual purchase amount.
+if (total <= 0 && (paid > 0 || balance > 0)) {
+
+    total =
+        Number(
+            (paid + balance).toFixed(2)
+        );
+
+}
 
             let status = "Paid";
 
@@ -1357,49 +1594,99 @@ document
     .addEventListener("click", function () {
 
         if (!currentCustomer) {
-            showToast("Customer not selected.", "warning");
+
+            showToast(
+                "Customer not selected.",
+                "warning"
+            );
+
             return;
         }
 
-        // Fill customer name
-        document.getElementById("payCustomer").value =
-            currentCustomer.name || "";
 
-        // Fill current balance
-        document.getElementById("payBalance").value =
+        // ==========================================
+        // CUSTOMER NAME
+        // ==========================================
+
+        document.getElementById("payCustomer").textContent =
+            currentCustomer.name || "-";
+
+
+        // ==========================================
+        // CURRENT OUTSTANDING BALANCE
+        // ==========================================
+
+        const outstandingBalance =
+            Number(currentCustomer.totalBalance) || 0;
+
+
+        document.getElementById("payBalance").textContent =
             "Rs. " +
-            Number(currentCustomer.totalBalance || 0).toFixed(2);
+            outstandingBalance.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
 
-        // Clear old values
-        document.getElementById("payAmount").value = "";
+
+        // ==========================================
+        // PAYMENT AMOUNT
+        // ==========================================
+
+        const payAmount =
+            document.getElementById("payAmount");
+
+        payAmount.value = "";
+
+        payAmount.max =
+            outstandingBalance > 0
+                ? outstandingBalance.toFixed(2)
+                : "0";
+
+
+        // ==========================================
+        // DEFAULT PAYMENT MODE
+        // ==========================================
 
         document.getElementById("payMode").value =
             "Cash";
 
+
+        // ==========================================
+        // CLEAR REMARKS
+        // ==========================================
+
         document.getElementById("payRemarks").value =
             "";
 
-        // Get existing modal instances
+
+        // ==========================================
+        // OPEN PAYMENT MODAL
+        // ==========================================
+
         const customerModalElement =
             document.getElementById("customerModal");
 
         const paymentModalElement =
             document.getElementById("paymentModal");
 
+
         const customerModalInstance =
             bootstrap.Modal.getOrCreateInstance(
                 customerModalElement
             );
+
 
         const paymentModalInstance =
             bootstrap.Modal.getOrCreateInstance(
                 paymentModalElement
             );
 
+
         // Close customer details
         customerModalInstance.hide();
 
-        // Wait until customer modal is closed
+
+        // Open payment modal after closing
         setTimeout(function () {
 
             paymentModalInstance.show();
@@ -2095,6 +2382,23 @@ dbCustomer.paymentHistory.push(
 
     const doc = new jsPDF();
     await refreshDatabase();
+    // ======================================
+    // STATEMENT MONEY FORMAT
+    // Indian comma formatting
+    // ======================================
+    
+    function formatStatementMoney(value) {
+    
+        const amount = Number(
+            String(value ?? 0)
+                .replace(/[^\d.-]/g, "")
+        ) || 0;
+    
+        return "Rs. " + amount.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
 
     const settings = db.settings || {};
     
@@ -2356,14 +2660,13 @@ dbCustomer.paymentHistory.push(
 
     );
 
+   const customerContact =
+        getCustomerContact(customer);
+    
     doc.text(
-
-        customer.mobile,
-
+        customerContact,
         38,
-
         detailsY+19
-
     );
 
     doc.setFont(
@@ -2529,27 +2832,31 @@ const rows = customer.bills.map((bill,index)=>{
 
     const balance =
         Number(bill.balanceDue) || 0;
-
+    
     return [
-
         index + 1,
-
         bill.billNo || "-",
-
         bill.billBookNo || "-",
-
         formatDate(bill.date),
-
-        total.toFixed(2),
-
-        paid.toFixed(2),
-
-        balance.toFixed(2),
-
+    
+        total.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }),
+    
+        paid.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }),
+    
+        balance.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }),
+    
         balance > 0
             ? "Pending"
             : "Paid"
-
     ];
 
 });
@@ -2978,15 +3285,10 @@ function summaryRow(label, value, bold = false) {
     );
 
     doc.text(
-
-        "Rs. " + value,
-
-        summaryX + summaryW - 2,
-
-        sy,
-
-        { align: "right" }
-
+    value,
+    summaryX + summaryW - 2,
+    sy,
+    { align: "right" }
     );
 
     sy += 10;
@@ -3014,19 +3316,13 @@ sy += 2;
 // Rows
 
 summaryRow(
-
     "Total Purchase",
-
-    customer.totalPurchase.toFixed(2)
-
+    formatStatementMoney(customer.totalPurchase)
 );
 
 summaryRow(
-
     "Total Paid",
-
-    customer.totalPaid.toFixed(2)
-
+    formatStatementMoney(customer.totalPaid)
 );
 
 // Gold Divider
@@ -3050,13 +3346,9 @@ doc.line(
 sy += 3;
 
 summaryRow(
-
     "Balance Due",
-
-    customer.totalBalance.toFixed(2),
-
+    formatStatementMoney(customer.totalBalance),
     true
-
 );
     
 // ======================================

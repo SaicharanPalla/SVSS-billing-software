@@ -473,6 +473,11 @@
                     </div>
 
                     <div class="col-md-4">
+                        <strong>GST Number :</strong>
+                        <span id="viewCustomerGST"></span>
+                    </div>
+
+                    <div class="col-md-4">
 
                         <strong>Address :</strong>
 
@@ -703,128 +708,186 @@
      PAYMENT MODAL
 =========================================== -->
 
-<div class="modal fade"
-     id="paymentModal"
-     tabindex="-1">
+<!-- ===========================================
+     PAYMENT MODAL - CONCEPT 4
+=========================================== -->
 
-    <div class="modal-dialog">
+<div class="modal fade" id="paymentModal" tabindex="-1">
 
-        <div class="modal-content">
+    <div class="modal-dialog payment-dialog">
 
-            <div class="modal-header">
+        <div class="modal-content payment-modal">
 
-                <h5 class="modal-title">
+            <!-- HEADER -->
+            <div class="payment-header">
 
-                    Receive Payment
+                <div class="payment-title-area">
 
-                </h5>
+                    <div class="payment-title-icon">
+                        <i class="bi bi-credit-card"></i>
+                    </div>
+
+                    <div>
+                        <h5>Receive Payment</h5>
+                        <span>Record customer payment</span>
+                    </div>
+
+                </div>
 
                 <button
-                    class="btn-close"
-                    data-bs-dismiss="modal">
+                    type="button"
+                    class="payment-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close">
+
+                    <i class="bi bi-x-lg"></i>
+
                 </button>
 
             </div>
 
-            <div class="modal-body">
 
-                <div class="mb-3">
+            <!-- BODY -->
+            <div class="payment-body">
 
-                    <label class="form-label">
+                <!-- CUSTOMER SUMMARY -->
+                <div class="payment-customer-card">
 
-                        Customer
+                    <div class="payment-customer-info">
 
-                    </label>
+                        <div class="payment-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
 
-                    <input
-                        id="payCustomer"
-                        class="form-control"
-                        readonly>
+                        <div>
+                            <small>Customer</small>
+                            <strong id="payCustomer">Charan</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="payment-divider"></div>
+
+
+                    <div class="payment-balance-info">
+
+                        <small>Outstanding Balance</small>
+
+                        <strong id="payBalance">
+                            Rs. 0.00
+                        </strong>
+
+                    </div>
 
                 </div>
 
-                <div class="mb-3">
 
-                    <label class="form-label">
+                <!-- PAYMENT AMOUNT -->
+                <div class="payment-field">
 
-                        Balance
-
-                    </label>
-
-                    <input
-                        id="payBalance"
-                        class="form-control"
-                        readonly>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
+                    <label>
                         Payment Amount
-
                     </label>
 
-                    <input
-                        type="number"
-                        id="payAmount"
-                        class="form-control">
+                    <div class="payment-input payment-amount-input">
+
+                        <span class="rupee-icon">
+                            ₹
+                        </span>
+
+                        <input
+                            type="number"
+                            id="payAmount"
+                            class="form-control"
+                            placeholder="0.00"
+                            min="0"
+                            step="0.01">
+
+                    </div>
 
                 </div>
 
-                <div class="mb-3">
 
-                    <label class="form-label">
+                <!-- PAYMENT MODE + REMARKS -->
+                <div class="payment-two-column">
 
-                        Payment Mode
+                    <!-- PAYMENT MODE -->
+                    <div class="payment-field">
 
-                    </label>
+                        <label>
+                            Payment Mode
+                        </label>
 
-                    <select
-                        id="payMode"
-                        class="form-select">
+                        <div class="payment-input">
 
-                        <option>Cash</option>
-                        <option>UPI</option>
-                        <option>Card</option>
-                        <option>Bank Transfer</option>
+                            <i class="bi bi-credit-card"></i>
 
-                    </select>
+                            <select
+                                id="payMode"
+                                class="form-select">
 
-                </div>
+                                <option>Cash</option>
+                                <option>UPI</option>
+                                <option>Card</option>
+                                <option>Bank Transfer</option>
 
-                <div class="mb-3">
+                            </select>
 
-                    <label class="form-label">
+                            <i class="bi bi-chevron-down select-arrow"></i>
 
-                       Remarks
+                        </div>
 
-                    </label>
+                    </div>
 
-                    <textarea
-                        id="payRemarks"
-                        class="form-control"></textarea>
+
+                    <!-- REMARKS -->
+                    <div class="payment-field">
+
+                        <label>
+                            Remarks <span>(Optional)</span>
+                        </label>
+
+                        <div class="payment-input remarks-input">
+
+                            <i class="bi bi-chat-left-text"></i>
+
+                            <textarea
+                                id="payRemarks"
+                                class="form-control"
+                                placeholder="Enter remarks..."></textarea>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </div>
 
-            <div class="modal-footer">
+
+            <!-- FOOTER -->
+            <div class="payment-footer">
 
                 <button
-                    class="btn btn-secondary"
+                    type="button"
+                    class="payment-close-btn"
                     data-bs-dismiss="modal">
 
                     Close
 
                 </button>
 
+
                 <button
                     type="button"
                     id="savePayment"
-                    class="btn btn-success">
+                    class="payment-save-btn">
+
+                    <i class="bi bi-check-circle"></i>
+
                     Save Payment
+
                 </button>
 
             </div>

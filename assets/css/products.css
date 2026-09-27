@@ -4090,3 +4090,86 @@ button[onclick*="openProduct"],
         margin-bottom: 8px !important;
     }
 }
+/* =========================================================
+   SVSS PRODUCT MODAL
+   769px - 1200px
+========================================================= */
+
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+
+    #productModal {
+        padding: 0 !important;
+        overflow-y: auto !important;
+    }
+
+    #productModal .modal-dialog {
+        position: fixed !important;
+
+        top: 100px !important;
+        left: 50% !important;
+
+        width: 700px !important;
+        max-width: calc(100vw - 40px) !important;
+
+        margin: 0 !important;
+
+        transform: translateX(-50%) !important;
+    }
+
+    #productModal .modal-content {
+        width: 100% !important;
+
+        max-height: calc(100vh - 120px) !important;
+
+        overflow: hidden !important;
+
+        border-radius: 12px !important;
+    }
+
+    #productModal .modal-body {
+        max-height: calc(100vh - 220px) !important;
+
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+}
+/* =========================================================
+   SVSS PRODUCT MODAL
+   MOBILE - 768px AND BELOW
+========================================================= */
+
+@media screen and (max-width: 768px) {
+
+    #productModal {
+        padding: 0 !important;
+        overflow-y: auto !important;
+    }
+
+    #productModal .modal-dialog {
+        width: calc(100% - 56px) !important;
+        max-width: none !important;
+
+        margin: 80px auto !important;
+
+        transform: none !important;
+    }
+
+    #productModal .modal-content {
+        width: 100% !important;
+
+        max-height: calc(100vh - 16px) !important;
+
+        overflow: hidden !important;
+
+        border-radius: 12px !important;
+    }
+
+    #productModal .modal-body {
+        max-height: calc(100vh - 150px) !important;
+
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+}

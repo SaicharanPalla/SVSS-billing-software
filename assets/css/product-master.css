@@ -99,3 +99,51 @@
     }
 
 }
+/* =========================================================
+   SVSS PRODUCT MASTER MODAL
+   769px - 1200px
+   ========================================================= */
+
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+
+    #productMasterModal {
+        padding: 0 !important;
+        overflow-y: auto !important;
+    }
+
+    #productMasterModal .modal-dialog {
+        position: fixed !important;
+
+        /* VERTICAL POSITION */
+        top: 100px !important;
+
+        /* CENTER */
+        left: 50% !important;
+
+        /* BOX WIDTH */
+        width: 650px !important;
+        max-width: calc(100vw - 40px) !important;
+
+        margin: 0 !important;
+
+        transform: translateX(-50%) !important;
+    }
+
+    #productMasterModal .modal-content {
+        width: 100% !important;
+
+        max-height: calc(100vh - 120px) !important;
+
+        overflow: hidden !important;
+
+        border-radius: 12px !important;
+    }
+
+    #productMasterModal .modal-body {
+        max-height: calc(100vh - 210px) !important;
+
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+}

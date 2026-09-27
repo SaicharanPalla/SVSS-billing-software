@@ -714,6 +714,13 @@
                 </tr>
 
             </tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Total</strong></td>
+                    <td id="salesTotalBills"><strong>0</strong></td>
+                    <td id="salesTotalAmount"><strong>Rs. 0.00</strong></td>
+                </tr>
+            </tfoot>
 
         </table>
 
@@ -789,17 +796,43 @@
 
                 </tr>
 
-            </tbody>
-            <tfoot>
-                <tr class="table-success fw-bold">
-                    <td>TOTAL</td>
-                    <td id="salesReportTotalBills" class="text-center">0</td>
-                    <td id="salesReportTotalAmount" class="text-end">
-                        Rs. 0.00
-                    </td>
-                </tr>
-            </tfoot>
-
+                </tbody>
+                <tfoot>
+        <tr class="table-success fw-bold">
+    
+            <td></td>
+    
+            <td>
+                TOTAL
+            </td>
+    
+            <td
+                id="creditTotalBills"
+                class="text-center">
+                0
+            </td>
+    
+            <td
+                id="creditTotalPurchase"
+                class="text-end">
+                Rs. 0.00
+            </td>
+    
+            <td
+                id="creditTotalPaid"
+                class="text-end">
+                Rs. 0.00
+            </td>
+    
+            <td
+                id="creditTotalBalance"
+                class="text-end text-danger">
+                Rs. 0.00
+            </td>
+    
+        </tr>
+    </tfoot>
+    
         </table>
 
     </div>
@@ -875,6 +908,29 @@
                 </tr>
 
             </tbody>
+            <tfoot>
+    <tr class="table-success fw-bold">
+
+        <td></td>
+    
+            <td colspan="3">
+                TOTAL
+            </td>
+    
+            <td
+                id="paidTotalBills"
+                class="text-center">
+                0 Bills
+            </td>
+    
+            <td
+                id="paidTotalAmount"
+                class="text-end text-success">
+                Rs. 0.00
+            </td>
+    
+        </tr>
+    </tfoot>
 
         </table>
 

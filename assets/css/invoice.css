@@ -836,6 +836,21 @@ body{
         margin:0;
 
     }
+    @media print {
+
+    /* Keep Bootstrap Icons visible in printed invoice */
+    .bi,
+    .card-title i,
+    .section-title i,
+    .footer-contact i {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            font-family: "bootstrap-icons" !important;
+            font-style: normal !important;
+            font-weight: normal !important;
+        }
+    
+    }
 
     .invoice{
 

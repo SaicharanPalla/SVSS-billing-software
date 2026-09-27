@@ -2901,3 +2901,113 @@ body:not(.dark-mode) .recent-bills .status-badge {
     border-radius: 10px;
     display: inline-block;
 }
+/* =====================================================
+   DASHBOARD - 769px to 1200px
+   Position adjustment only
+   ===================================================== */
+
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+
+    .main {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 0 20px 30px !important;
+
+        box-sizing: border-box !important;
+    }
+
+    .welcome-card {
+        margin-top: 0 !important;
+    }
+
+}
+/* =========================================================
+   SVSS DASHBOARD
+   1200px WIDTH ADJUSTMENT ONLY
+   DO NOT AFFECT 780px
+========================================================= */
+
+@media screen and (min-width: 1001px) and (max-width: 1200px) {
+
+    /* ================= MAIN ================= */
+
+    body .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 95px 20px 30px 20px !important;
+
+        box-sizing: border-box !important;
+    }
+
+
+    /* ================= WELCOME BOX ================= */
+
+    body .main .welcome-card {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin: 0 0 25px 0 !important;
+
+        height: 260px !important;
+        min-height: 260px !important;
+        max-height: 260px !important;
+
+        box-sizing: border-box !important;
+    }
+
+
+    /* ================= DASHBOARD CARDS ================= */
+
+    body .main .dashboard-grid {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin: 0 0 25px 0 !important;
+
+        box-sizing: border-box !important;
+    }
+
+
+    body .main .dashboard-card {
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+
+    /* ================= QUICK ACTIONS ================= */
+
+    body .main .quick-actions {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin: 0 0 25px 0 !important;
+
+        box-sizing: border-box !important;
+    }
+
+
+    body .main .action-btn {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+
+    /* ================= RECENT BILLS ================= */
+
+    body .main .recent-bills {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin-top: 0 !important;
+
+        box-sizing: border-box !important;
+    }
+
+}
