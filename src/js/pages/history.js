@@ -1687,7 +1687,7 @@ document
 
                 // ==========================================
                 // CREATE PDF
-                // EXACT BILLING PAGE FORMAT
+                // SAME BILLING PAGE FORMAT
                 // ==========================================
 
                 const { jsPDF } =
@@ -1794,7 +1794,6 @@ document
 
                 // ==========================================
                 // PAGE BORDER
-                // EXACT BILLING PAGE
                 // ==========================================
 
                 function drawPageBorder() {
@@ -1972,8 +1971,6 @@ document
                 doc.setLineWidth(0.8);
 
 
-                // Left line
-
                 doc.line(
                     12,
                     47,
@@ -1981,8 +1978,6 @@ document
                     47
                 );
 
-
-                // Right line
 
                 doc.line(
                     134,
@@ -1992,9 +1987,8 @@ document
                 );
 
 
-                // Left diamond
-
                 doc.setLineWidth(0.7);
+
 
                 doc.rect(
                     78,
@@ -2005,8 +1999,6 @@ document
                 );
 
 
-                // Right diamond
-
                 doc.rect(
                     pageWidth - 82,
                     45,
@@ -2014,23 +2006,25 @@ document
                     4,
                     "S"
                 );
+
+
                 // ==========================================
                 // COPY LABEL
                 // ==========================================
-                
+
                 doc.setFont(
                     "helvetica",
                     "bold"
                 );
-                
+
                 doc.setFontSize(9);
-                
+
                 doc.setTextColor(
                     90,
                     90,
                     90
                 );
-                
+
                 doc.text(
                     "COPY INVOICE",
                     pageWidth - 18,
@@ -2039,7 +2033,7 @@ document
                         align: "right"
                     }
                 );
-                
+
                 doc.setTextColor(
                     ...BLACK
                 );
@@ -2131,8 +2125,6 @@ document
                     3
                 );
 
-
-                // Header background
 
                 doc.setFillColor(
                     ...LIGHT_GOLD
@@ -2282,8 +2274,6 @@ document
                 );
 
 
-                // Header background
-
                 doc.setFillColor(
                     ...LIGHT_GOLD
                 );
@@ -2394,6 +2384,8 @@ document
 
                 // ==========================================
                 // PRODUCT TABLE
+                // IMPORTANT:
+                // DO NOT SPLIT AFTER 3 ITEMS
                 // ==========================================
 
                 const tableY =
@@ -2447,16 +2439,18 @@ document
                         );
 
 
+                // ==========================================
+                // ONE COMPLETE TABLE
+                // AUTO PAGE BREAK ONLY WHEN ACTUALLY NEEDED
+                // ==========================================
+
                 doc.autoTable({
 
                     startY: tableY,
 
                     margin: {
-
                         left: 11,
-
                         right: 10
-
                     },
 
                     tableWidth: "auto",
@@ -2497,9 +2491,9 @@ document
 
                         font: "helvetica",
 
-                        fontSize: 7.4,
+                        fontSize: 7.1,
 
-                        cellPadding: 2,
+                        cellPadding: 1.5,
 
                         halign: "center",
 
@@ -2531,7 +2525,7 @@ document
 
                     bodyStyles: {
 
-                        minCellHeight: 10
+                        minCellHeight: 8
 
                     },
 
@@ -2586,30 +2580,54 @@ document
                         }
 
                     }
-
-                });
-
-
-                // ==========================================
-                // POSITION AFTER TABLE
-                // ==========================================
-
-                let y =
-                    doc.lastAutoTable.finalY + 5;
-
-
-                if (
-                    y + 105 >
-                    pageHeight - 15
-                ) {
-
-                    doc.addPage();
-
-                    drawPageBorder();
-
-                    y = 18;
-
-                }
+             
+             }); 
+             // ==========================================
+             // POSITION AFTER PRODUCT TABLE
+             // ==========================================
+             //
+             // 1–4 ITEMS
+             // → Bottom sections stay on PAGE 1
+             //
+             // 5+ ITEMS
+             // → Product table stays on PAGE 1
+             // → Bottom sections start on PAGE 2
+             // ==========================================
+             
+             const itemCount =
+                 (selectedBill.items || []).length;
+             
+             
+             let y =
+                 doc.lastAutoTable.finalY + 3;
+             
+             
+             // ==========================================
+             // 5+ ITEMS → FORCE BOTTOM SECTIONS TO PAGE 2
+             // ==========================================
+             
+             if (itemCount >= 5) {
+             
+                 doc.addPage();
+             
+                 drawPageBorder();
+             
+                 y = 18;
+             
+             }
+             
+             
+             // ==========================================
+             // 1–4 ITEMS
+             // → CONTINUE DIRECTLY BELOW TABLE
+             // ==========================================
+             
+             else {
+             
+                 y =
+                     doc.lastAutoTable.finalY + 3;
+             
+             }
 
 
                 // ==========================================
@@ -2620,7 +2638,7 @@ document
 
                 const paymentW = 83;
 
-                const paymentH = 42;
+                const paymentH = 41;
 
 
                 doc.setDrawColor(...GOLD);
@@ -2635,8 +2653,6 @@ document
                     3
                 );
 
-
-                // Header
 
                 doc.setFillColor(
                     ...LIGHT_GOLD
@@ -2759,7 +2775,7 @@ document
                 );
 
 
-                // Status
+                // STATUS
 
                 doc.setFont(
                     "helvetica",
@@ -2808,6 +2824,7 @@ document
                     doc.setTextColor(
                         ...RED
                     );
+
                 }
 
 
@@ -2840,7 +2857,7 @@ document
 
 
                 const amountH =
-                    86;
+                    82;
 
 
                 doc.setDrawColor(...GOLD);
@@ -2855,8 +2872,6 @@ document
                     3
                 );
 
-
-                // Header
 
                 doc.setFillColor(
                     ...LIGHT_GOLD
@@ -2949,10 +2964,6 @@ document
                 let amountY =
                     y + 18;
 
-
-                // ==========================================
-                // AMOUNT ROW
-                // ==========================================
 
                 function amountRow(
                     label,
@@ -3175,11 +3186,11 @@ document
                 const transportY =
                     y +
                     paymentH +
-                    5;
+                    4;
 
 
                 const transportH =
-                    39;
+                    38;
 
 
                 doc.setDrawColor(...GOLD);
@@ -3194,8 +3205,6 @@ document
                     3
                 );
 
-
-                // Header
 
                 doc.setFillColor(
                     ...LIGHT_GOLD
@@ -3310,14 +3319,14 @@ document
                 // AMOUNT IN WORDS
                 // ==========================================
 
-                const wordsY =
-                    transportY +
-                    transportH +
-                    5;
-
-
+               const wordsY =
+                    Math.max(
+                        transportY + transportH,
+                        y + amountH
+                    ) + 2;
+                
                 const wordsH =
-                    22;
+                    15;
 
 
                 doc.setDrawColor(...GOLD);
@@ -3332,8 +3341,6 @@ document
                     3
                 );
 
-
-                // Header background
 
                 doc.setFillColor(
                     ...LIGHT_GOLD
@@ -3395,7 +3402,7 @@ document
                 doc.text(
                     amountLines,
                     16,
-                    wordsY + 16
+                    wordsY + 13
                 );
 
 
@@ -3406,7 +3413,7 @@ document
                 const bankY =
                     wordsY +
                     wordsH +
-                    5;
+                    2;
 
 
                 const bankW =
@@ -3414,7 +3421,7 @@ document
 
 
                 const bankH =
-                    34;
+                    32;
 
 
                 doc.setDrawColor(...GOLD);
@@ -3429,8 +3436,6 @@ document
                     3
                 );
 
-
-                // Header
 
                 doc.setFillColor(
                     ...LIGHT_GOLD
@@ -3559,8 +3564,6 @@ document
                     pageHeight - 20;
 
 
-                // Thank you
-
                 doc.setTextColor(
                     75,
                     20,
@@ -3585,8 +3588,6 @@ document
                     }
                 );
 
-
-                // Computer generated
 
                 doc.setTextColor(
                     40,
@@ -3617,16 +3618,11 @@ document
                 // SAVE PDF
                 // ==========================================
 
-                // Convert historical date to DD-MM-YYYY
-
                 let reportDate =
                     formatDisplayDate(
                         selectedBill.date
                     );
 
-
-                // Fallback if formatDisplayDate
-                // returns something unexpected
 
                 if (!reportDate) {
 
@@ -3652,6 +3648,7 @@ document
                             ).padStart(2, "0") +
                             "-" +
                             dateObject.getFullYear();
+
                     }
                 }
 
@@ -3666,7 +3663,7 @@ document
 
 
                 showToast(
-                    "Invoice Reprinted Successfully.",
+                    "Bill Reprinted Successfully.",
                     "success"
                 );
 
@@ -3674,13 +3671,13 @@ document
             } catch (error) {
 
                 console.error(
-                    "Reprint Invoice Error:",
+                    "Reprint Bill Error:",
                     error
                 );
 
 
                 showToast(
-                    "Failed to reprint invoice.",
+                    "Failed to reprint bill.",
                     "error"
                 );
 
@@ -3688,7 +3685,6 @@ document
 
         }
     );
-
 
 // ==============================
 // PART 5 STARTS HERE
@@ -3811,22 +3807,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ==============================
 // SAVE DATABASE BEFORE EXIT
 // ==============================
-
-window.addEventListener("beforeunload", async () => {
-
-    try {
-
-        await saveDatabase();
-
-    } catch (err) {
-
-        console.error(
-            "Error saving database:",
-            err
-        );
-
+window.addEventListener("beforeunload", () => {
+    // Browser edits and deletes are saved by their explicit handlers.
+    // Don't upload a potentially stale cached bill list on page exit.
+    if (window.api.isBrowser) {
+        return;
     }
 
+    saveDatabase().catch((err) => {
+        console.error("Error saving database:", err);
+    });
 });
 // ==============================
 // DELETE BILL POPUP

@@ -377,6 +377,23 @@
                             class="form-control"
                             value="0">
 
+                            <div class="mb-3">
+                                <label for="openingBalanceDate" class="form-label">
+                                    <i class="bi bi-calendar3"></i>
+                                    Opening Balance Date
+                                </label>
+                            
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="openingBalanceDate"
+                                >
+                            
+                                <div class="form-text">
+                                    Optional — select the date from which this opening balance is due.
+                                </div>
+                            </div>
+
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -454,38 +471,6 @@
 
             <div class="modal-body">
 
-                <div class="row mb-4">
-
-                    <div class="col-md-4">
-
-                        <strong>Name :</strong>
-
-                        <span id="viewCustomerName"></span>
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <strong>Mobile :</strong>
-
-                        <span id="viewCustomerMobile"></span>
-
-                    </div>
-
-                    <div class="col-md-4">
-                        <strong>GST Number :</strong>
-                        <span id="viewCustomerGST"></span>
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <strong>Address :</strong>
-
-                        <span id="viewCustomerAddress"></span>
-
-                    </div>
-
-                </div>
 
                 <div class="table-responsive">
 
@@ -707,22 +692,13 @@
 <!-- ===========================================
      PAYMENT MODAL
 =========================================== -->
-
-<!-- ===========================================
-     PAYMENT MODAL - CONCEPT 4
-=========================================== -->
-
 <div class="modal fade" id="paymentModal" tabindex="-1">
-
     <div class="modal-dialog payment-dialog">
-
         <div class="modal-content payment-modal">
 
             <!-- HEADER -->
             <div class="payment-header">
-
                 <div class="payment-title-area">
-
                     <div class="payment-title-icon">
                         <i class="bi bi-credit-card"></i>
                     </div>
@@ -731,7 +707,6 @@
                         <h5>Receive Payment</h5>
                         <span>Record customer payment</span>
                     </div>
-
                 </div>
 
                 <button
@@ -739,22 +714,16 @@
                     class="payment-close"
                     data-bs-dismiss="modal"
                     aria-label="Close">
-
                     <i class="bi bi-x-lg"></i>
-
                 </button>
-
             </div>
 
-
-            <!-- BODY -->
+            <!-- BODY: fields and allocation scroll together -->
             <div class="payment-body">
 
                 <!-- CUSTOMER SUMMARY -->
                 <div class="payment-customer-card">
-
                     <div class="payment-customer-info">
-
                         <div class="payment-avatar">
                             <i class="bi bi-person"></i>
                         </div>
@@ -763,39 +732,22 @@
                             <small>Customer</small>
                             <strong id="payCustomer">Charan</strong>
                         </div>
-
                     </div>
-
 
                     <div class="payment-divider"></div>
 
-
                     <div class="payment-balance-info">
-
                         <small>Outstanding Balance</small>
-
-                        <strong id="payBalance">
-                            Rs. 0.00
-                        </strong>
-
+                        <strong id="payBalance">Rs. 0.00</strong>
                     </div>
-
                 </div>
-
 
                 <!-- PAYMENT AMOUNT -->
                 <div class="payment-field">
-
-                    <label>
-                        Payment Amount
-                    </label>
+                    <label for="payAmount">Payment Amount</label>
 
                     <div class="payment-input payment-amount-input">
-
-                        <span class="rupee-icon">
-                            ₹
-                        </span>
-
+                        <span class="rupee-icon">₹</span>
                         <input
                             type="number"
                             id="payAmount"
@@ -803,99 +755,129 @@
                             placeholder="0.00"
                             min="0"
                             step="0.01">
-
                     </div>
-
                 </div>
 
+                <!-- PAYMENT DATE -->
+                <div class="payment-field">
+                    <label for="payDate">Payment Date</label>
 
-                <!-- PAYMENT MODE + REMARKS -->
+                    <div class="payment-input">
+                        <i class="bi bi-calendar3"></i>
+                        <input
+                            type="date"
+                            id="payDate"
+                            class="form-control">
+                    </div>
+                </div>
+
+                <!-- PAYMENT MODE AND REMARKS -->
                 <div class="payment-two-column">
-
-                    <!-- PAYMENT MODE -->
                     <div class="payment-field">
-
-                        <label>
-                            Payment Mode
-                        </label>
+                        <label for="payMode">Payment Mode</label>
 
                         <div class="payment-input">
-
                             <i class="bi bi-credit-card"></i>
 
-                            <select
-                                id="payMode"
-                                class="form-select">
-
+                            <select id="payMode" class="form-select">
                                 <option>Cash</option>
                                 <option>UPI</option>
                                 <option>Card</option>
                                 <option>Bank Transfer</option>
-
                             </select>
 
                             <i class="bi bi-chevron-down select-arrow"></i>
-
                         </div>
-
                     </div>
 
-
-                    <!-- REMARKS -->
                     <div class="payment-field">
-
-                        <label>
+                        <label for="payRemarks">
                             Remarks <span>(Optional)</span>
                         </label>
 
                         <div class="payment-input remarks-input">
-
                             <i class="bi bi-chat-left-text"></i>
-
                             <textarea
                                 id="payRemarks"
                                 class="form-control"
                                 placeholder="Enter remarks..."></textarea>
-
                         </div>
-
                     </div>
-
                 </div>
 
-            </div>
+                <!-- APPLY PAYMENT TO -->
+                <div class="payment-allocation">
+                    <label class="payment-allocation-heading">Apply payment to</label>
 
+                    <div class="payment-allocation-grid">
+                        <label
+                            class="payment-allocation-card"
+                            id="payOpeningCard"
+                            for="payToOpeningBalance">
+
+                            <input
+                                type="radio"
+                                id="payToOpeningBalance"
+                                name="paymentAllocation"
+                                value="openingBalance">
+
+                            <span class="payment-allocation-content">
+                                <strong>Opening Balance</strong>
+                                <small id="payOpeningRemaining" data-balance="0">
+                                    Rs. 0.00 remaining
+                                </small>
+                            </span>
+                        </label>
+
+                        <div class="payment-allocation-card" id="payBillCard">
+                            <label class="payment-allocation-choice" for="payToBill">
+                                <input
+                                    type="radio"
+                                    id="payToBill"
+                                    name="paymentAllocation"
+                                    value="bill">
+
+                                <strong>Select Bill</strong>
+                            </label>
+
+                            <select
+                                id="payBillSelect"
+                                class="form-select"
+                                aria-label="Select unpaid bill">
+                                <option value="">No unpaid bills</option>
+                            </select>
+
+                            <small id="payBillRemaining">Select an unpaid bill</small>
+                        </div>
+                    </div>
+
+                    <div class="payment-allocation-note">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Payment will reduce the selected balance only.
+                    </div>
+                </div>
+            </div>
 
             <!-- FOOTER -->
             <div class="payment-footer">
-
                 <button
                     type="button"
                     class="payment-close-btn"
                     data-bs-dismiss="modal">
-
                     Close
-
                 </button>
-
 
                 <button
                     type="button"
                     id="savePayment"
                     class="payment-save-btn">
-
                     <i class="bi bi-check-circle"></i>
-
                     Save Payment
-
                 </button>
-
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 <!-- Bootstrap -->

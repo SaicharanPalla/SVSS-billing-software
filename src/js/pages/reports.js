@@ -151,9 +151,122 @@ function getBillPaid(bill) {
 // GET BALANCE DUE
 // ===========================================
 
+function getReportEndDate() {
+    if (toDate.value) {
+        const [year, month, day] = toDate.value
+            .split("-")
+            .map(Number);
+
+        return new Date(year, month - 1, day, 23, 59, 59, 999);
+    }
+
+    const today = new Date();
+    return new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23, 59, 59, 999
+    );
+}
+
+function getBillPaidAsOfReportDate(bill) {
+    const currentPaid = getBillPaid(bill);
+    const reportEnd = getReportEndDate();
+
+    const customer = (db.customers || []).find(c => {
+        const sameId =
+            c.customerId &&
+            bill.customerId &&
+            String(c.customerId).trim() ===
+                String(bill.customerId).trim();
+
+        const sameName =
+            String(c.name || "").trim().toLowerCase() ===
+            String(bill.customer || "").trim().toLowerCase();
+
+        const customerMobile = String(c.mobile || "").trim();
+        const billMobile = String(bill.mobile || "").trim();
+
+        const sameMobile =
+            !customerMobile ||
+            !billMobile ||
+            customerMobile === "-" ||
+            billMobile === "-" ||
+            customerMobile === billMobile;
+
+        return sameId || (sameName && sameMobile);
+    });
+
+    if (!customer || !Array.isArray(customer.paymentHistory)) {
+        return currentPaid;
+    }
+
+    const customerBills = bills.filter(otherBill => {
+        const sameId =
+            customer.customerId &&
+            otherBill.customerId &&
+            String(customer.customerId).trim() ===
+                String(otherBill.customerId).trim();
+
+        const sameName =
+            String(otherBill.customer || "").trim().toLowerCase() ===
+            String(customer.name || "").trim().toLowerCase();
+
+        const customerMobile = String(customer.mobile || "").trim();
+        const billMobile = String(otherBill.mobile || "").trim();
+
+        const sameMobile =
+            !customerMobile ||
+            !billMobile ||
+            customerMobile === "-" ||
+            billMobile === "-" ||
+            customerMobile === billMobile;
+
+        return sameId || (sameName && sameMobile);
+    });
+
+    // The saved history has no bill allocation link.
+    // Apply this date adjustment only when the customer has one bill
+    // and the history total equals that bill's current paid amount.
+    if (customerBills.length !== 1) {
+        return currentPaid;
+    }
+
+    const historyTotal = customer.paymentHistory.reduce(
+        (total, payment) =>
+            total + Math.max(0, parseAmount(payment.amount)),
+        0
+    );
+
+    if (Math.abs(historyTotal - currentPaid) > 0.01) {
+        return currentPaid;
+    }
+
+    const paymentsAfterReportDate =
+        customer.paymentHistory.reduce((total, payment) => {
+            const paymentDate = getBillDate({
+                date:
+                    payment.date ||
+                    payment.paymentDate ||
+                    payment.createdAt
+            });
+
+            if (
+                !isNaN(paymentDate.getTime()) &&
+                paymentDate > reportEnd
+            ) {
+                return total + Math.max(0, parseAmount(payment.amount));
+            }
+
+            return total;
+        }, 0);
+
+    return Math.max(0, currentPaid - paymentsAfterReportDate);
+}
+
 function getBillBalance(bill) {
     const total = getBillTotal(bill);
-    const paid = getBillPaid(bill);
+    const paid = getBillPaidAsOfReportDate(bill);
 
     return Math.max(0, total - paid);
 }
@@ -389,6 +502,114 @@ function getFilteredBills() {
 
     });
 }
+function isDateInReportRange(date) {
+    if (!date || isNaN(date.getTime())) return false;
+
+    let start = null;
+    let end = null;
+
+    if (fromDate.value) {
+        const [year, month, day] = fromDate.value.split("-").map(Number);
+        start = new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    if (toDate.value) {
+        const [year, month, day] = toDate.value.split("-").map(Number);
+        end = new Date(year, month - 1, day, 23, 59, 59, 999);
+    }
+
+    return (!start || date >= start) && (!end || date <= end);
+}
+
+function getReportActivityBills(reportBills) {
+    const result = new Set(reportBills);
+
+    if (!fromDate.value && !toDate.value) {
+        return bills;
+    }
+
+    (db.customers || []).forEach(customer => {
+        const customerBills = bills.filter(bill => {
+            const sameId =
+                customer.customerId &&
+                bill.customerId &&
+                String(customer.customerId).trim() ===
+                    String(bill.customerId).trim();
+
+            const sameName =
+                String(customer.name || "").trim().toLowerCase() ===
+                String(bill.customer || "").trim().toLowerCase();
+
+            const customerMobile = String(customer.mobile || "").trim();
+            const billMobile = String(bill.mobile || "").trim();
+
+            const sameMobile =
+                !customerMobile ||
+                !billMobile ||
+                customerMobile === "-" ||
+                billMobile === "-" ||
+                customerMobile === billMobile;
+
+            return sameId || (sameName && sameMobile);
+        });
+
+        // Payment history has no bill number. Limit this association to
+        // customers with one bill so we do not guess between multiple bills.
+        if (
+            customerBills.length !== 1 ||
+            !Array.isArray(customer.paymentHistory)
+        ) {
+            return;
+        }
+
+        const bill = customerBills[0];
+        const billDate = getBillDate(bill);
+        const totalCustomerBillPaid =
+            customerBills.reduce(
+                (total, item) => total + getBillPaid(item),
+                0
+            );
+
+        const payments = [...customer.paymentHistory].sort((a, b) =>
+            getBillDate({ date: a.date || a.paymentDate || a.createdAt }) -
+            getBillDate({ date: b.date || b.paymentDate || b.createdAt })
+        );
+
+        let runningPaid = 0;
+        let previousOpeningPaid = 0;
+
+        payments.forEach(payment => {
+            const amount = Math.max(0, parseAmount(payment.amount));
+            runningPaid += amount;
+
+            const currentOpeningPaid =
+                Math.max(runningPaid - totalCustomerBillPaid, 0);
+
+            const openingPortion =
+                Math.max(currentOpeningPaid - previousOpeningPaid, 0);
+
+            previousOpeningPaid = currentOpeningPaid;
+
+            const billPortion =
+                Math.max(amount - openingPortion, 0);
+
+            const paymentDate = getBillDate({
+                date: payment.date || payment.paymentDate || payment.createdAt
+            });
+
+            if (
+                billPortion > 0 &&
+                !isNaN(billDate.getTime()) &&
+                paymentDate >= billDate &&
+                isDateInReportRange(paymentDate)
+            ) {
+                result.add(bill);
+            }
+        });
+    });
+
+    return [...result];
+}
 // ===========================================
 // PART 2 STARTS HERE
 // ===========================================
@@ -396,104 +617,60 @@ function getFilteredBills() {
 // PART 2 - SUMMARY CARDS
 // ===========================================
 
-function loadSummaryCards(reportBills) {
-
+function loadSummaryCards(reportBills, activityBills = reportBills) {
     let todaySales = 0;
     let monthSales = 0;
-
     let totalGST = 0;
 
     const customerSet = new Set();
-
     const productSet = new Set();
 
+    // Sales remain tied to the bill date.
     reportBills.forEach(bill => {
-
         const billDate = getBillDate(bill);
 
-        const grandTotal = getBillTotal(bill);
-
-        const gst = parseAmount(bill.gstTotal);
-
-        totalGST += gst;
-
         if (!isNaN(billDate.getTime()) && isToday(billDate)) {
+            todaySales += getBillTotal(bill);
+        }
+    });
 
-    todaySales += grandTotal;
+    // Payment-linked bill context for summary cards.
+    activityBills.forEach(bill => {
+        const billDate = getBillDate(bill);
 
-}
+        if (!isNaN(billDate.getTime()) && isCurrentMonth(billDate)) {
+            monthSales += getBillTotal(bill);
+        }
 
-       if (!isNaN(billDate.getTime()) && isCurrentMonth(billDate)) {
+        totalGST += parseAmount(bill.gstTotal);
 
-    monthSales += grandTotal;
-
-}
         if (
-
             bill.customer &&
-
             bill.customer.trim() !== "" &&
-
             bill.customer !== "Walk-in Customer"
-
         ) {
-
-            customerSet.add(
-
-                bill.customer.trim().toLowerCase()
-
-            );
-
+            customerSet.add(bill.customer.trim().toLowerCase());
         }
 
         if (Array.isArray(bill.items)) {
-
             bill.items.forEach(item => {
-
                 const productName =
+                    item.productName || item.product || "";
 
-                    item.productName ||
-
-                    item.product ||
-
-                    "";
-
-                if (productName !== "") {
-
+                if (productName) {
                     productSet.add(productName);
-
                 }
-
             });
-
         }
-
     });
 
-    // ----------------------------
-    // UPDATE SUMMARY CARDS
-    // ----------------------------
-
-    todaySalesEl.textContent =
-        formatCurrency(todaySales);
-
-    monthSalesEl.textContent =
-        formatCurrency(monthSales);
-
-    totalBillsEl.textContent =
-        reportBills.length;
-
-    totalCustomersEl.textContent =
-        customerSet.size;
-
-    totalProductsEl.textContent =
-        productSet.size;
-
-    totalGSTEl.textContent =
-        formatCurrency(totalGST);
-
+    todaySalesEl.textContent = formatCurrency(todaySales);
+    monthSalesEl.textContent = formatCurrency(monthSales);
+    totalBillsEl.textContent = activityBills.length;
+    totalCustomersEl.textContent = customerSet.size;
+    totalProductsEl.textContent = productSet.size;
+    totalGSTEl.textContent = formatCurrency(totalGST);
 }
-
 // ===========================================
 // PART 3 STARTS HERE
 // ===========================================
@@ -501,29 +678,48 @@ function loadSummaryCards(reportBills) {
 // PART 3 - PAYMENT SUMMARY & GST SUMMARY
 // ===========================================
 
-function loadPaymentSummary(reportBills) {
+// ===========================================
+// PAYMENT SUMMARY
+// ===========================================
+
+function loadPaymentSummary(reportBills, activityBills = reportBills) {
 
     let cash = 0;
+
     let upi = 0;
+
     let card = 0;
 
     let fullyPaid = 0;
+
     let credit = 0;
 
     let amountReceived = 0;
+
     let pendingAmount = 0;
 
+    let billPayments = 0;
+
+    let openingBalanceReceived = 0;
+
     let cgst = 0;
+
     let sgst = 0;
 
+
+    // ==========================================
+    // BILL PAYMENT SUMMARY
+    // ==========================================
 
     reportBills.forEach(bill => {
 
         const grandTotal =
             getBillTotal(bill);
 
+
         const paid =
-            getBillPaid(bill);
+    getBillPaidAsOfReportDate(bill);
+
 
         const balance =
             Math.max(
@@ -532,23 +728,23 @@ function loadPaymentSummary(reportBills) {
             );
 
 
-        // =================================
-        // AMOUNT RECEIVED
-        // =================================
+        // ==========================================
+        // BILL PAYMENTS
+        // ==========================================
 
-        amountReceived += paid;
+        billPayments += paid;
 
 
-        // =================================
+        // ==========================================
         // PENDING / CREDIT
-        // =================================
+        // ==========================================
 
         pendingAmount += balance;
 
 
-        // =================================
-        // FULLY PAID
-        // =================================
+        // ==========================================
+        // FULLY PAID / CREDIT
+        // ==========================================
 
         if (balance <= 0) {
 
@@ -561,19 +757,17 @@ function loadPaymentSummary(reportBills) {
         }
 
 
-        // =================================
-        // PAYMENT METHOD
-        // =================================
+        // ==========================================
+        // BILL PAYMENT METHOD
+        // ==========================================
 
         const mode =
             String(
                 bill.paymentMode || ""
-            ).trim().toLowerCase();
+            )
+                .trim()
+                .toLowerCase();
 
-
-        // IMPORTANT:
-        // Count only actual money received
-        // against Cash / UPI / Card.
 
         switch (mode) {
 
@@ -600,95 +794,592 @@ function loadPaymentSummary(reportBills) {
         }
 
 
-        // =================================
-        // GST
-        // =================================
+       // ==========================================
+// GST
+// ==========================================
+
+const gst = parseAmount(bill.gstTotal);
+
+cgst += gst / 2;
+sgst += gst / 2;
+    });
+    // Recalculate bill status and GST using bills linked to
+// payment activity in the selected period.
+fullyPaid = 0;
+credit = 0;
+pendingAmount = 0;
+cgst = 0;
+sgst = 0;
+
+activityBills.forEach(bill => {
+    const grandTotal = getBillTotal(bill);
+    const balance = getBillBalance(bill);
+    const paid = getBillPaidAsOfReportDate(bill);
+    const gst = parseAmount(bill.gstTotal);
+
+    pendingAmount += balance;
+
+    if (balance <= 0) {
+        fullyPaid += grandTotal;
+    } else {
+        credit += balance;
+    }
+
+    // CGST and SGST are split evenly in the existing bill data.
+    cgst += gst / 2;
+    sgst += gst / 2;
+});
+
+    // ==========================================
+    // OPENING BALANCE PAYMENTS
+    //
+    // IMPORTANT:
+    //
+    // Payment is first considered against
+    // all bill payments.
+    //
+    // Any amount remaining after all bill
+    // payments is treated as Opening Balance
+    // Received.
+    // ==========================================
+
+    const customers =
+        Array.isArray(db.customers)
+            ? db.customers
+            : [];
+
+
+    customers.forEach(customer => {
 
         if (
-            Array.isArray(bill.items) &&
-            bill.items.length > 0
+            !Array.isArray(
+                customer.paymentHistory
+            ) ||
+            customer.paymentHistory.length === 0
         ) {
 
-            bill.items.forEach(item => {
-
-                const itemGST =
-                    parseAmount(item.gst);
-
-
-                if (itemGST > 0) {
-
-                    cgst +=
-                        itemGST / 2;
-
-                    sgst +=
-                        itemGST / 2;
-
-                } else {
-
-                    cgst +=
-                        parseAmount(item.cgst);
-
-                    sgst +=
-                        parseAmount(item.sgst);
-
-                }
-
-            });
-
-        } else {
-
-            const gst =
-                parseAmount(
-                    bill.gstTotal
-                );
-
-            cgst += gst / 2;
-            sgst += gst / 2;
+            return;
 
         }
 
+
+        const customerId =
+            String(
+                customer.customerId || ""
+            ).trim();
+
+
+        const customerName =
+            String(
+                customer.name || ""
+            )
+                .trim()
+                .toLowerCase();
+
+
+        const customerMobile =
+            String(
+                customer.mobile || ""
+            ).trim();
+
+
+        // ==========================================
+        // FIND ALL BILLS OF THIS CUSTOMER
+        // ==========================================
+
+        const customerBills =
+            bills.filter(bill => {
+
+                const billCustomerId =
+                    String(
+                        bill.customerId || ""
+                    ).trim();
+
+
+                const billName =
+                    String(
+                        bill.customer ||
+                        ""
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                const billMobile =
+                    String(
+                        bill.mobile || ""
+                    ).trim();
+
+
+                // Customer ID match
+                if (
+                    customerId &&
+                    billCustomerId &&
+                    customerId ===
+                        billCustomerId
+                ) {
+
+                    return true;
+
+                }
+
+
+                // Name + mobile match
+                if (
+                    customerName &&
+                    billName ===
+                        customerName
+                ) {
+
+                    if (
+                        customerMobile &&
+                        billMobile &&
+                        customerMobile ===
+                            billMobile
+                    ) {
+
+                        return true;
+     
+                         }
+     
+     
+                         // Allow missing mobile
+                         if (
+                             !customerMobile ||
+                             !billMobile ||
+                             billMobile === "-"
+                         ) {
+     
+                             return true;
+     
+                         }
+     
+                     }
+     
+     
+                     return false;
+     
+                 });
+     
+     
+             // ==========================================
+             // TOTAL BILL PAYMENTS
+             // FOR THIS CUSTOMER
+             // ==========================================
+     
+             const totalCustomerBillPaid =
+                 customerBills.reduce(
+                     (
+                         total,
+                         bill
+                     ) => {
+     
+                         return (
+                             total +
+                             getBillPaid(bill)
+                         );
+     
+                     },
+                     0
+                 );
+     
+     
+             // ==========================================
+             // SORT PAYMENT HISTORY
+             // OLDEST → NEWEST
+             // ==========================================
+     
+             const payments =
+                 [...customer.paymentHistory]
+                     .sort((a, b) => {
+     
+                         const dateA =
+                             getBillDate({
+                                 date:
+                                     a.date ||
+                                     a.createdAt
+                             });
+     
+                         const dateB =
+                             getBillDate({
+                                 date:
+                                     b.date ||
+                                     b.createdAt
+                             });
+     
+     
+                         return (
+                             dateA - dateB
+                         );
+     
+                     });
+     
+     
+             let runningPaid = 0;
+     
+             let previousOpeningPaid = 0;
+     
+     
+             // ==========================================
+             // CALCULATE OPENING PORTION
+             // OF EVERY PAYMENT
+             // ==========================================
+     
+             payments.forEach(payment => {
+     
+                 const paymentAmount =
+                     Math.max(
+                         0,
+                         parseAmount(
+                             payment.amount
+                         )
+                     );
+     
+     
+                 runningPaid +=
+                     paymentAmount;
+     
+     
+                 // Amount of all payments
+                 // that has gone beyond
+                 // total bill payments.
+     
+                 const currentOpeningPaid =
+                     Math.max(
+                         runningPaid -
+                         totalCustomerBillPaid,
+                         0
+                     );
+     
+     
+                 // Only the NEW portion
+                 // belonging to opening balance.
+     
+                 const openingPortion =
+                     Math.max(
+                         currentOpeningPaid -
+                         previousOpeningPaid,
+                         0
+                     );
+     
+     
+                 previousOpeningPaid =
+                     currentOpeningPaid;
+     
+                 const billPaymentPortion =
+                 Math.max(paymentAmount - openingPortion, 0);    
+     
+                 // ==========================================
+                 // CHECK PAYMENT DATE
+                 // AGAINST CURRENT REPORT FILTER
+                 // ==========================================
+     
+                 const paymentDate =
+                     getBillDate({
+                         date:
+                             payment.date ||
+                             payment.createdAt
+                     });
+     
+     
+                 let includePayment =
+                     true;
+     
+     
+                 if (
+                     fromDate.value ||
+                     toDate.value
+                 ) {
+     
+                     let start = null;
+     
+                     let end = null;
+     
+     
+                     // ------------------------------
+                     // START DATE
+                     // ------------------------------
+     
+                     if (
+                         fromDate.value
+                     ) {
+     
+                         const parts =
+                             fromDate.value
+                                 .split("-");
+     
+     
+                         start =
+                             new Date(
+                                 Number(parts[0]),
+                                 Number(parts[1]) - 1,
+                                 Number(parts[2]),
+                                 0,
+                                 0,
+                                 0,
+                                 0
+                             );
+     
+                     }
+     
+     
+                     // ------------------------------
+                     // END DATE
+                     // ------------------------------
+     
+                     if (
+                         toDate.value
+                     ) {
+     
+                         const parts =
+                             toDate.value
+                                 .split("-");
+     
+     
+                         end =
+                             new Date(
+                                 Number(parts[0]),
+                                 Number(parts[1]) - 1,
+                                 Number(parts[2]),
+                                 23,
+                                 59,
+                                 59,
+                                 999
+                             );
+     
+                     }
+     
+     
+                     if (
+                         isNaN(
+                             paymentDate.getTime()
+                         )
+                     ) {
+     
+                         includePayment = false;
+     
+                     }
+     
+     
+                     if (
+                         start &&
+                         paymentDate < start
+                     ) {
+     
+                         includePayment = false;
+     
+                     }
+     
+     
+                     if (
+                         end &&
+                         paymentDate > end
+                     ) {
+     
+                         includePayment = false;
+     
+                     }
+     
+                 }
+     
+     
+                 if (!includePayment) {
+         return;
+     }
+     
+     let billPaymentOutsideBillDateFilter = 0;
+     
+     const hasDateFilter =
+         Boolean(fromDate.value || toDate.value);
+     
+     if (
+         hasDateFilter &&
+         customerBills.length === 1 &&
+         !reportBills.includes(customerBills[0])
+     ) {
+         const associatedBill = customerBills[0];
+         const associatedBillDate = getBillDate(associatedBill);
+     
+         if (
+             !isNaN(associatedBillDate.getTime()) &&
+             paymentDate >= associatedBillDate
+         ) {
+             billPaymentOutsideBillDateFilter =
+                 billPaymentPortion;
+     
+             billPayments +=
+                 billPaymentOutsideBillDateFilter;
+         }
+     }
+
+
+            // ==========================================
+            // ADD OPENING BALANCE RECEIVED
+            // ==========================================
+
+            openingBalanceReceived +=
+                openingPortion;
+
+
+            // ==========================================
+            // ADD OPENING PAYMENT TO ITS
+            // PAYMENT METHOD
+            // ==========================================
+
+            const paymentMode =
+                String(
+                    payment.paymentMode ||
+                    "Cash"
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const paymentMethodAmount =
+    openingPortion +
+    billPaymentOutsideBillDateFilter;
+
+        switch (paymentMode) {
+            case "cash":
+                cash += paymentMethodAmount;
+                break;
+        
+            case "upi":
+                upi += paymentMethodAmount;
+                break;
+        
+            case "card":
+                card += paymentMethodAmount;
+                break;
+        }
+
+        });
+
     });
 
+
+    // ==========================================
+    // TOTAL AMOUNT RECEIVED
+    // ==========================================
+
+    amountReceived =
+        billPayments +
+        openingBalanceReceived;
+
+
+    // ==========================================
+    // TOTAL GST
+    // ==========================================
 
     const totalGST =
         cgst + sgst;
 
 
-    // =================================
+    // ==========================================
     // PAYMENT SUMMARY
-    // =================================
+    // ==========================================
 
     cashTotalEl.textContent =
         formatCurrency(cash);
 
+
     upiTotalEl.textContent =
         formatCurrency(upi);
 
+
     cardTotalEl.textContent =
         formatCurrency(card);
+
 
     creditTotalEl.textContent =
         formatCurrency(credit);
 
 
-    // =================================
-    // NEW PAYMENT CARDS
-    // =================================
+    // ==========================================
+    // BILL PAYMENTS
+    // ==========================================
+
+    const billPaymentsEl =
+        document.getElementById(
+            "billPaymentsTotal"
+        );
+
+
+    if (billPaymentsEl) {
+
+        billPaymentsEl.textContent =
+            formatCurrency(
+                billPayments
+            );
+
+    }
+
+
+    // ==========================================
+    // OPENING BALANCE RECEIVED
+    // ==========================================
+
+    const openingBalanceReceivedEl =
+        document.getElementById(
+            "openingBalanceReceivedTotal"
+        );
+
+
+    if (
+        openingBalanceReceivedEl
+    ) {
+
+        openingBalanceReceivedEl.textContent =
+            formatCurrency(
+                openingBalanceReceived
+            );
+
+    }
+
+
+    // ==========================================
+    // TOTAL AMOUNT RECEIVED
+    // ==========================================
+
+    const totalAmountReceivedEl =
+        document.getElementById(
+            "totalAmountReceived"
+        );
+
+
+    if (
+        totalAmountReceivedEl
+    ) {
+
+        totalAmountReceivedEl.textContent =
+            formatCurrency(
+                amountReceived
+            );
+
+    }
+
+
+    // ==========================================
+    // EXISTING SUMMARY CARDS
+    // ==========================================
 
     const paidBillsAmount =
         document.getElementById(
             "paidBillsAmount"
         );
 
+
     const creditBillsAmount =
         document.getElementById(
             "creditBillsAmount"
         );
 
+
     const amountReceivedEl =
         document.getElementById(
             "amountReceived"
         );
+
 
     const pendingAmountEl =
         document.getElementById(
@@ -699,7 +1390,9 @@ function loadPaymentSummary(reportBills) {
     if (paidBillsAmount) {
 
         paidBillsAmount.textContent =
-            formatCurrency(fullyPaid);
+            formatCurrency(
+                fullyPaid
+            );
 
     }
 
@@ -707,7 +1400,9 @@ function loadPaymentSummary(reportBills) {
     if (creditBillsAmount) {
 
         creditBillsAmount.textContent =
-            formatCurrency(credit);
+            formatCurrency(
+                credit
+            );
 
     }
 
@@ -715,7 +1410,9 @@ function loadPaymentSummary(reportBills) {
     if (amountReceivedEl) {
 
         amountReceivedEl.textContent =
-            formatCurrency(amountReceived);
+            formatCurrency(
+                amountReceived
+            );
 
     }
 
@@ -723,29 +1420,32 @@ function loadPaymentSummary(reportBills) {
     if (pendingAmountEl) {
 
         pendingAmountEl.textContent =
-            formatCurrency(pendingAmount);
+            formatCurrency(
+                pendingAmount
+            );
 
     }
 
 
-    // =================================
+    // ==========================================
     // GST SUMMARY
-    // =================================
+    // ==========================================
 
     cgstCollectedEl.textContent =
         formatCurrency(cgst);
 
+
     sgstCollectedEl.textContent =
         formatCurrency(sgst);
+
 
     totalGSTSummaryEl.textContent =
         formatCurrency(totalGST);
 
 }
-
 // ===========================================
 // PART 4 STARTS HERE
-// ===========================================// ===========================================
+// ===========================================
 // PART 4 - CHARTS
 // ===========================================
 
@@ -856,7 +1556,7 @@ function loadSalesChart(reportBills) {
 // PAYMENT CHART
 // ===========================================
 
-function loadPaymentChart(reportBills) {
+function loadPaymentChart(reportBills, activityBills = reportBills) {
 
     let cash = 0;
     let upi = 0;
@@ -919,7 +1619,14 @@ function loadPaymentChart(reportBills) {
 
     });
 
-
+    cash = parseAmount(cashTotalEl.textContent);
+    upi = parseAmount(upiTotalEl.textContent);
+    card = parseAmount(cardTotalEl.textContent);
+    
+    credit = activityBills.reduce(
+        (total, bill) => total + getBillBalance(bill),
+        0
+    );
     console.log("PAYMENT CHART VALUES:", {
         cash,
         upi,
@@ -1042,7 +1749,7 @@ function loadPaymentChart(reportBills) {
 // PART 5 - TABLES
 // ===========================================
 
-function loadTables(reportBills) {
+function loadTables(reportBills, activityBills = reportBills) {
 
     // ----------------------------
     // Clear Tables
@@ -1142,7 +1849,41 @@ function loadTables(reportBills) {
         }
 
     });
+// Rebuild these two maps using payment-linked bill activity.
+// salesMap remains bill-date based for the Sales Report table.
+Object.keys(customerMap).forEach(key => delete customerMap[key]);
+Object.keys(productMap).forEach(key => delete productMap[key]);
 
+activityBills.forEach(bill => {
+    const customer = bill.customer || "Walk-in Customer";
+
+    if (!customerMap[customer]) {
+        customerMap[customer] = {
+            bills: 0,
+            amount: 0
+        };
+    }
+
+    customerMap[customer].bills++;
+    customerMap[customer].amount += getBillTotal(bill);
+
+    if (Array.isArray(bill.items)) {
+        bill.items.forEach(item => {
+            const product =
+                item.productName || item.product || "Unknown";
+
+            if (!productMap[product]) {
+                productMap[product] = {
+                    qty: 0,
+                    sales: 0
+                };
+            }
+
+            productMap[product].qty += Number(item.qty || 0);
+            productMap[product].sales += parseAmount(item.total);
+        });
+    }
+});
 // ----------------------------
 // Sales Report Table
 // ----------------------------
@@ -1431,45 +2172,26 @@ function loadCreditStatement(reportBills) {
 
 
             row.innerHTML = `
+    <td class="text-center">${index + 1}</td>
 
-                <td>
-                    ${index + 1}
-                </td>
+    <td>
+        <strong>${name}</strong>
+    </td>
 
-                <td>
-                    <strong>
-                        ${name}
-                    </strong>
-                </td>
+    <td class="text-center">${data.bills}</td>
 
-                <td>
-                    ${data.bills}
-                </td>
+    <td class="text-end">
+        ${formatCurrency(data.purchase)}
+    </td>
 
-                <td>
-                    ${formatCurrency(
-                        data.purchase
-                    )}
-                </td>
+    <td class="text-end">
+        ${formatCurrency(data.paid)}
+    </td>
 
-                <td>
-                    ${formatCurrency(
-                        data.paid
-                    )}
-                </td>
-
-                <td
-                    class="text-danger fw-bold">
-
-                    ${formatCurrency(
-                        data.balance
-                    )}
-
-                </td>
-
-            `;
-
-
+    <td class="text-end text-danger fw-bold">
+        ${formatCurrency(data.balance)}
+    </td>
+   `;
             body.appendChild(row);
 
         }
@@ -1574,6 +2296,7 @@ function updateCreditTotals(
     }
 
 }
+
 // ===========================================
 // PAID BILLS STATEMENT
 // ===========================================
@@ -1740,6 +2463,20 @@ function updatePaidStatementTotals(
     }
 
 }
+function updatePaidStatementTotals(bills, amount) {
+    const billsElement = document.getElementById("paidTotalBills");
+    const amountElement = document.getElementById("paidTotalAmount");
+
+    if (billsElement) {
+        billsElement.textContent = `${bills} Bills`;
+        billsElement.style.setProperty("text-align", "left", "important");
+    }
+
+    if (amountElement) {
+        amountElement.textContent = formatCurrency(amount);
+        amountElement.style.setProperty("text-align", "left", "important");
+    }
+}
     // ===========================================
     // PART 6 STARTS HERE
     // ===========================================
@@ -1747,23 +2484,17 @@ function updatePaidStatementTotals(
     // PART 6 - MASTER LOADER
     // ===========================================
     
-    function loadReports(reportBills) {
-    
-        loadSummaryCards(reportBills);
-    
-        loadPaymentSummary(reportBills);
-    
-        loadSalesChart(reportBills);
-    
-        loadPaymentChart(reportBills);
-    
-        loadTables(reportBills);
-    
-        loadCreditStatement(reportBills);
-    
-        loadPaidStatement(reportBills);
-    
-    }
+function loadReports(reportBills) {
+    const activityBills = getReportActivityBills(reportBills);
+
+    loadSummaryCards(reportBills, activityBills);
+    loadPaymentSummary(reportBills, activityBills);
+    loadSalesChart(reportBills);
+    loadPaymentChart(reportBills, activityBills);
+    loadTables(reportBills, activityBills);
+    loadCreditStatement(activityBills);
+    loadPaidStatement(activityBills);
+}
     
     // ===========================================
     // INITIAL PAGE LOAD

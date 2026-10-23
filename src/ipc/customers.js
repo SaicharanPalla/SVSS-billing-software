@@ -294,12 +294,15 @@ db.customers.forEach((customer, dbIndex) => {
         notes: customer.notes || "",
 
         openingBalance:
-            Number(customer.openingBalance) || 0,
+        Number(customer.openingBalance) || 0,
 
+        openingBalanceDate:
+            customer.openingBalanceDate || "",
+        
         paymentHistory:
-           Array.isArray(customer.paymentHistory)
-               ? customer.paymentHistory
-               : [],    
+            Array.isArray(customer.paymentHistory)
+                ? customer.paymentHistory
+                : [],  
 
         bills: [],
 
@@ -509,15 +512,98 @@ customers[key].totalBalance += balance;
 
 
             });
-            Object.values(customers).forEach(customer => {
-
-    customer.totalBalance +=
-        Number(customer.openingBalance) || 0;
-
-    });
 
         }
+        // ==========================================
+// RECALCULATE CUSTOMER TOTALS
+// USING PAYMENT HISTORY
+// ==========================================
 
+Object.values(customers).forEach(customer => {
+
+    // ------------------------------------------
+    // TOTAL BILL BALANCE
+    // ------------------------------------------
+
+    const billBalance =
+        (customer.bills || []).reduce(
+            (total, bill) =>
+                total +
+                (Number(bill.balanceDue) || 0),
+            0
+        );
+
+
+    // ------------------------------------------
+    // TOTAL PAID AGAINST BILLS
+    // ------------------------------------------
+
+    const totalBillPaid =
+        (customer.bills || []).reduce(
+            (total, bill) =>
+                total +
+                (Number(bill.amountPaid) || 0),
+            0
+        );
+
+
+    // ------------------------------------------
+    // TOTAL PAYMENTS RECEIVED
+    // ------------------------------------------
+
+    const paymentHistoryTotal =
+        Array.isArray(customer.paymentHistory)
+            ? customer.paymentHistory.reduce(
+                (total, payment) =>
+                    total +
+                    (Number(payment.amount) || 0),
+                0
+            )
+            : 0;
+
+
+    // ------------------------------------------
+    // PAYMENT USED FOR OPENING BALANCE
+    // ------------------------------------------
+
+    const openingPaid =
+        Math.max(
+            paymentHistoryTotal -
+            totalBillPaid,
+            0
+        );
+
+
+    // ------------------------------------------
+    // REMAINING OPENING BALANCE
+    // ------------------------------------------
+
+    const remainingOpeningBalance =
+        Math.max(
+            (Number(customer.openingBalance) || 0) -
+            openingPaid,
+            0
+        );
+
+
+    // ------------------------------------------
+    // FINAL CUSTOMER TOTALS
+    // ------------------------------------------
+
+    customer.totalPaid =
+    Number(Math.max(totalBillPaid, paymentHistoryTotal).toFixed(2));
+
+
+    customer.totalBalance =
+        Number(
+            (
+                billBalance +
+                remainingOpeningBalance
+            ).toFixed(2)
+        );
+
+});
+ 
         // --------------------------
         // No Bills
         // --------------------------
@@ -737,6 +823,10 @@ saveCustomerBtn.addEventListener("click", async function () {
             document.getElementById("openingBalance").value
         ) || 0;
 
+    const openingBalanceDate =
+            document.getElementById("openingBalanceDate").value || ""; 
+               
+
     if (!name) {
 
         showToast("Please enter Customer Name.","info");
@@ -816,22 +906,24 @@ if (contact !== "") {
         db.customers[dbIndex] = {
 
             ...db.customers[dbIndex],
-
+        
             name,
-
+        
             mobile,
-
+        
             address,
-
+        
             gst,
-
-                email,
-    
-                notes,
-    
-                openingBalance
-    
-            };
+        
+            email,
+        
+            notes,
+        
+            openingBalance,
+        
+            openingBalanceDate
+        
+        };
             const oldName = oldCustomer.name;
            const oldMobile = oldCustomer.mobile;
            
@@ -950,7 +1042,8 @@ return sameMobile||sameName;
     email,
     notes,
     openingBalance,
-
+    openingBalanceDate,
+    
     createdDate: new Date().toISOString()
 
 });
@@ -998,6 +1091,7 @@ showToast("Customer Added Successfully", "success");
     document.getElementById("customerNotes").value = "";
     document.getElementById("openingBalance").value = "0";
 
+    document.getElementById("openingBalanceDate").value = "";
     document.getElementById("saveCustomer").innerHTML = `
         <i class="bi bi-check-circle-fill"></i>
         Save Customer
@@ -1039,46 +1133,576 @@ currentCustomer = customer;
 showCustomer(customer);
    });
 
+// ==========================================
+// SHOW CUSTOMER DETAILS
+// MODERN CUSTOMER DETAILS DESIGN
+// ==========================================
+
+function showCustomer(customer) {
+
     // ==========================================
-    // Show Customer Details
+    // CUSTOMER DATA
     // ==========================================
 
-    function showCustomer(customer) {
+    const customerName =
+        customer.name || "-";
 
-        document.getElementById("viewCustomerName").textContent =
-            customer.name;
+    const customerMobile =
+        customer.mobile || "-";
 
-       document.getElementById("viewCustomerMobile").textContent =
-          getCustomerContact(customer);
+    const customerGST =
+        customer.gst || "-";
 
-        document.getElementById("viewCustomerAddress").textContent =
-            customer.address;
+    const customerAddress =
+        customer.address || "-";
 
-        document.getElementById("customerPurchase").textContent =
-        formatCurrency(customer.totalPurchase);
+    const openingBalance =
+        Number(customer.openingBalance) || 0;
 
-        document.getElementById("customerPaid").textContent =
-            formatCurrency(customer.totalPaid);
-        
-        document.getElementById("customerBalance").textContent =
-            formatCurrency(customer.totalBalance);
 
-        loadBillHistory(customer);
+    // ==========================================
+    // KEEP OLD IDS UPDATED
+    // ==========================================
 
-        loadPaymentHistory(customer);
-        
-        customerModal.show();
+    const nameElement =
+        document.getElementById("viewCustomerName");
+
+    const mobileElement =
+        document.getElementById("viewCustomerMobile");
+
+    const gstElement =
+        document.getElementById("viewCustomerGST");
+
+    const addressElement =
+        document.getElementById("viewCustomerAddress");
+
+
+    if (nameElement) {
+
+        nameElement.textContent =
+            customerName;
+
+        nameElement.style.display =
+            "none";
 
     }
-    function formatDate(dateString) {
 
+
+    if (mobileElement) {
+
+        mobileElement.textContent =
+            customerMobile;
+
+        mobileElement.style.display =
+            "none";
+
+    }
+
+
+    if (gstElement) {
+
+        gstElement.textContent =
+            customerGST;
+
+        gstElement.style.display =
+            "none";
+
+    }
+
+
+    if (addressElement) {
+
+        addressElement.textContent =
+            customerAddress;
+
+        addressElement.style.display =
+            "none";
+
+    }
+
+
+    // ==========================================
+    // CUSTOMER MODERN HEADER
+    // ==========================================
+
+    let modernHeader =
+        document.getElementById(
+            "customerModernHeader"
+        );
+
+
+    if (!modernHeader) {
+
+        modernHeader =
+            document.createElement("div");
+
+        modernHeader.id =
+            "customerModernHeader";
+
+        modernHeader.className =
+            "customer-modern-header";
+
+
+        const modalBody =
+            document.querySelector(
+                "#customerModal .modal-body"
+            );
+
+
+        if (modalBody) {
+
+            modalBody.insertBefore(
+                modernHeader,
+                modalBody.firstElementChild
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // HEADER CONTENT
+    // EMAIL REMOVED
+    // ADDRESS ADDED
+    // ==========================================
+
+    modernHeader.innerHTML = `
+
+        <!-- CUSTOMER -->
+
+        <div class="customer-modern-main">
+
+            <div class="customer-modern-avatar">
+
+                <i class="bi bi-person-fill"></i>
+
+            </div>
+
+
+            <div class="customer-modern-main-text">
+
+                <div class="customer-modern-name">
+
+                    ${customerName}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MOBILE -->
+
+        <div class="customer-modern-contact">
+
+            <div class="customer-modern-label">
+
+                Mobile Number
+
+            </div>
+
+
+            <div class="customer-modern-value">
+
+                <i class="bi bi-telephone-fill"></i>
+
+                ${customerMobile}
+
+            </div>
+
+        </div>
+
+
+        <!-- GST -->
+
+        <div class="customer-modern-contact">
+
+            <div class="customer-modern-label">
+
+                GST Number
+
+            </div>
+
+
+            <div class="customer-modern-value">
+
+                <i class="bi bi-file-earmark-text"></i>
+
+                ${customerGST}
+
+            </div>
+
+        </div>
+
+
+        <!-- ADDRESS -->
+
+        <div class="customer-modern-contact">
+
+            <div class="customer-modern-label">
+
+                Address
+
+            </div>
+
+
+            <div class="customer-modern-value">
+
+                <i class="bi bi-geo-alt-fill"></i>
+
+                ${customerAddress}
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    // ==========================================
+    // CALCULATE ACTUAL BILL TOTALS
+    // ==========================================
+
+    const customerBills =
+        Array.isArray(customer.bills)
+            ? customer.bills
+            : [];
+
+
+    let totalPurchase = 0;
+
+    let totalPaid = 0;
+
+    let totalBalance = 0;
+
+
+    customerBills.forEach(bill => {
+
+        let grandTotal =
+            Number(
+                String(
+                    bill.grandTotal || ""
+                )
+                .replace(/[^\d.]/g, "")
+            ) || 0;
+
+
+        const paid =
+            Number(
+                bill.amountPaid
+            ) || 0;
+
+
+        const balance =
+            Number(
+                bill.balanceDue
+            ) || 0;
+
+
+        // Recover old bill total
+        if (
+            grandTotal <= 0 &&
+            (paid > 0 || balance > 0)
+        ) {
+
+            grandTotal =
+                Number(
+                    (
+                        paid +
+                        balance
+                    ).toFixed(2)
+                );
+
+        }
+
+
+        totalPurchase +=
+            grandTotal;
+
+        totalPaid +=
+            paid;
+
+        totalBalance +=
+            balance;
+
+    });
+    // ==========================================
+// CALCULATE FINAL BALANCE DUE
+// ==========================================
+
+// Total payments received from payment history
+const paymentHistoryTotal =
+    Array.isArray(customer.paymentHistory)
+        ? customer.paymentHistory.reduce(
+            (total, payment) =>
+                total +
+                (Number(payment.amount) || 0),
+            0
+        )
+        : 0;
+
+
+// Total amount already paid against bills
+const totalBillPaid =
+    customerBills.reduce(
+        (total, bill) =>
+            total +
+            (Number(bill.amountPaid) || 0),
+        0
+    );
+
+
+// Payment remaining after clearing bills
+const openingBalancePaid =
+    Math.max(
+        paymentHistoryTotal -
+        totalBillPaid,
+        0
+    );
+
+
+// Remaining original opening balance
+const remainingOpeningBalance =
+    Math.max(
+        openingBalance -
+        openingBalancePaid,
+        0
+    );
+
+
+// Final customer balance
+totalBalance =
+    Number(
+        (
+            totalBalance +
+            remainingOpeningBalance
+        ).toFixed(2)
+    );
+
+
+    totalPurchase =
+        Number(
+            totalPurchase.toFixed(2)
+        );
+    
+     totalPaid =
+    Number(Math.max(totalBillPaid, paymentHistoryTotal).toFixed(2));
+
+
+    // ==========================================
+    // UPDATE SUMMARY VALUES
+    // ==========================================
+
+    const purchaseElement =
+        document.getElementById(
+            "customerPurchase"
+        );
+
+    const paidElement =
+        document.getElementById(
+            "customerPaid"
+        );
+
+    const balanceElement =
+        document.getElementById(
+            "customerBalance"
+        );
+
+
+    if (purchaseElement) {
+
+        purchaseElement.textContent =
+            formatCurrency(
+                totalPurchase
+            );
+
+    }
+
+
+    if (paidElement) {
+
+        paidElement.textContent =
+            formatCurrency(
+                totalPaid
+            );
+
+    }
+
+
+    if (balanceElement) {
+
+        balanceElement.textContent =
+            formatCurrency(
+                totalBalance
+            );
+
+    }
+
+
+    // ==========================================
+    // CREATE OPENING BALANCE BOX
+    // SEPARATE FROM BOOTSTRAP SUMMARY ROW
+    // ==========================================
+
+    let openingCard =
+        document.getElementById(
+            "customerOpeningSummary"
+        );
+
+
+    if (!openingCard) {
+
+        openingCard =
+            document.createElement("div");
+
+        openingCard.id =
+            "customerOpeningSummary";
+
+        openingCard.className =
+            "customer-summary-card customer-summary-opening";
+
+
+        openingCard.innerHTML = `
+
+            <div class="customer-summary-icon">
+
+                <i class="bi bi-coin"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="customer-summary-title">
+
+                    Opening Balance
+
+                </div>
+
+
+                <div
+                    id="customerOpeningBalance"
+                    class="customer-summary-value"
+                >
+
+                    Rs. 0.00
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        // ======================================
+        // IMPORTANT
+        // Put opening balance BELOW
+        // the 3 existing summary cards
+        // ======================================
+
+        const summaryRow =
+            purchaseElement
+                ?.closest(".row");
+
+
+        if (summaryRow) {
+
+            summaryRow.insertAdjacentElement(
+                "afterend",
+                openingCard
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // UPDATE OPENING BALANCE VALUE
+    // ==========================================
+
+    const openingElement =
+        document.getElementById(
+            "customerOpeningBalance"
+        );
+
+
+    if (openingElement) {
+
+        openingElement.textContent =
+            formatCurrency(
+                openingBalance
+            );
+
+    }
+
+
+    // ==========================================
+    // LOAD BILL HISTORY
+    // ==========================================
+
+    loadBillHistory(
+        customer
+    );
+
+
+    // ==========================================
+    // LOAD PAYMENT HISTORY
+    // ==========================================
+
+    loadPaymentHistory(
+        customer
+    );
+
+
+    // ==========================================
+    // SHOW MODAL
+    // ==========================================
+
+    customerModal.show();
+
+}
+function formatDate(dateString) {
     if (!dateString) return "-";
 
-    const parts = dateString.split("-");
+    const value = String(dateString).trim();
+    let year, month, day;
 
-    if (parts.length !== 3) return dateString;
+    // YYYY-MM-DD, with an optional time
+    let match = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T)/);
 
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    if (match) {
+        [, year, month, day] = match;
+    } else {
+        // DD-MM-YYYY or DD/MM/YYYY
+        match = value.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+
+        if (match) {
+            [, day, month, year] = match;
+        } else {
+            // YYYY/MM/DD
+            match = value.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+            if (!match) return value;
+            [, year, month, day] = match;
+        }
+    }
+
+    const y = Number(year);
+    const m = Number(month);
+    const d = Number(day);
+    const parsed = new Date(y, m - 1, d);
+
+    if (
+        parsed.getFullYear() !== y ||
+        parsed.getMonth() !== m - 1 ||
+        parsed.getDate() !== d
+    ) {
+        return value;
+    }
+
+    return `${String(d).padStart(2, "0")}-${String(m).padStart(2, "0")}-${y}`;
 }
 // ==========================================
 // Edit Customer
@@ -1122,8 +1746,11 @@ const customer = customerData.find(c =>
         customer.email || "";
 
     document.getElementById("openingBalance").value =
-        customer.openingBalance || 0;
+    customer.openingBalance || 0;
 
+    document.getElementById("openingBalanceDate").value =
+        customer.openingBalanceDate || "";
+    
     document.getElementById("customerNotes").value =
         customer.notes || "";
 
@@ -1312,24 +1939,120 @@ showToast(
        deleteHandler
    );
 });
+  // ==========================================
+// BILL HISTORY
+// ==========================================
+
+function loadBillHistory(customer) {
+
+    const tbody =
+        document.getElementById(
+            "customerBills"
+        );
+
+
+    if (!tbody) return;
+
+
+    tbody.innerHTML = "";
+
+
     // ==========================================
-    // Bill History
+    // OPENING BALANCE
     // ==========================================
 
-    function loadBillHistory(customer) {
+    const openingBalance =
+        Number(
+            customer.openingBalance
+        ) || 0;
 
-        const tbody =
-            document.getElementById("customerBills");
 
-        tbody.innerHTML = "";
+    // Show opening balance only when it exists
 
-        if (customer.bills.length === 0) {
+    if (openingBalance > 0) {
+
+        const openingRow =
+            document.createElement("tr");
+
+
+        openingRow.className =
+            "customer-opening-row";
+
+
+        openingRow.innerHTML = `
+
+            <td>
+
+                <strong>
+                    OPENING BALANCE
+                </strong>
+
+            </td>
+
+
+           <td>
+                ${
+                    customer.openingBalanceDate
+                        ? formatDate(customer.openingBalanceDate)
+                        : "-"
+                }
+            </td>
+
+
+            <td>
+                Rs.${openingBalance.toFixed(2)}
+            </td>
+
+
+            <td>
+                Rs.0.00
+            </td>
+
+
+            <td>
+                Rs.${openingBalance.toFixed(2)}
+            </td>
+
+
+            <td>
+
+                <span class="badge bg-warning text-dark">
+
+                    Opening
+
+                </span>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(
+            openingRow
+        );
+
+    }
+
+
+    // ==========================================
+    // NO BILLS
+    // ==========================================
+
+    if (
+        !Array.isArray(customer.bills) ||
+        customer.bills.length === 0
+    ) {
+
+        if (openingBalance <= 0) {
 
             tbody.innerHTML = `
 
                 <tr>
 
-                    <td colspan="6" class="text-center text-muted">
+                    <td
+                        colspan="6"
+                        class="text-center text-muted"
+                    >
 
                         No Bills Found
 
@@ -1339,64 +2062,136 @@ showToast(
 
             `;
 
-            return;
-
         }
 
-        customer.bills.forEach(bill => {
+        return;
+    }
 
-            const row = document.createElement("tr");
+
+    // ==========================================
+    // BILL ROWS
+    // ==========================================
+
+    customer.bills.forEach(
+        bill => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
 
             let total =
-    Number(
-        String(bill.grandTotal || "")
-            .replace(/[^\d.]/g, "")
-    ) || 0;
-
-const paid =
-    Number(bill.amountPaid) || 0;
-
-const balance =
-    Number(bill.balanceDue) || 0;
+                Number(
+                    String(
+                        bill.grandTotal || ""
+                    )
+                    .replace(/[^\d.]/g, "")
+                ) || 0;
 
 
-// If stored Grand Total is missing,
-// recover the actual purchase amount.
-if (total <= 0 && (paid > 0 || balance > 0)) {
+            const paid =
+                Number(
+                    bill.amountPaid
+                ) || 0;
 
-    total =
-        Number(
-            (paid + balance).toFixed(2)
-        );
 
-}
+            const balance =
+                Number(
+                    bill.balanceDue
+                ) || 0;
 
-            let status = "Paid";
 
-            if (balance > 0)
-                status = "Pending";
+            // Recover total if missing
+
+            if (
+                total <= 0 &&
+                (
+                    paid > 0 ||
+                    balance > 0
+                )
+            ) {
+
+                total =
+                    Number(
+                        (
+                            paid +
+                            balance
+                        ).toFixed(2)
+                    );
+
+            }
+
+
+            const status =
+                balance > 0
+                    ? "Pending"
+                    : "Paid";
+
 
             row.innerHTML = `
 
-            <td>
-                <strong>${bill.billNo || "-"}</strong><br>
-            
-                <small class="text-primary fw-semibold">
-                    Book : ${bill.billBookNo || "-"}
-                </small>
-            </td>
+                <td>
 
-                <td>${formatDate(bill.date)}</td>
+                    <strong>
 
-                <td>Rs.${total.toFixed(2)}</td>
+                        ${bill.billNo || "-"}
 
-                <td>Rs.${paid.toFixed(2)}</td>
+                    </strong>
 
-                <td>Rs.${balance.toFixed(2)}</td>
+                    <br>
+
+                    <small
+                        class="text-primary fw-semibold"
+                    >
+
+                        Book :
+                        ${bill.billBookNo || "-"}
+
+                    </small>
+
+                </td>
+
 
                 <td>
 
-                    <span class="badge ${balance > 0 ? "bg-danger" : "bg-success"}">
+                    ${formatDate(
+                        bill.date
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    Rs.${total.toFixed(2)}
+
+                </td>
+
+
+                <td>
+
+                    Rs.${paid.toFixed(2)}
+
+                </td>
+
+
+                <td>
+
+                    Rs.${balance.toFixed(2)}
+
+                </td>
+
+
+                <td>
+
+                    <span
+                        class="badge ${
+                            balance > 0
+                                ? "bg-danger"
+                                : "bg-success"
+                        }"
+                    >
 
                         ${status}
 
@@ -1406,16 +2201,90 @@ if (total <= 0 && (paid > 0 || balance > 0)) {
 
             `;
 
-            tbody.appendChild(row);
 
-        });
+            tbody.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+// ==========================================
+// PAYMENT HISTORY HEADER
+// ==========================================
+
+function addPaymentHistoryHeader() {
+
+    const tbody =
+        document.getElementById(
+            "paymentHistoryBody"
+        );
+
+
+    if (!tbody) return;
+
+
+    const table =
+        tbody.closest("table");
+
+
+    if (!table) return;
+
+
+    let heading =
+        document.getElementById(
+            "customerPaymentHeading"
+        );
+
+
+    if (!heading) {
+
+        heading =
+            document.createElement(
+                "div"
+            );
+
+
+        heading.id =
+            "customerPaymentHeading";
+
+
+        heading.className =
+            "customer-payment-heading";
+
+
+        heading.innerHTML = `
+
+            <div
+                class="customer-payment-heading-title"
+            >
+
+                <i class="bi bi-clock-history"></i>
+
+                <span>
+                    Payment History
+                </span>
+
+            </div>
+
+        `;
+
+
+        table.parentNode.insertBefore(
+            heading,
+            table
+        );
 
     }
+
+}
 // ==========================================
 // PAYMENT HISTORY
 // ==========================================
 
 function loadPaymentHistory(customer) {
+    addPaymentHistoryHeader();
 
     const tbody =
         document.getElementById("paymentHistoryBody");
@@ -1448,7 +2317,7 @@ function loadPaymentHistory(customer) {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="7"
+                <td colspan="8"
                     class="text-center text-muted py-3">
                     <i class="bi bi-cash-stack"></i>
                     No Payments Found
@@ -1459,69 +2328,214 @@ function loadPaymentHistory(customer) {
         return;
     }
 
-    // Sort oldest payment first for correct calculation
-    const chronologicalPayments =
-        [...payments].sort((a, b) => {
+ // ==========================================
+// SORT PAYMENTS CHRONOLOGICALLY
+// ==========================================
 
-            const dateA = new Date(
-                a.createdAt || a.date || 0
+const chronologicalPayments =
+    [...payments].sort((a, b) => {
+
+        const dateA =
+            new Date(
+                a.createdAt ||
+                a.date ||
+                0
             ).getTime();
 
-            const dateB = new Date(
-                b.createdAt || b.date || 0
+        const dateB =
+            new Date(
+                b.createdAt ||
+                b.date ||
+                0
             ).getTime();
 
-            return dateA - dateB;
-        });
+        return dateA - dateB;
 
-// Current remaining customer balance
-const currentBalance =
-    Number(customer.totalBalance) || 0;
+    });
+
+
+// ==========================================
+// ORIGINAL OPENING BALANCE
+// ==========================================
+
+const openingBalance =
+    Number(
+        customer.openingBalance
+    ) || 0;
+
+
+// ==========================================
+// CUSTOMER BILLS
+// ==========================================
+
+const customerBills =
+    Array.isArray(customer.bills)
+        ? customer.bills
+        : [];
+
+
+// ==========================================
+// TOTAL BILL PURCHASE
+// ==========================================
+
+const totalBillPurchase =
+    customerBills.reduce(
+        (total, bill) => {
+
+            let grandTotal =
+                Number(
+                    String(
+                        bill.grandTotal || ""
+                    )
+                    .replace(/[^\d.]/g, "")
+                ) || 0;
+
+            const paid =
+                Number(
+                    bill.amountPaid
+                ) || 0;
+
+            const balance =
+                Number(
+                    bill.balanceDue
+                ) || 0;
+
+            if (
+                grandTotal <= 0 &&
+                (
+                    paid > 0 ||
+                    balance > 0
+                )
+            ) {
+
+                grandTotal =
+                    Number(
+                        (
+                            paid +
+                            balance
+                        ).toFixed(2)
+                    );
+
+            }
+
+            return total + grandTotal;
+
+        },
+        0
+    );
+
+
+// ==========================================
+// TOTAL BILL PAID
+// ==========================================
+
+const totalBillPaid =
+    customerBills.reduce(
+        (total, bill) =>
+            total +
+            (
+                Number(
+                    bill.amountPaid
+                ) || 0
+            ),
+        0
+    );
+
+
+// ==========================================
+// CALCULATE PAYMENT HISTORY
+// ==========================================
 
 let runningPaid = 0;
 
-// Calculate payment rows without changing
-// the existing Total Paid calculation
 const calculatedPayments =
-    chronologicalPayments.map((payment, index) => {
+    chronologicalPayments.map(
+        payment => {
 
-        const amount =
-            Number(payment.amount) || 0;
+            const amount =
+                Number(
+                    payment.amount
+                ) || 0;
 
-        runningPaid =
-            Number(
-                (runningPaid + amount).toFixed(2)
-            );
 
-        // Payments made after this payment
-        const paymentsAfterThis =
-            chronologicalPayments
-                .slice(index + 1)
-                .reduce(
-                    (total, laterPayment) =>
-                        total +
-                        (Number(laterPayment.amount) || 0),
+            runningPaid =
+                Number(
+                    (
+                        runningPaid +
+                        amount
+                    ).toFixed(2)
+                );
+
+
+            // ==========================================
+            // PAYMENT USED AGAINST OPENING BALANCE
+            // ==========================================
+
+            const openingPaid =
+                Math.max(
+                    runningPaid -
+                    totalBillPaid,
                     0
                 );
 
-        // Remaining balance after this payment
-        const balanceDue =
-            Math.max(
-                currentBalance +
-                paymentsAfterThis,
-                0
-            );
 
-        return {
-            ...payment,
-            amount,
-            totalPaid: runningPaid,
-            balanceDue
-        };
-    });
+            // ==========================================
+            // REMAINING OPENING BALANCE
+            // ==========================================
 
-    // Show newest payment first
-    calculatedPayments.reverse();
+            const remainingOpeningBalance =
+                Math.max(
+                    openingBalance -
+                    openingPaid,
+                    0
+                );
+
+
+            // ==========================================
+            // REMAINING BILL BALANCE
+            // ==========================================
+
+            const remainingBillBalance =
+                Math.max(
+                    totalBillPurchase -
+                    Math.min(
+                        runningPaid,
+                        totalBillPaid
+                    ),
+                    0
+                );
+
+
+            // ==========================================
+            // FINAL BALANCE AFTER THIS PAYMENT
+            // ==========================================
+
+            const balanceDue =
+                Number(
+                    (
+                        remainingBillBalance +
+                        remainingOpeningBalance
+                    ).toFixed(2)
+                );
+
+
+            return {
+                ...payment,
+                amount,
+                totalPaid: runningPaid,
+                balanceDue,
+                historyIndex: customer.paymentHistory.indexOf(payment)
+            };
+
+        }
+    );
+
+
+// ==========================================
+// SHOW NEWEST PAYMENT FIRST
+// ==========================================
+
+calculatedPayments.reverse();
 
     // Display payment history
     calculatedPayments.forEach(
@@ -1540,44 +2554,20 @@ const calculatedPayments =
                 Number(payment.balanceDue) || 0;
 
             row.innerHTML = `
-                <td>
-                    ${index + 1}
-                </td>
-
-                <td>
-                    ${formatDate(
-                        payment.date ||
-                        payment.createdAt?.split("T")[0]
-                    )}
-                </td>
-
-                <td class="payment-amount">
-                    Rs.${amount.toFixed(2)}
-                </td>
-
-                <td>
-                    Rs.${totalPaid.toFixed(2)}
-                </td>
-
-                <td class="payment-balance">
-                    Rs.${balanceDue.toFixed(2)}
-                </td>
-
+                <td>${index + 1}</td>
+                <td>${formatDate(payment.date || payment.createdAt?.split("T")[0])}</td>
+                <td class="payment-amount">Rs.${amount.toFixed(2)}</td>
+                <td>Rs.${totalPaid.toFixed(2)}</td>
+                <td class="payment-balance">Rs.${balanceDue.toFixed(2)}</td>
                 <td>
                     <span class="badge bg-secondary">
-                        ${
-                            payment.paymentMode ||
-                            "Cash"
-                        }
+                        ${payment.paymentMode || "Cash"}
                     </span>
                 </td>
-
-                <td>
-                    ${
-                        payment.remarks
-                            ? payment.remarks
-                            : "-"
-                    }
+                <td>${payment.remarks || "-"}</td>
+                <td class="payment-history-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary editPaymentHistoryBtn" data-payment-index="${payment.historyIndex}">Edit</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger deletePaymentHistoryBtn" data-payment-index="${payment.historyIndex}">Delete</button>
                 </td>
             `;
 
@@ -1586,82 +2576,460 @@ const calculatedPayments =
     );
 }
 // ==========================================
+// ==========================================
+// EDIT / DELETE PAYMENT HISTORY
+// ==========================================
+
+function normalizePaymentHistoryDate(value) {
+    const text = String(value || "").trim();
+    let match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if (!match) {
+        const dmy = text.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+        if (dmy) match = [text, dmy[3], dmy[2], dmy[1]];
+    }
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const parsed = new Date(year, month - 1, day);
+
+    if (parsed.getFullYear() !== year || parsed.getMonth() !== month - 1 || parsed.getDate() !== day) {
+        return null;
+    }
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function getPaymentHistoryTimestamp(record) {
+    const created = new Date(record.createdAt || "");
+    if (!isNaN(created.getTime())) return created.getTime();
+    const normalized = normalizePaymentHistoryDate(record.date);
+    return normalized ? new Date(`${normalized}T00:00:00`).getTime() : 0;
+}
+
+function paymentHistoryAmount(value) {
+    return Number(String(value ?? "0").replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function getCustomerBillsForPaymentHistory(customer) {
+    const customerId = String(customer.customerId || "").trim();
+    const customerName = String(customer.name || "").trim().toLowerCase();
+    const customerMobile = String(customer.mobile || "").trim();
+
+    return bills.filter(bill => {
+        const sameId = customerId && bill.customerId &&
+            String(bill.customerId).trim() === customerId;
+        const sameName = String(bill.customer || "").trim().toLowerCase() === customerName;
+        const billMobile = String(bill.mobile || "").trim();
+        const sameMobile = billMobile === customerMobile || !billMobile || billMobile === "-" ||
+            !customerMobile || customerMobile === "-";
+        return sameId || (sameName && sameMobile);
+    }).sort((a, b) => getPaymentHistoryTimestamp({ date: a.date }) - getPaymentHistoryTimestamp({ date: b.date }));
+}
+
+function recalculateBillsForPaymentHistory(
+    customerBills,
+    oldHistory,
+    newHistory
+) {
+    const roundMoney = value =>
+        Number((Number(value) || 0).toFixed(2));
+
+    const getBillTotal = bill =>
+        paymentHistoryAmount(bill.grandTotal) ||
+        paymentHistoryAmount(bill.amountPaid) +
+            paymentHistoryAmount(bill.balanceDue);
+
+    const findAllocatedBill = payment =>
+        customerBills.find(bill =>
+            String(bill.billNo || "") ===
+                String(payment.allocationBillNo || "") &&
+            (
+                !payment.allocationBillDate ||
+                String(bill.date || "") ===
+                    String(payment.allocationBillDate)
+            )
+        );
+
+    let amountToReverse = roundMoney(
+        customerBills.reduce(
+            (total, bill) =>
+                total + paymentHistoryAmount(bill.amountPaid),
+            0
+        )
+    );
+
+    const reverseFromBill = (bill, amount) => {
+        if (!bill || amount <= 0 || amountToReverse <= 0) return;
+
+        const paid = paymentHistoryAmount(bill.amountPaid);
+        const reversed = Math.min(paid, amount, amountToReverse);
+
+        bill.amountPaid = roundMoney(paid - reversed);
+        amountToReverse = roundMoney(amountToReverse - reversed);
+    };
+
+    // Reverse old bill allocations. Opening-balance payments never
+    // changed bill balances, so they must not be reversed from bills.
+    [...oldHistory]
+        .sort((a, b) =>
+            getPaymentHistoryTimestamp(b) -
+            getPaymentHistoryTimestamp(a)
+        )
+        .forEach(payment => {
+            if (payment.allocationType === "openingBalance") return;
+
+            const amount = paymentHistoryAmount(payment.amount);
+
+            if (payment.allocationType === "bill") {
+                reverseFromBill(findAllocatedBill(payment), amount);
+                return;
+            }
+
+            // Older payment records have no allocation fields.
+            // Preserve their previous oldest-bill-first behavior.
+            for (
+                let i = customerBills.length - 1;
+                i >= 0 && amountToReverse > 0;
+                i--
+            ) {
+                reverseFromBill(customerBills[i], amount);
+            }
+        });
+
+    const applyToBill = (bill, amount) => {
+        if (!bill || amount <= 0) return;
+
+        const total = getBillTotal(bill);
+        const paid = paymentHistoryAmount(bill.amountPaid);
+        const applied = Math.min(
+            Math.max(0, total - paid),
+            amount
+        );
+
+        bill.amountPaid = roundMoney(paid + applied);
+    };
+
+    // Replay payments in date order, respecting the saved target.
+    [...newHistory]
+        .sort((a, b) =>
+            getPaymentHistoryTimestamp(a) -
+            getPaymentHistoryTimestamp(b)
+        )
+        .forEach(payment => {
+            if (payment.allocationType === "openingBalance") return;
+
+            const amount = paymentHistoryAmount(payment.amount);
+
+            if (payment.allocationType === "bill") {
+                applyToBill(findAllocatedBill(payment), amount);
+                return;
+            }
+
+            // Legacy records continue using the original allocation rule.
+            let remaining = amount;
+
+            for (const bill of customerBills) {
+                if (remaining <= 0) break;
+
+                const before = paymentHistoryAmount(bill.amountPaid);
+                applyToBill(bill, remaining);
+
+                const applied = roundMoney(
+                    paymentHistoryAmount(bill.amountPaid) - before
+                );
+
+                remaining = roundMoney(remaining - applied);
+            }
+        });
+
+    customerBills.forEach(bill => {
+        const total = getBillTotal(bill);
+        const paid = Math.min(
+            total,
+            paymentHistoryAmount(bill.amountPaid)
+        );
+
+        bill.amountPaid = roundMoney(paid);
+        bill.balanceDue = roundMoney(Math.max(0, total - paid));
+        bill.paymentStatus =
+            bill.balanceDue <= 0 ? "Paid" : "Pending";
+    });
+}
+
+async function savePaymentHistoryChanges(nextHistory) {
+    const identity = {
+        customerId: currentCustomer?.customerId,
+        name: currentCustomer?.name,
+        mobile: currentCustomer?.mobile
+    };
+    await refreshDatabase();
+
+    const sameIdentity = customer => identity.customerId &&
+        String(customer.customerId || "").trim() === String(identity.customerId).trim();
+    const dbCustomer = db.customers.find(sameIdentity) || db.customers.find(customer =>
+        String(customer.name || "").trim().toLowerCase() === String(identity.name || "").trim().toLowerCase() &&
+        String(customer.mobile || "").trim() === String(identity.mobile || "").trim()
+    );
+    if (!dbCustomer) throw new Error("Customer record was not found.");
+
+    const oldHistory = Array.isArray(dbCustomer.paymentHistory) ? [...dbCustomer.paymentHistory] : [];
+    recalculateBillsForPaymentHistory(getCustomerBillsForPaymentHistory(dbCustomer), oldHistory, nextHistory);
+    dbCustomer.paymentHistory = nextHistory;
+    db.bills = bills;
+
+    await window.api.saveDatabase(db);
+    await Promise.all([
+        window.api.saveCustomers(db.customers),
+        window.api.saveBills(db.bills)
+    ]);
+    await loadCustomers();
+
+    currentCustomer = customerData.find(sameIdentity) || customerData.find(customer =>
+        String(customer.name || "").trim().toLowerCase() === String(identity.name || "").trim().toLowerCase() &&
+        String(customer.mobile || "").trim() === String(identity.mobile || "").trim()
+    );
+    if (currentCustomer) {
+        document.getElementById("customerPurchase").textContent = formatCurrency(currentCustomer.totalPurchase);
+        document.getElementById("customerPaid").textContent = formatCurrency(currentCustomer.totalPaid);
+        document.getElementById("customerBalance").textContent = formatCurrency(currentCustomer.totalBalance);
+        loadBillHistory(currentCustomer);
+        loadPaymentHistory(currentCustomer);
+    }
+}
+
+const paymentHistoryBody = document.getElementById("paymentHistoryBody");
+paymentHistoryBody?.addEventListener("click", async event => {
+    const button = event.target.closest(".editPaymentHistoryBtn, .deletePaymentHistoryBtn");
+    if (!button || !currentCustomer) return;
+
+    const index = Number(button.dataset.paymentIndex);
+    const history = Array.isArray(currentCustomer.paymentHistory) ? currentCustomer.paymentHistory : [];
+    const payment = history[index];
+    if (!payment) return;
+
+    try {
+        if (button.classList.contains("editPaymentHistoryBtn")) {
+            const dateInput = window.prompt("Payment date (YYYY-MM-DD):", payment.date || "");
+            if (dateInput === null) return;
+            const amountInput = window.prompt("Payment amount:", String(payment.amount ?? ""));
+            if (amountInput === null) return;
+            const modeInput = window.prompt("Payment mode:", payment.paymentMode || "Cash");
+            if (modeInput === null) return;
+            const remarksInput = window.prompt("Remarks (leave blank for none):", payment.remarks || "");
+            if (remarksInput === null) return;
+
+            const date = normalizePaymentHistoryDate(dateInput);
+            const amount = Number(amountInput);
+            if (!date || !Number.isFinite(amount) || amount <= 0) {
+                showToast("Enter a valid date and an amount greater than zero.", "error");
+                return;
+            }
+
+            const nextHistory = [...history];
+            nextHistory[index] = {
+                ...payment,
+                date,
+                amount: Number(amount.toFixed(2)),
+                paymentMode: modeInput.trim() || "Cash",
+                remarks: remarksInput.trim()
+            };
+            await savePaymentHistoryChanges(nextHistory);
+            showToast("Payment updated successfully.", "success");
+        } else {
+            if (!window.confirm(`Delete this payment of ${formatCurrency(payment.amount)}? Bill balances will be recalculated.`)) return;
+            await savePaymentHistoryChanges(history.filter((_, i) => i !== index));
+            showToast("Payment deleted successfully.", "success");
+        }
+    } catch (error) {
+        console.error("Payment history update failed:", error);
+        showToast("Could not save this payment change.", "error");
+    }
+});
+function getOpeningBalanceRemaining(customer, customerBills) {
+    const history = Array.isArray(customer?.paymentHistory)
+        ? customer.paymentHistory
+        : [];
+
+    const paymentHistoryTotal = history.reduce(
+        (total, payment) => total + (Number(payment.amount) || 0),
+        0
+    );
+
+    const totalBillPaid = customerBills.reduce(
+        (total, bill) => total + (Number(bill.amountPaid) || 0),
+        0
+    );
+
+    const openingBalancePaid = Math.max(
+        paymentHistoryTotal - totalBillPaid,
+        0
+    );
+
+    return Math.max(
+        (Number(customer?.openingBalance) || 0) - openingBalancePaid,
+        0
+    );
+}
+
+function updatePaymentAllocationLimit() {
+    const amountInput = document.getElementById("payAmount");
+    const openingRadio = document.getElementById("payToOpeningBalance");
+    const billRadio = document.getElementById("payToBill");
+    const billSelect = document.getElementById("payBillSelect");
+    const openingAmount = Number(
+        document.getElementById("payOpeningRemaining")?.dataset.balance
+    ) || 0;
+    const selectedBillOption = billSelect?.selectedOptions?.[0];
+    const billAmount = Number(selectedBillOption?.dataset.balance) || 0;
+
+    const selectedRadio = document.querySelector(
+        'input[name="paymentAllocation"]:checked'
+    );
+
+    let selectedBalance = 0;
+
+    if (selectedRadio?.value === "openingBalance") {
+        selectedBalance = openingAmount;
+    } else if (selectedRadio?.value === "bill") {
+        selectedBalance = billAmount;
+    }
+
+    amountInput.max = selectedBalance.toFixed(2);
+
+    document.getElementById("payOpeningCard")
+        ?.classList.toggle("is-selected", openingRadio.checked);
+
+    document.getElementById("payBillCard")
+        ?.classList.toggle("is-selected", billRadio.checked);
+
+    const billRemaining = document.getElementById("payBillRemaining");
+
+    if (selectedBillOption && selectedBillOption.value) {
+        billRemaining.textContent =
+            `${formatCurrency(billAmount)} remaining`;
+    } else {
+        billRemaining.textContent = "Select an unpaid bill";
+    }
+}
+
+document
+    .querySelectorAll('input[name="paymentAllocation"]')
+    .forEach(radio => {
+        radio.addEventListener("change", updatePaymentAllocationLimit);
+    });
+
+document
+    .getElementById("payBillSelect")
+    .addEventListener("change", () => {
+        document.getElementById("payToBill").checked = true;
+        updatePaymentAllocationLimit();
+    });
 // RECEIVE PAYMENT BUTTON
 // ==========================================
 
 document
     .getElementById("receivePayment")
     .addEventListener("click", function () {
-
         if (!currentCustomer) {
-
-            showToast(
-                "Customer not selected.",
-                "warning"
-            );
-
+            showToast("Customer not selected.", "warning");
             return;
         }
-
-
-        // ==========================================
-        // CUSTOMER NAME
-        // ==========================================
 
         document.getElementById("payCustomer").textContent =
             currentCustomer.name || "-";
 
+        const customerBills =
+            getCustomerBillsForPaymentHistory(currentCustomer);
 
-        // ==========================================
-        // CURRENT OUTSTANDING BALANCE
-        // ==========================================
+        const unpaidBills = customerBills.filter(
+            bill => (Number(bill.balanceDue) || 0) > 0
+        );
 
-        const outstandingBalance =
-            Number(currentCustomer.totalBalance) || 0;
+        const openingRemaining =
+            getOpeningBalanceRemaining(currentCustomer, customerBills);
 
+        const billBalance = customerBills.reduce(
+            (total, bill) => total + (Number(bill.balanceDue) || 0),
+            0
+        );
+
+        const outstandingBalance = Number(
+            (openingRemaining + billBalance).toFixed(2)
+        );
 
         document.getElementById("payBalance").textContent =
-            "Rs. " +
-            outstandingBalance.toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+            formatCurrency(outstandingBalance);
 
-
-        // ==========================================
-        // PAYMENT AMOUNT
-        // ==========================================
-
-        const payAmount =
-            document.getElementById("payAmount");
-
+        const payAmount = document.getElementById("payAmount");
         payAmount.value = "";
 
-        payAmount.max =
-            outstandingBalance > 0
-                ? outstandingBalance.toFixed(2)
-                : "0";
+        const openingRemainingLabel =
+            document.getElementById("payOpeningRemaining");
 
+        openingRemainingLabel.dataset.balance =
+            openingRemaining.toFixed(2);
 
-        // ==========================================
-        // DEFAULT PAYMENT MODE
-        // ==========================================
+        openingRemainingLabel.textContent =
+            `${formatCurrency(openingRemaining)} remaining`;
 
-        document.getElementById("payMode").value =
-            "Cash";
+        const billSelect = document.getElementById("payBillSelect");
+        billSelect.innerHTML = "";
 
+        unpaidBills.forEach(bill => {
+            const balance = Number(bill.balanceDue) || 0;
+            const option = document.createElement("option");
 
-        // ==========================================
-        // CLEAR REMARKS
-        // ==========================================
+            option.value = String(bill.billNo || "");
+            option.dataset.billNo = String(bill.billNo || "");
+            option.dataset.billDate = String(bill.date || "");
+            option.dataset.balance = balance.toFixed(2);
+            option.textContent =
+                `${bill.billNo || "Bill"} · ${formatDate(bill.date)} · ` +
+                `${formatCurrency(balance)} remaining`;
 
-        document.getElementById("payRemarks").value =
-            "";
+            billSelect.appendChild(option);
+        });
 
+        if (unpaidBills.length === 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No unpaid bills";
+            option.disabled = true;
+            option.selected = true;
+            option.dataset.balance = "0";
+            billSelect.appendChild(option);
+        }
 
-        // ==========================================
-        // OPEN PAYMENT MODAL
-        // ==========================================
+        const openingRadio =
+            document.getElementById("payToOpeningBalance");
+
+        const billRadio =
+            document.getElementById("payToBill");
+
+        openingRadio.disabled = openingRemaining <= 0;
+        billRadio.disabled = unpaidBills.length === 0;
+        billSelect.disabled = unpaidBills.length === 0;
+
+        if (openingRemaining > 0) {
+            openingRadio.checked = true;
+            billRadio.checked = false;
+        } else if (unpaidBills.length > 0) {
+            openingRadio.checked = false;
+            billRadio.checked = true;
+        } else {
+            openingRadio.checked = false;
+            billRadio.checked = false;
+        }
+
+        updatePaymentAllocationLimit();
+
+        document.getElementById("payDate").value =
+            new Date().toISOString().split("T")[0];
+
+        document.getElementById("payMode").value = "Cash";
+        document.getElementById("payRemarks").value = "";
 
         const customerModalElement =
             document.getElementById("customerModal");
@@ -1669,30 +3037,15 @@ document
         const paymentModalElement =
             document.getElementById("paymentModal");
 
-
         const customerModalInstance =
-            bootstrap.Modal.getOrCreateInstance(
-                customerModalElement
-            );
-
+            bootstrap.Modal.getOrCreateInstance(customerModalElement);
 
         const paymentModalInstance =
-            bootstrap.Modal.getOrCreateInstance(
-                paymentModalElement
-            );
+            bootstrap.Modal.getOrCreateInstance(paymentModalElement);
 
-
-        // Close customer details
         customerModalInstance.hide();
 
-
-        // Open payment modal after closing
-        setTimeout(function () {
-
-            paymentModalInstance.show();
-
-        }, 350);
-
+        setTimeout(() => paymentModalInstance.show(), 350);
     });
 
 // ==========================================
@@ -1782,6 +3135,8 @@ document
 
         if (!currentCustomer) return;
 
+        try {
+
         const paymentInput =
             document.getElementById("payAmount");
 
@@ -1793,6 +3148,9 @@ document
 
         const requestedAmount =
             Number(paymentInput.value);
+        
+        const paymentDate =
+            document.getElementById("payDate").value;    
 
         // ==========================================
         // VALIDATION
@@ -1810,6 +3168,15 @@ document
 
             return;
         }
+        if (!paymentDate) {
+
+            showToast(
+                "Please select the payment date.",
+                "error"
+            );
+        
+            return;
+        }
 
 
         // ==========================================
@@ -1819,206 +3186,111 @@ document
         await refreshDatabase();
 
 
-        // ==========================================
-        // CHECK CUSTOMER BALANCE
-        // ==========================================
+      // ==========================================
+// CHECK CUSTOMER BALANCE AND PAYMENT TARGET
+// ==========================================
 
-        const latestCustomer =
-            customerData.find(c =>
-                String(c.customerId) ===
-                String(currentCustomer.customerId)
-            ) || currentCustomer;
+const paymentCustomer =
+    db.customers.find(customer =>
+        currentCustomer.customerId &&
+        String(customer.customerId || "").trim() ===
+            String(currentCustomer.customerId || "").trim()
+    ) ||
+    db.customers.find(customer =>
+        String(customer.name || "").trim().toLowerCase() ===
+            String(currentCustomer.name || "").trim().toLowerCase() &&
+        String(customer.mobile || "").trim() ===
+            String(currentCustomer.mobile || "").trim()
+    ) ||
+    latestCustomer;
 
+const customerBills =
+    getCustomerBillsForPaymentHistory(paymentCustomer);
 
-        const currentBalance =
-            Number(latestCustomer.totalBalance) || 0;
+const openingRemaining =
+    getOpeningBalanceRemaining(paymentCustomer, customerBills);
 
+const billBalance = customerBills.reduce(
+    (total, bill) => total + (Number(bill.balanceDue) || 0),
+    0
+);
 
-        if (requestedAmount > currentBalance) {
+const currentBalance = Number(
+    (openingRemaining + billBalance).toFixed(2)
+);
 
-            showToast(
-                `Payment cannot be greater than balance due.\n\nBalance Due: Rs.${currentBalance.toFixed(2)}`,
-                "error"
-            );
+const allocationType =
+    document.querySelector('input[name="paymentAllocation"]:checked')?.value;
 
-            return;
-        }
+if (!allocationType) {
+    showToast("Select Opening Balance or a bill for this payment.", "error");
+    return;
+}
 
+let selectedBill = null;
+let targetBalance = 0;
 
-        // ==========================================
-        // PAYMENT AMOUNT TO PROCESS
-        // ==========================================
+if (allocationType === "openingBalance") {
+    targetBalance = openingRemaining;
+} else if (allocationType === "bill") {
+    const selectedOption =
+        document.getElementById("payBillSelect").selectedOptions[0];
 
-        let remainingAmount =
-            requestedAmount;
+    const selectedBillNo =
+        String(selectedOption?.dataset.billNo || "");
 
+    const selectedBillDate =
+        String(selectedOption?.dataset.billDate || "");
 
-        // ==========================================
-        // FIND CUSTOMER BILLS
-        // ==========================================
+    selectedBill = customerBills.find(bill =>
+        String(bill.billNo || "") === selectedBillNo &&
+        String(bill.date || "") === selectedBillDate
+    );
 
-       const customerBills =
-    bills
-        .filter(bill => {
+    if (!selectedBill) {
+        showToast("Select an unpaid bill for this payment.", "error");
+        return;
+    }
 
-            const sameCustomerId =
-                bill.customerId &&
-                currentCustomer.customerId &&
-                String(bill.customerId).trim() ===
-                String(currentCustomer.customerId).trim();
+    targetBalance = Number(selectedBill.balanceDue) || 0;
+} else {
+    showToast("Select a valid payment target.", "error");
+    return;
+}
 
-            const sameName =
-                String(bill.customer || "").trim().toLowerCase() ===
-                String(currentCustomer.name || "").trim().toLowerCase();
+if (requestedAmount > currentBalance + 0.009) {
+    showToast(
+        `Payment cannot be greater than the total balance due. ${formatCurrency(currentBalance)}`,
+        "error"
+    );
+    return;
+}
 
-            const billMobile =
-                String(bill.mobile || "").trim();
+if (requestedAmount > targetBalance + 0.009) {
+    showToast(
+        `Payment cannot be greater than the selected balance. ${formatCurrency(targetBalance)}`,
+        "error"
+    );
+    return;
+}
 
-            const customerMobile =
-                String(currentCustomer.mobile || "").trim();
+// Apply this payment only to the selected bill.
+// Opening balance payments are recorded in paymentHistory and do not
+// change any bill's amountPaid or balanceDue.
+if (allocationType === "bill") {
+    selectedBill.amountPaid = Number(
+        ((Number(selectedBill.amountPaid) || 0) + requestedAmount).toFixed(2)
+    );
 
-            const sameMobile =
-                billMobile === customerMobile ||
-                billMobile === "" ||
-                billMobile === "-" ||
-                customerMobile === "" ||
-                customerMobile === "-";
+    selectedBill.balanceDue = Number(
+        (targetBalance - requestedAmount).toFixed(2)
+    );
 
-            return sameCustomerId || (sameName && sameMobile);
-        })
-        .sort((a, b) =>
-            new Date(a.date) - new Date(b.date)
-        );
-
-
-        // ==========================================
-        // APPLY PAYMENT TO OLDEST BILLS FIRST
-        // ==========================================
-
-        for (const bill of customerBills) {
-
-            if (remainingAmount <= 0)
-                break;
-
-
-            let balance =
-                Number(bill.balanceDue) || 0;
-
-
-            if (balance <= 0)
-                continue;
-
-
-            const paymentForBill =
-                Math.min(
-                    balance,
-                    remainingAmount
-                );
-
-
-            bill.amountPaid =
-                Number(bill.amountPaid || 0) +
-                paymentForBill;
-
-
-            bill.balanceDue =
-                Number(
-                    (
-                        balance -
-                        paymentForBill
-                    ).toFixed(2)
-                );
-
-
-            bill.paymentStatus =
-                bill.balanceDue <= 0
-                    ? "Paid"
-                    : "Pending";
-
-
-            remainingAmount =
-                Number(
-                    (
-                        remainingAmount -
-                        paymentForBill
-                    ).toFixed(2)
-                );
-
-        }
-
-
-        // ==========================================
-        // APPLY REMAINING PAYMENT TO OPENING BALANCE
-        // ==========================================
-
-        if (remainingAmount > 0) {
-
-            const dbCustomer =
-    db.customers.find(c => {
-
-        const sameCustomerId =
-            c.customerId &&
-            currentCustomer.customerId &&
-            String(c.customerId).trim() ===
-            String(currentCustomer.customerId).trim();
-
-        const sameName =
-            String(c.name || "").trim().toLowerCase() ===
-            String(currentCustomer.name || "").trim().toLowerCase();
-
-        const dbMobile =
-            String(c.mobile || "").trim();
-
-        const currentMobile =
-            String(currentCustomer.mobile || "").trim();
-
-        const sameMobile =
-            dbMobile === currentMobile ||
-            dbMobile === "" ||
-            dbMobile === "-" ||
-            currentMobile === "" ||
-            currentMobile === "-";
-
-        return sameCustomerId || (sameName && sameMobile);
-    });
-
-
-            if (dbCustomer) {
-
-                const openingBalance =
-                    Number(
-                        dbCustomer.openingBalance
-                    ) || 0;
-
-
-                const openingPayment =
-                    Math.min(
-                        openingBalance,
-                        remainingAmount
-                    );
-
-
-                dbCustomer.openingBalance =
-                    Number(
-                        (
-                            openingBalance -
-                            openingPayment
-                        ).toFixed(2)
-                    );
-
-
-                remainingAmount =
-                    Number(
-                        (
-                            remainingAmount -
-                            openingPayment
-                        ).toFixed(2)
-                    );
-
-            }
-
-        }
-
+    selectedBill.paymentStatus =
+        selectedBill.balanceDue <= 0 ? "Paid" : "Pending";
+}
+// The payment is applied only to the selected target.
+// Opening-balance payments are calculated from paymentHistory.
 
 // ==========================================
 // PAYMENT HISTORY
@@ -2200,11 +3472,10 @@ const newTotalPaid =
 const currentBalanceAfterPayment =
     Number(
         (
-            Number(currentCustomer.totalBalance || 0) -
+            Number(currentBalance || 0) -
             Number(requestedAmount)
         ).toFixed(2)
     );
-
 
 // ==========================================
 // CREATE PAYMENT RECORD
@@ -2216,9 +3487,7 @@ const paymentRecord = {
         "PAY-" + Date.now(),
 
     date:
-        new Date()
-            .toISOString()
-            .split("T")[0],
+        paymentDate,
 
     createdAt:
         new Date().toISOString(),
@@ -2261,112 +3530,55 @@ dbCustomer.paymentHistory.push(
         
         // Save to local storage / Electron database
         // Save locally first
-         await window.api.saveDatabase(db);
+         try {
+             await window.api.saveDatabase(db);
+         } catch (saveError) {
+             console.error("Could not save received payment.", saveError);
+             showToast("Payment could not be saved. Please try again.", "error");
+             return;
+         }
          
-         // Save customer payment history and bills together
-         await Promise.all([
-             window.api.saveCustomers(db.customers),
-             window.api.saveBills(db.bills)
-         ]);
+         // Sync customer and bill records after the local database save.
+         // A sync failure should not leave the payment dialog open or stop
+         // the local customer list from refreshing.
+         try {
+             await Promise.race([
+                 Promise.all([
+                     window.api.saveCustomers(db.customers),
+                     window.api.saveBills(db.bills)
+                 ]),
+                 new Promise(resolve => setTimeout(resolve, 1500))
+             ]);
+         } catch (syncError) {
+             console.warn(
+                 "Payment was saved locally, but customer/bill sync failed.",
+                 syncError
+             );
+         }
 
 
-        // ==========================================
-        // RELOAD CUSTOMERS
-        // ==========================================
-
-        await loadCustomers();
-
-
-        // ==========================================
-        // GET UPDATED CUSTOMER
-        // ==========================================
-
-        currentCustomer =
-            customerData.find(c =>
-
-                String(c.name).trim() ===
-                    String(currentCustomer.name).trim() &&
-
-                String(c.mobile || "").trim() ===
-                    String(currentCustomer.mobile || "").trim()
-
-            );
-
-
-        // ==========================================
-        // REFRESH CUSTOMER MODAL
-        // ==========================================
-
-        if (currentCustomer) {
-
-            document.getElementById(
-                "viewCustomerName"
-            ).textContent =
-                currentCustomer.name;
-
-
-            document.getElementById(
-                "viewCustomerMobile"
-            ).textContent =
-                currentCustomer.mobile || "-";
-
-
-            document.getElementById(
-                "viewCustomerAddress"
-            ).textContent =
-                currentCustomer.address || "-";
-
-
-            document.getElementById(
-                "customerPurchase"
-            ).textContent =
-                "Rs. " +
-                currentCustomer.totalPurchase.toFixed(2);
-
-
-            document.getElementById(
-                "customerPaid"
-            ).textContent =
-                "Rs. " +
-                currentCustomer.totalPaid.toFixed(2);
-
-
-            document.getElementById(
-                "customerBalance"
-            ).textContent =
-                "Rs. " +
-                currentCustomer.totalBalance.toFixed(2);
-
-
-            loadBillHistory(
-                currentCustomer
-            );
-
-
-            // Load payment history
-
-            loadPaymentHistory(
-                currentCustomer
-            );
-
-        }
-
-
-        // ==========================================
-        // CLOSE PAYMENT MODAL
-        // ==========================================
-
-        paymentModal.hide();
-
-
-        // ==========================================
-        // SUCCESS MESSAGE
-        // ==========================================
-
-        showToast(
-            "Payment saved successfully.",
-            "success"
+        // Preserve a confirmation across the page reload.
+        const receivedAmount = Number(requestedAmount).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        sessionStorage.setItem(
+            "svssPendingPaymentNotice",
+            `Amount credited: Rs. ${receivedAmount}`
         );
+
+        // Reload from the saved database so the Paid and Balance columns
+        // show the latest figures and the payment dialog closes.
+        window.location.reload();
+        return;
+
+        } catch (paymentError) {
+            console.error("Receive Payment failed.", paymentError);
+            showToast(
+                "Payment process failed. Refresh and check payment history before trying again.",
+                "error"
+            );
+        }
 
     });
     // ==========================================
@@ -2381,7 +3593,197 @@ dbCustomer.paymentHistory.push(
     const { jsPDF } = window.jspdf;
 
     const doc = new jsPDF();
+
     await refreshDatabase();
+    
+    // ======================================
+    // GET LATEST CUSTOMER DATA
+    // ======================================
+    
+    const latestCustomer =
+        db.customers.find(c =>
+            String(c.customerId || "").trim() ===
+            String(customer.customerId || "").trim()
+        ) ||
+        db.customers.find(c =>
+            String(c.name || "").trim().toLowerCase() ===
+            String(customer.name || "").trim().toLowerCase()
+        ) ||
+        customer;
+    
+    // ======================================
+    // OPENING BALANCE
+    // ======================================
+    
+    const openingBalance =
+        Number(latestCustomer.openingBalance) || 0;
+    
+    const openingBalanceDate =
+        latestCustomer.openingBalanceDate || "";
+
+    // ======================================
+    // CALCULATE LATEST STATEMENT TOTALS
+    // ======================================
+    
+    let statementTotalPurchase = 0;
+    
+   let statementTotalPaid = 0;
+
+let statementBillPaid = 0;
+
+let statementBillBalance = 0;
+
+
+// ======================================
+// CALCULATE FROM CUSTOMER BILLS
+// ======================================
+
+(customer.bills || []).forEach(
+    bill => {
+
+        let grandTotal =
+            Number(
+                String(
+                    bill.grandTotal || ""
+                )
+                .replace(/[^\d.]/g, "")
+            ) || 0;
+
+
+        const paid =
+            Number(
+                bill.amountPaid
+            ) || 0;
+
+
+        const balance =
+            Number(
+                bill.balanceDue
+            ) || 0;
+
+
+        // Recover old bill total
+        if (
+            grandTotal <= 0 &&
+            (
+                paid > 0 ||
+                balance > 0
+            )
+        ) {
+
+            grandTotal =
+                Number(
+                    (
+                        paid +
+                        balance
+                    ).toFixed(2)
+                );
+
+        }
+
+
+        statementTotalPurchase +=
+            grandTotal;
+
+
+        statementBillPaid +=
+            paid;
+
+
+        statementBillBalance +=
+            balance;
+
+    }
+);
+
+
+// ======================================
+// TOTAL PAYMENTS FROM PAYMENT HISTORY
+// ======================================
+
+if (
+    Array.isArray(
+        customer.paymentHistory
+    )
+) {
+
+    statementTotalPaid =
+        customer.paymentHistory.reduce(
+            (total, payment) =>
+                total +
+                (
+                    Number(
+                        payment.amount
+                    ) || 0
+                ),
+            0
+        );
+
+}
+
+statementTotalPaid = Math.max(
+    statementBillPaid,
+    statementTotalPaid
+);
+// ======================================
+// PAYMENT USED AGAINST OPENING BALANCE
+// ======================================
+
+const statementOpeningPaid = Math.max(
+    statementTotalPaid - statementBillPaid,
+    0
+);
+
+
+// ======================================
+// REMAINING OPENING BALANCE
+// ==========================================
+
+const statementRemainingOpening = Math.max(
+    openingBalance - statementOpeningPaid,
+    0
+);
+
+
+// ======================================
+// FINAL BALANCE DUE
+// ======================================
+
+const statementBalanceDue =
+    Number(
+        (
+            statementBillBalance +
+            statementRemainingOpening
+        ).toFixed(2)
+    );
+
+
+// ======================================
+// CLEAN DECIMAL VALUES
+// ======================================
+
+statementTotalPurchase =
+    Number(
+        statementTotalPurchase.toFixed(2)
+    );
+
+statementTotalPaid =
+    Number(
+        statementTotalPaid.toFixed(2)
+    );
+    // ======================================
+    // CLEAN DECIMAL VALUES
+    // ======================================
+    
+    statementTotalPurchase =
+        Number(
+            statementTotalPurchase.toFixed(2)
+        );
+    
+    statementTotalPaid =
+        Number(
+            statementTotalPaid.toFixed(2)
+        );    
     // ======================================
     // STATEMENT MONEY FORMAT
     // Indian comma formatting
@@ -2761,7 +4163,11 @@ dbCustomer.paymentHistory.push(
 
     doc.text(
 
-        new Date().toLocaleDateString("en-GB"),
+        formatDate(
+        new Date().getFullYear() + "-" +
+            String(new Date().getMonth() + 1).padStart(2, "0") + "-" +
+            String(new Date().getDate()).padStart(2, "0")
+        ),
 
         155,
 
@@ -2816,15 +4222,62 @@ dbCustomer.paymentHistory.push(
     );
 
 // ======================================
-// STATEMENT TABLE
+// STATEMENT TABLE ROWS
+// INCLUDING OPENING BALANCE
 // ======================================
 
-const rows = customer.bills.map((bill,index)=>{
+const rows = [];
+
+// ======================================
+// OPENING BALANCE ROW
+// ======================================
+
+if (openingBalance > 0) {
+
+    rows.push([
+
+        "—",
+
+        "OPENING BALANCE",
+
+        "—",
+
+        openingBalanceDate
+            ? formatDate(openingBalanceDate)
+            : "-",
+
+        openingBalance.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }),
+
+        statementOpeningPaid.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }),
+
+        statementRemainingOpening.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }),
+
+        "Opening"
+
+    ]);
+
+}
+
+
+// ======================================
+// NORMAL BILL ROWS
+// ======================================
+
+(customer.bills || []).forEach((bill, index) => {
 
     const total =
         Number(
-            String(bill.grandTotal)
-            .replace(/[^\d.]/g,"")
+            String(bill.grandTotal || "")
+                .replace(/[^\d.]/g, "")
         ) || 0;
 
     const paid =
@@ -2832,32 +4285,37 @@ const rows = customer.bills.map((bill,index)=>{
 
     const balance =
         Number(bill.balanceDue) || 0;
-    
-    return [
+
+    rows.push([
+
         index + 1,
+
         bill.billNo || "-",
+
         bill.billBookNo || "-",
+
         formatDate(bill.date),
-    
+
         total.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }),
-    
+
         paid.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }),
-    
+
         balance.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }),
-    
+
         balance > 0
             ? "Pending"
             : "Paid"
-    ];
+
+    ]);
 
 });
 
@@ -2957,32 +4415,57 @@ doc.autoTable({
 
 },
 
-    didParseCell:function(data){
+    didParseCell: function(data) {
 
-        if(
-            data.section==="body" &&
-            data.column.index===7
-        ){
+    if (
+        data.section === "body" &&
+        data.column.index === 7
+    ) {
 
-            if(data.cell.raw==="Paid"){
+        if (data.cell.raw === "Opening") {
 
-                data.cell.styles.textColor=[0,140,0];
+            data.cell.styles.textColor = [120, 90, 0];
 
-                data.cell.styles.fontStyle="bold";
+            data.cell.styles.fontStyle = "bold";
 
-            }
+        }
 
-            else{
+        else if (data.cell.raw === "Paid") {
 
-                data.cell.styles.textColor=[220,53,69];
+            data.cell.styles.textColor = [0, 140, 0];
 
-                data.cell.styles.fontStyle="bold";
+            data.cell.styles.fontStyle = "bold";
 
-            }
+        }
+
+        else {
+
+            data.cell.styles.textColor = [220, 53, 69];
+
+            data.cell.styles.fontStyle = "bold";
 
         }
 
     }
+
+
+    // ======================================
+    // OPENING BALANCE ROW
+    // ======================================
+
+    if (
+        data.section === "body" &&
+        data.row.index === 0 &&
+        openingBalance > 0
+    ) {
+
+        data.cell.styles.fillColor = [255, 248, 225];
+
+        data.cell.styles.fontStyle = "bold";
+
+    }
+
+  }
 
 });
 
@@ -2990,251 +4473,223 @@ doc.autoTable({
 // PAYMENT HISTORY
 // ======================================
 
-// Collect all payment history entries for this customer
 const paymentHistory = Array.isArray(customer.paymentHistory)
     ? customer.paymentHistory
     : [];
 
-let y = doc.lastAutoTable.finalY + 12;
-
-
-// ======================================
-// SHOW PAYMENT HISTORY ONLY IF AVAILABLE
-// ======================================
+// Keep the detailed movement and allocation tables only when there are
+// payment records to explain. Without payment history, the bill table and
+// account summary already show the customer's outstanding balance clearly.
+let y = doc.lastAutoTable.finalY + 10;
 
 if (paymentHistory.length > 0) {
+// ======================================
+// BUILD CHRONOLOGICAL ACCOUNT MOVEMENT
+// ======================================
 
-    // Check whether enough space is available
-    if (y + 45 > pageHeight - 20) {
+const movementItems = [];
+let movementOrder = 0;
 
-        doc.addPage();
+function statementDateTimestamp(value) {
+    const displayDate = formatDate(String(value || "").split("T")[0]);
+    const parts = displayDate.split("-");
+    if (parts.length !== 3) return 0;
 
-        drawPageBorder();
+    return Date.UTC(
+        Number(parts[2]),
+        Number(parts[1]) - 1,
+        Number(parts[0])
+    );
+}
 
-        y = 20;
-    }
+function statementNumber(value) {
+    return Number(String(value ?? 0).replace(/[^\d.-]/g, "")) || 0;
+}
 
+if (openingBalance > 0) {
+    movementItems.push({
+        date: openingBalanceDate,
+        description: "Opening balance",
+        charge: openingBalance,
+        payment: 0,
+        order: movementOrder++
+    });
+}
 
-    // ======================================
-    // PAYMENT HISTORY HEADING
-    // ======================================
+(customer.bills || []).forEach(bill => {
+    const total = statementNumber(bill.grandTotal) ||
+        statementNumber(bill.amountPaid) + statementNumber(bill.balanceDue);
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    movementItems.push({
+        date: bill.date || "",
+        description: "Bill " + (bill.billNo || "-") +
+            (bill.billBookNo ? " (Book " + bill.billBookNo + ")" : ""),
+        charge: total,
+        payment: 0,
+        order: movementOrder++
+    });
+});
 
-    doc.text(
-        "PAYMENT HISTORY",
-        14,
-        y
+paymentHistory.forEach(payment => {
+    movementItems.push({
+        date: payment.date || payment.paymentDate || payment.createdAt || "",
+        description: "Payment received (" +
+            (payment.paymentMode || payment.mode || "Cash") + ")",
+        charge: 0,
+        payment: statementNumber(payment.amount ?? payment.payment),
+        order: movementOrder++
+    });
+});
+
+movementItems.sort((a, b) =>
+    statementDateTimestamp(a.date) - statementDateTimestamp(b.date) ||
+    a.order - b.order
+);
+
+let runningBalance = 0;
+const movementRows = movementItems.map(item => {
+    runningBalance = Number(
+        (runningBalance + item.charge - item.payment).toFixed(2)
     );
 
-    y += 5;
+    return [
+        formatDate(item.date),
+        item.description,
+        item.charge > 0 ? formatStatementMoney(item.charge) : "-",
+        item.payment > 0 ? formatStatementMoney(item.payment) : "-",
+        formatStatementMoney(Math.max(0, runningBalance))
+    ];
+});
 
+if (y + 35 > pageHeight - 18) {
+    doc.addPage();
+    drawPageBorder();
+    y = 20;
+}
 
-    // ======================================
-    // PREPARE PAYMENT ROWS
-    // ======================================
+doc.setFont("helvetica", "bold");
+doc.setFontSize(12);
+doc.text("ACCOUNT MOVEMENT", 14, y);
 
-    const paymentRows = paymentHistory.map((payment, index) => {
+doc.autoTable({
+    startY: y + 4,
+    head: [["Date", "Description", "Charge", "Payment", "Balance"]],
+    body: movementRows.length
+        ? movementRows
+        : [["-", "No transactions", "-", "-", "-"]],
+    margin: { left: 14, right: 14 },
+    theme: "grid",
+    styles: {
+        font: "helvetica",
+        fontSize: 8,
+        cellPadding: 2,
+        textColor: [40, 40, 40],
+        valign: "middle"
+    },
+    headStyles: {
+        fillColor: [244, 180, 0],
+        textColor: [31, 41, 55],
+        fontStyle: "bold",
+        halign: "center"
+    },
+    columnStyles: {
+        0: { cellWidth: 25, halign: "center" },
+        1: { cellWidth: 69 },
+        2: { cellWidth: 29, halign: "right" },
+        3: { cellWidth: 29, halign: "right" },
+        4: { cellWidth: 30, halign: "right", fontStyle: "bold" }
+    },
+    didDrawPage: drawPageBorder
+});
 
-        const amount =
-            Number(
-                payment.amount ??
-                payment.payment ??
-                0
-            );
+y = doc.lastAutoTable.finalY + 8;
 
+if (y + 55 > pageHeight - 18) {
+    doc.addPage();
+    drawPageBorder();
+    y = 20;
+}
 
-        const totalPaid =
-            Number(
-                payment.totalPaid ??
-                payment.runningTotal ??
-                0
-            );
+doc.setFont("helvetica", "bold");
+doc.setFontSize(11);
+doc.text("PAYMENT ALLOCATION", 14, y);
 
+const allocationY = y + 4;
+const allocationGap = 4;
+const allocationWidth = (pageWidth - 28 - allocationGap) / 2;
+const allocationHeight = 36;
+const allocationLeftX = 14;
+const allocationRightX = allocationLeftX + allocationWidth + allocationGap;
 
-        const balanceDue =
-            Number(
-                payment.balanceDue ??
-                payment.balance ??
-                0
-            );
+function drawAllocationCard(x, title, rows, remainingAmount) {
+    doc.setDrawColor(227, 169, 0);
+    doc.setLineWidth(0.35);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x, allocationY, allocationWidth, allocationHeight, 2, 2, "FD");
 
+    doc.setFillColor(255, 243, 204);
+    doc.roundedRect(x, allocationY, allocationWidth, 8, 2, 2, "F");
 
-        const paymentMode =
-            payment.paymentMode ||
-            payment.mode ||
-            "-";
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(40, 40, 40);
+    doc.text(title, x + 3, allocationY + 5.5);
 
+    doc.setDrawColor(230, 230, 230);
+    doc.line(x + 3, allocationY + 9, x + allocationWidth - 3, allocationY + 9);
 
-        const remarks =
-            payment.remarks ||
-            "-";
+    const remainingBalanceColor = Number(Number(remainingAmount || 0).toFixed(2)) > 0
+        ? [220, 53, 69]
+        : [22, 131, 75];
 
+    rows.forEach((row, index) => {
+        const rowY = allocationY + 16 + (index * 8);
+        const isBalance = index === rows.length - 1;
 
-        let paymentDate =
-            payment.date ||
-            payment.paymentDate ||
-            "";
+        doc.setFont("helvetica", isBalance ? "bold" : "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(70, 70, 70);
+        doc.text(row[0], x + 3, rowY);
 
-
-        // ======================================
-        // FORMAT DATE
-        // ======================================
-
-        if (paymentDate) {
-
-            const dateObject = new Date(paymentDate);
-
-            if (!isNaN(dateObject.getTime())) {
-
-                paymentDate =
-                    String(dateObject.getDate()).padStart(2, "0") +
-                    "-" +
-                    String(dateObject.getMonth() + 1).padStart(2, "0") +
-                    "-" +
-                    dateObject.getFullYear();
-
-            }
-
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.2);
+        if (isBalance) {
+            doc.setTextColor(...remainingBalanceColor);
+        } else {
+            doc.setTextColor(40, 40, 40);
         }
-
-
-        return [
-
-            index + 1,
-
-            paymentDate || "-",
-
-            amount.toFixed(2),
-
-            totalPaid.toFixed(2),
-
-            balanceDue.toFixed(2),
-
-            paymentMode,
-
-            remarks
-
-        ];
-
+        doc.text(row[1], x + allocationWidth - 3, rowY, { align: "right" });
     });
+}
 
+drawAllocationCard(allocationLeftX, "BILL PAYMENT", [
+    ["Bill total", formatStatementMoney(statementBillPaid + statementBillBalance)],
+    ["Paid against bills", formatStatementMoney(statementBillPaid)],
+    ["Remaining bill balance", formatStatementMoney(statementBillBalance)]
+], statementBillBalance);
 
-    // ======================================
-    // PAYMENT HISTORY TABLE
-    // ======================================
+drawAllocationCard(allocationRightX, "OPENING BALANCE", [
+    ["Original balance", formatStatementMoney(openingBalance)],
+    ["Paid against opening balance", formatStatementMoney(statementOpeningPaid)],
+    ["Remaining balance", formatStatementMoney(statementRemainingOpening)]
+], statementRemainingOpening);
 
-    doc.autoTable({
+const totalBalanceY = allocationY + allocationHeight + 3;
+doc.setFillColor(255, 247, 223);
+doc.setDrawColor(244, 180, 0);
+doc.roundedRect(14, totalBalanceY, pageWidth - 28, 8, 1.5, 1.5, "FD");
+doc.setFont("helvetica", "bold");
+doc.setFontSize(8);
+doc.setTextColor(50, 50, 50);
+doc.text("TOTAL BALANCE DUE", 17, totalBalanceY + 5.3);
+if (statementBalanceDue > 0) {
+    doc.setTextColor(255, 0, 0);
+} else {
+    doc.setTextColor(22, 131, 75);
+}
+doc.text(formatStatementMoney(statementBalanceDue), pageWidth - 17, totalBalanceY + 5.3, { align: "right" });
 
-        startY: y,
-
-        head: [[
-            "S.No",
-            "Date",
-            "Payment",
-            "Total Paid",
-            "Balance Due",
-            "Payment Mode",
-            "Remarks"
-        ]],
-
-        body: paymentRows,
-
-        margin: {
-            left: 14,
-            right: 14
-        },
-
-        theme: "grid",
-
-        styles: {
-
-            font: "helvetica",
-
-            fontSize: 8,
-
-            textColor: [40, 40, 40],
-
-            cellPadding: 2.5,
-
-            valign: "middle"
-
-        },
-
-        headStyles: {
-
-            fillColor: [54, 105, 230],
-
-            textColor: [255, 255, 255],
-
-            fontStyle: "bold",
-
-            halign: "center"
-
-        },
-
-        bodyStyles: {
-
-            minCellHeight: 8
-
-        },
-
-        alternateRowStyles: {
-
-            fillColor: [248, 248, 248]
-
-        },
-
-        columnStyles: {
-
-            0: {
-                cellWidth: 12,
-                halign: "center"
-            },
-
-            1: {
-                cellWidth: 25,
-                halign: "center"
-            },
-
-            2: {
-                cellWidth: 27,
-                halign: "right"
-            },
-
-            3: {
-                cellWidth: 27,
-                halign: "right"
-            },
-
-            4: {
-                cellWidth: 28,
-                halign: "right"
-            },
-
-            5: {
-                cellWidth: 27,
-                halign: "center"
-            },
-
-            6: {
-                cellWidth: 36
-            }
-
-        },
-
-        didDrawPage: function () {
-
-            drawPageBorder();
-
-        }
-
-    });
-
-
-    // Move next section below payment table
-    y = doc.lastAutoTable.finalY + 12;
+y = totalBalanceY + 18;
 
 }
 
@@ -3244,9 +4699,13 @@ if (paymentHistory.length > 0) {
 // ======================================
 
 // Check page space
+
 const requiredHeight = 65;
 
-if (y + requiredHeight > pageHeight - 15) {
+if (
+    y + requiredHeight >
+    pageHeight - 15
+) {
 
     doc.addPage();
 
@@ -3256,98 +4715,206 @@ if (y + requiredHeight > pageHeight - 15) {
 
 }
 
+
 const summaryX = 110;
+
 const summaryW = 82;
 
 let sy = y + 6;
 
-function summaryRow(label, value, bold = false) {
+
+// ======================================
+// SUMMARY ROW
+// ======================================
+
+function summaryRow(
+    label,
+    value,
+    bold = false
+) {
+
+    doc.setTextColor(40, 40, 40);
+
+    // Highlight Balance Due
 
     if (bold) {
 
-        doc.setFillColor(255,248,225);
+        doc.setFillColor(
+            255,
+            248,
+            225
+        );
 
-        doc.rect(summaryX, sy - 5, summaryW, 9, "F");
+        doc.rect(
+            summaryX,
+            sy - 5,
+            summaryW,
+            9,
+            "F"
+        );
 
     }
 
-    doc.setFont("helvetica", "bold");
 
-    doc.setFontSize(10);
-
-    doc.text(label, summaryX + 2, sy);
-
-    doc.text(":", summaryX + 40, sy);
+    // Label
 
     doc.setFont(
         "helvetica",
-        bold ? "bold" : "normal"
+        "bold"
+    );
+
+    doc.setFontSize(10);
+
+    doc.text(
+        label,
+        summaryX + 2,
+        sy
+    );
+
+
+    // Colon
+
+    doc.setFont(
+        "helvetica",
+        "normal"
     );
 
     doc.text(
-    value,
-    summaryX + summaryW - 2,
-    sy,
-    { align: "right" }
+        ":",
+        summaryX + 40,
+        sy
     );
+
+
+    // Amount
+
+    doc.setFont(
+        "helvetica",
+        bold
+            ? "bold"
+            : "normal"
+    );
+
+    if (bold && statementBalanceDue > 0) {
+        doc.setTextColor(255, 0, 0);
+    } else if (bold) {
+        doc.setTextColor(22, 131, 75);
+    } else {
+        doc.setTextColor(40, 40, 40);
+    }
+
+    doc.text(
+        value,
+        summaryX + summaryW - 2,
+        sy,
+        {
+            align: "right"
+        }
+    );
+
 
     sy += 10;
 
 }
 
-// Summary Heading
 
-doc.setFont("helvetica","bold");
+// ======================================
+// ACCOUNT SUMMARY HEADING
+// ======================================
+
+doc.setFont(
+    "helvetica",
+    "bold"
+);
 
 doc.setFontSize(12);
+doc.setTextColor(40, 40, 40);
 
 doc.text(
-
     "ACCOUNT SUMMARY",
-
     summaryX,
-
     y
-
 );
 
 sy += 2;
 
-// Rows
+
+// ======================================
+// TOTAL PURCHASE
+// ======================================
 
 summaryRow(
     "Total Purchase",
-    formatStatementMoney(customer.totalPurchase)
+    formatStatementMoney(
+        statementTotalPurchase
+    )
 );
+
+
+// ======================================
+// OPENING BALANCE
+// ======================================
+
+summaryRow(
+    "Opening Balance",
+    formatStatementMoney(
+        openingBalance
+    )
+);
+
+
+// ======================================
+// TOTAL PAID
+// ======================================
 
 summaryRow(
     "Total Paid",
-    formatStatementMoney(customer.totalPaid)
+    formatStatementMoney(
+        statementTotalPaid
+    )
 );
 
-// Gold Divider
 
-doc.setDrawColor(255,193,7);
+// ======================================
+// GOLD DIVIDER
+// ======================================
+
+doc.setDrawColor(
+    255,
+    193,
+    7
+);
 
 doc.setLineWidth(0.4);
 
 doc.line(
-
     summaryX,
-
-    sy-3,
-
-    summaryX+summaryW,
-
-    sy-3
-
+    sy - 3,
+    summaryX + summaryW,
+    sy - 3
 );
 
 sy += 3;
 
+
+// ======================================
+// FINAL BALANCE DUE
+// ======================================
+
+const finalBalanceDue =
+    Math.max(
+        0,
+        Number(
+            statementBalanceDue || 0
+        )
+    );
+
+
 summaryRow(
     "Balance Due",
-    formatStatementMoney(customer.totalBalance),
+    formatStatementMoney(
+        finalBalanceDue
+    ),
     true
 );
     
@@ -3374,6 +4941,7 @@ doc.line(
 doc.setFont("helvetica","bold");
 doc.setFontSize(10);
 
+doc.setTextColor(0, 0, 0);
 doc.text(
     "Authorized Signature",
     pageWidth - 37,
@@ -3402,6 +4970,7 @@ function drawFooter() {
     doc.setFont("helvetica","bold");
     doc.setFontSize(11);
 
+    doc.setTextColor(0, 0, 0);
     doc.text(
         "Thank You For Shopping With Us!",
         pageWidth / 2,
@@ -3412,6 +4981,7 @@ function drawFooter() {
     doc.setFont("helvetica","normal");
     doc.setFontSize(8);
 
+    doc.setTextColor(0, 0, 0);
     doc.text(
         "Computer Generated Statement",
         pageWidth / 2,
@@ -3450,11 +5020,11 @@ doc.save(
     // Initial Load
     // ==========================================
     // ======================================
-// Keyboard Shortcuts - Customers
-// ======================================
-
-// Ctrl + N → Add Customer
-document.addEventListener("svss:new", () => {
+    // Keyboard Shortcuts - Customers
+    // ======================================
+    
+    // Ctrl + N → Add Customer
+    document.addEventListener("svss:new", () => {
 
     editIndex = -1;
 
@@ -3465,7 +5035,7 @@ document.addEventListener("svss:new", () => {
     document.getElementById("customerEmail").value = "";
     document.getElementById("customerNotes").value = "";
     document.getElementById("openingBalance").value = "0";
-
+    document.getElementById("openingBalance").value = "0";
     document.getElementById("saveCustomer").innerHTML = `
         <i class="bi bi-check-circle-fill"></i>
         Save Customer
@@ -3531,6 +5101,20 @@ document.addEventListener("svss:escape", () => {
     await applyTheme();
     
     await loadCustomers();
-    
 
+    const pendingPaymentNotice =
+        sessionStorage.getItem("svssPendingPaymentNotice");
+
+    if (pendingPaymentNotice) {
+        sessionStorage.removeItem("svssPendingPaymentNotice");
+        setTimeout(() => {
+            try {
+                showToast(pendingPaymentNotice, "success");
+            } catch (toastError) {
+                console.error("Could not show payment confirmation toast.", toastError);
+                window.alert(pendingPaymentNotice);
+            }
+        }, 300);
+    }
 });
+

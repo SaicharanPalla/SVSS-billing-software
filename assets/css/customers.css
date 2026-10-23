@@ -1108,14 +1108,12 @@ h1{
    MODAL SIZE
 ========================= */
 
-#paymentModal .payment-dialog {
-
-    max-width: 455px;
-
+#paymentModal .modal-dialog {
+    box-sizing: border-box;
+    width: 700px !important;
+    max-width: calc(100vw - 32px) !important;
     margin: 1.75rem auto;
-
 }
-
 
 /* =========================
    MAIN MODAL
@@ -1124,6 +1122,12 @@ h1{
 #paymentModal .payment-modal {
 
     border: none;
+
+    display: flex;
+
+    flex-direction: column;
+
+    max-height: calc(100vh - 32px);
 
     border-radius: 20px;
 
@@ -1274,6 +1278,12 @@ h1{
 #paymentModal .payment-body {
 
     padding: 20px 22px 22px;
+
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    overflow-y: auto;
 
     background: #ffffff;
 
@@ -1659,6 +1669,8 @@ h1{
 #paymentModal .payment-footer {
 
     display: flex;
+
+    flex: 0 0 auto;
 
     align-items: center;
 
@@ -2142,3 +2154,605 @@ h1{
     }
 
 }
+/* =========================================================
+   CUSTOMER DETAILS - MODERN HEADER
+   ========================================================= */
+
+#customerModernHeader {
+
+    width: 100%;
+
+    margin: 0 0 18px 0;
+
+    padding: 16px 18px;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #eef6ff,
+            #f8fbff
+        );
+
+    border: 1px solid #d8e8ff;
+
+    display: grid;
+
+    grid-template-columns:
+        1.5fr
+        1fr
+        1fr
+        1fr;
+
+    align-items: center;
+
+    gap: 16px;
+
+    box-sizing: border-box;
+
+}
+
+
+/* ==========================================
+   CUSTOMER MAIN
+   ========================================== */
+
+#customerModernHeader
+.customer-modern-main {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-width: 0;
+
+}
+
+
+#customerModernHeader
+.customer-modern-avatar {
+
+    width: 52px;
+
+    height: 52px;
+
+    min-width: 52px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #dcecff;
+
+    color: #1677ff;
+
+    font-size: 24px;
+
+}
+
+
+#customerModernHeader
+.customer-modern-main-text {
+
+    min-width: 0;
+
+}
+
+
+#customerModernHeader
+.customer-modern-name {
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    color: #12315d;
+
+    line-height: 1.2;
+
+}
+
+
+#customerModernHeader
+.customer-modern-address {
+
+    margin-top: 5px;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 5px;
+
+    color: #52647a;
+
+    font-size: 12px;
+
+    line-height: 1.35;
+
+}
+
+
+#customerModernHeader
+.customer-modern-address i {
+
+    color: #1677ff;
+
+    flex-shrink: 0;
+
+    margin-top: 2px;
+
+}
+
+
+/* ==========================================
+   CONTACT BLOCK
+   ========================================== */
+
+#customerModernHeader
+.customer-modern-contact {
+
+    min-width: 0;
+
+    padding-left: 15px;
+
+    border-left:
+        1px solid #cddff4;
+
+}
+
+
+#customerModernHeader
+.customer-modern-label {
+
+    margin-bottom: 4px;
+
+    color: #64748b;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+}
+
+
+#customerModernHeader
+.customer-modern-value {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #12315d;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    overflow-wrap: anywhere;
+
+}
+
+
+#customerModernHeader
+.customer-modern-value i {
+
+    color: #1677ff;
+
+    flex-shrink: 0;
+
+}
+
+
+/* ==========================================
+   MOBILE
+   ========================================== */
+
+@media (max-width: 1000px) {
+
+    #customerModernHeader {
+
+        grid-template-columns:
+            1fr 1fr;
+
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    #customerModernHeader {
+
+        grid-template-columns:
+            1fr;
+
+        gap: 12px;
+
+    }
+
+
+    #customerModernHeader
+    .customer-modern-contact {
+
+        border-left: none;
+
+        border-top:
+            1px solid #cddff4;
+
+        padding-left: 0;
+
+        padding-top: 10px;
+
+    }
+
+}
+/* =========================================================
+   CUSTOMER SUMMARY CARDS
+   ========================================================= */
+
+.customer-summary-row {
+
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-top: 14px;
+
+    margin-left: 0 !important;
+
+    margin-right: 0 !important;
+
+}
+
+
+/* Remove Bootstrap column width */
+
+.customer-summary-row > * {
+
+    width: auto !important;
+
+    max-width: none !important;
+
+    flex: none !important;
+
+    padding-left: 0 !important;
+
+    padding-right: 0 !important;
+
+}
+
+
+/* ==========================================
+   TABLET
+   ========================================== */
+
+@media (max-width: 1000px) {
+
+    .customer-summary-row {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
+
+
+/* ==========================================
+   MOBILE
+   ========================================== */
+
+@media (max-width: 600px) {
+
+    .customer-summary-row {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+/* =========================================================
+   CUSTOMER SUMMARY - 3 MAIN CARDS
+   ========================================================= */
+
+.customer-summary-row {
+
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-top: 18px;
+
+    margin-left: 0 !important;
+
+    margin-right: 0 !important;
+
+}
+
+
+/* Remove Bootstrap column sizing */
+
+.customer-summary-row > * {
+
+    width: auto !important;
+
+    max-width: none !important;
+
+    flex: none !important;
+
+    padding-left: 0 !important;
+
+    padding-right: 0 !important;
+
+}
+
+
+/* =========================================================
+   OPENING BALANCE
+   SEPARATE BOX BELOW
+   ========================================================= */
+
+#customerOpeningSummary {
+
+    width: 100%;
+
+    min-height: 82px;
+
+    margin-top: 16px;
+
+    padding: 18px 22px;
+
+    box-sizing: border-box;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 14px;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff8df,
+            #fffdf4
+        );
+
+    border:
+        1px solid #f1d77a;
+
+    box-shadow:
+        0 3px 12px
+        rgba(0,0,0,.06);
+
+}
+
+
+#customerOpeningSummary
+.customer-summary-icon {
+
+    width: 48px;
+
+    height: 48px;
+
+    min-width: 48px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #fff0b8;
+
+    color: #b88600;
+
+    font-size: 22px;
+
+}
+
+
+#customerOpeningSummary
+.customer-summary-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #765900;
+
+}
+
+
+#customerOpeningSummary
+.customer-summary-value {
+
+    margin-top: 3px;
+
+    font-size: 22px;
+
+    font-weight: 800;
+
+    color: #5f4700;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .customer-summary-row {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .customer-summary-row {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    #customerOpeningSummary {
+
+        justify-content: flex-start;
+
+    }
+
+}
+/* Payment history row actions */
+.payment-history-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.payment-history-actions .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* ==========================================
+   PAYMENT ALLOCATION CARDS
+========================================== */
+
+#paymentModal .payment-allocation {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 20px 0 0;
+}
+
+#paymentModal .payment-allocation-heading {
+    display: block;
+    margin-bottom: 10px;
+    color: #12315a;
+    font-weight: 700;
+}
+
+#paymentModal .payment-allocation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+#paymentModal .payment-allocation-card {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #d6e0ec;
+    border-radius: 11px;
+    background: #fff;
+    cursor: pointer;
+}
+
+#paymentModal .payment-allocation-card.is-selected {
+    border: 2px solid #1682ff;
+    background: #edf6ff;
+}
+
+#paymentModal .payment-allocation-card.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+#paymentModal .payment-allocation-card input[type="radio"] {
+    accent-color: #1682ff;
+    margin-right: 8px;
+}
+
+#paymentModal .payment-allocation-content {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 5px;
+    vertical-align: middle;
+}
+
+#paymentModal .payment-allocation-content strong,
+#paymentModal .payment-allocation-choice strong {
+    color: #12315a;
+}
+
+#paymentModal .payment-allocation-content small,
+#paymentModal #payBillRemaining {
+    color: #1682ff;
+    font-weight: 600;
+}
+
+#paymentModal .payment-allocation-choice {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+#paymentModal #payBillSelect {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    font-size: 0.9rem;
+    color: #12315a !important;
+    background-color: #fff !important;
+    color-scheme: light;
+}
+
+#paymentModal #payBillRemaining {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.82rem;
+}
+
+#paymentModal .payment-allocation-note {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #f5d77b;
+    border-radius: 8px;
+    background: #fff8df;
+    color: #805500;
+    font-size: 0.9rem;
+}
+
+#paymentModal .payment-allocation-note i {
+    margin-right: 6px;
+}
+
+@media (max-width: 600px) {
+    #paymentModal .payment-allocation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+

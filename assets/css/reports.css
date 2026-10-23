@@ -912,17 +912,25 @@ canvas{
 .payment-summary-card,
 .gst-summary-card,
 .chart-card{
-
     height:420px;
-
 }
 
-.payment-summary-card .dashboard-card,
+.payment-summary-card{
+    height:auto;
+}
+
+.payment-summary-card .dashboard-card{
+    height:auto;
+    min-height:420px;
+}
+.payment-summary-card .dashboard-card{
+    height:auto;
+    min-height:420px;
+}
+
 .gst-summary-card .dashboard-card,
 .chart-card .dashboard-card{
-
     height:100%;
-
 }
 /* =====================================
    Equal Height - Top Products & Customers
@@ -1791,4 +1799,135 @@ body:has(#salesReportBody) .mb-4 {
     background: #d1e7dd !important;
     font-weight: 700;
     border-top: 2px solid #198754;
+}
+/* ==========================================
+   TOTAL PAYMENT RECEIVED
+========================================== */
+
+.total-payment-item {
+
+    margin-top: 8px;
+
+    padding-top: 10px;
+
+    border-top: 2px solid #dee2e6;
+
+}
+/* ==========================================
+   PAYMENT SUMMARY - FINAL ROW FIX
+========================================== */
+
+.payment-summary-card .payment-item{
+    width:100%;
+    min-width:0;
+}
+
+.payment-summary-card .payment-item span{
+    min-width:0;
+    flex:1;
+}
+
+.payment-summary-card .payment-item span{
+    white-space:normal;
+}
+
+.payment-summary-card .payment-item span i{
+    flex-shrink:0;
+}
+
+.payment-summary-card .payment-item strong{
+    flex-shrink:0;
+    white-space:nowrap;
+}
+
+/* Total Amount Received */
+.payment-summary-card .total-payment-item span{
+    white-space:nowrap;
+}
+
+.payment-summary-card .total-payment-item strong{
+    font-size:17px;
+}
+/* ==========================================
+   TOTAL AMOUNT RECEIVED - FINAL FIX
+========================================== */
+
+.payment-summary-card .total-payment-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    min-width:0;
+}
+
+/* Left side: icon + label */
+.payment-summary-card .total-payment-item > span{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex:1;
+    min-width:0;
+    white-space:normal;
+}
+
+/* Total Amount Received label */
+.payment-summary-card .total-payment-item > span > strong{
+    flex:1;
+    min-width:0;
+    font-size:16px;
+    line-height:1.25;
+    white-space:normal;
+}
+
+/* Amount on right */
+.payment-summary-card .total-payment-item > strong{
+    flex-shrink:0;
+    font-size:17px;
+    white-space:nowrap;
+}
+/* Align credit statement totals under their headers */
+#creditStatementTable tfoot td:nth-child(2) {
+    text-align: left;
+}
+
+#creditTotalBills {
+    text-align: center !important;
+}
+
+#creditTotalPurchase,
+#creditTotalPaid,
+#creditTotalBalance {
+    text-align: right !important;
+}
+
+/* Align paid statement totals under their headers */
+#paidStatementTable tfoot td[colspan="3"] {
+    text-align: left;
+}
+
+#paidTotalBills {
+    text-align: center !important;
+}
+
+#paidTotalAmount {
+    text-align: right !important;
+}
+/* Align Credit Statement columns consistently */
+#creditStatementTable th:nth-child(1),
+#creditStatementTable tbody td:nth-child(1),
+#creditStatementTable tfoot td:nth-child(1) {
+    text-align: center !important;
+}
+
+#creditStatementTable th:nth-child(3),
+#creditStatementTable tbody td:nth-child(3),
+#creditStatementTable tfoot td:nth-child(3) {
+    text-align: center !important;
+}
+
+#creditStatementTable th:nth-child(n+4),
+#creditStatementTable tbody td:nth-child(n+4),
+#creditStatementTable tfoot td:nth-child(n+4) {
+    text-align: right !important;
 }

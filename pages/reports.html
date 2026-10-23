@@ -31,8 +31,15 @@
     <link rel="stylesheet" href="../assets/css/reports.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/theme-colors.css">
+    <style>
+    #creditStatementTable tfoot,
+    #paidStatementTable tfoot {
+        z-index: auto !important;
+    }
+</style>
 
 </head>
+
 
 <body>
 <!-- ================= MOBILE HEADER ================= -->
@@ -560,6 +567,58 @@
                     <strong id="creditTotal">Rs. 0.00</strong>
 
                 </div>
+                <!-- ==========================================
+     BILL PAYMENTS
+========================================== -->
+
+<div class="payment-item">
+
+    <span>
+        <i class="bi bi-receipt text-success"></i>
+        Bill Payments
+    </span>
+
+    <strong id="billPaymentsTotal">
+        Rs. 0.00
+    </strong>
+
+</div>
+
+
+<!-- ==========================================
+     OPENING BALANCE RECEIVED
+========================================== -->
+
+<div class="payment-item">
+
+    <span>
+        <i class="bi bi-wallet2 text-warning"></i>
+        Opening Balance Received
+    </span>
+
+    <strong id="openingBalanceReceivedTotal">
+        Rs. 0.00
+    </strong>
+
+</div>
+
+
+            <!-- ==========================================
+                 TOTAL AMOUNT RECEIVED
+            ========================================== -->
+            
+            <div class="payment-item total-payment-item">
+            
+                <span>
+                    <i class="bi bi-cash-stack text-primary"></i>
+                    <strong>Total Amount Received</strong>
+                </span>
+            
+                <strong id="totalAmountReceived">
+                    Rs. 0.00
+                </strong>
+            
+            </div>
 
             </div>
 

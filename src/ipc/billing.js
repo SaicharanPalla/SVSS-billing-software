@@ -1752,15 +1752,8 @@ async function saveCurrentBill() {
     // ==============================
     // CHECK DUPLICATE BILL BOOK NO
     // ==============================
-
+    
     const enteredBookNo = billBookNo.value.trim();
-    const match = enteredBookNo.match(/^B-(\d+)$/i);
-
-    if (match) {
-    
-        settings.nextBillBookNo = parseInt(match[1], 10) + 1;
-    
-    }
 
     if (enteredBookNo !== "") {
 
@@ -1875,18 +1868,71 @@ async function saveCurrentBill() {
     // ==============================
     // SAVE OR UPDATE BILL
     // ==============================
-
-if (existingBillIndex >= 0) {
-
-    bills[existingBillIndex] = bill;
-
-} else {
-
-    bills.push(bill);
-
-    // nextBillBookNo is already updated from the entered Bill Book No.
-
-}
+    
+    if (existingBillIndex >= 0) {
+    
+        bills[existingBillIndex] = bill;
+    
+    } else {
+    
+        bills.push(bill);
+    
+    }
+    
+    // ==========================================
+    // UPDATE NEXT BILL BOOK NO
+    // BASED ON ACTUAL SAVED BILL BOOK NUMBERS
+    // ==========================================
+    
+    let highestBillBookNo = 0;
+    
+    bills.forEach(savedBill => {
+    
+        const bookNo = String(
+            savedBill.billBookNo || ""
+        ).trim();
+    
+            const match = bookNo.match(/^B-(\d+)$/i);
+        
+            if (match) {
+        
+                const number =
+                    parseInt(match[1], 10);
+        
+                if (
+                    !isNaN(number) &&
+                    number > highestBillBookNo
+                ) {
+        
+                    highestBillBookNo = number;
+        
+                }
+        
+            }
+        
+        });
+        
+        if (highestBillBookNo > 0) {
+        
+            settings.nextBillBookNo =
+                highestBillBookNo + 1;
+        
+        }
+        console.log(
+        "Entered Book No:",
+        enteredBookNo
+    );
+    
+    console.log(
+        "Next Bill Book No:",
+        settings.nextBillBookNo
+    );
+    
+    // ==========================================
+    // SAVE TO LOCAL DATABASE
+    // ==========================================
+    
+    await saveDatabase();
 
 console.log("Entered Book No:", enteredBookNo);
 console.log("Next Bill Book No:", settings.nextBillBookNo);
@@ -2646,9 +2692,9 @@ doc.text(
 
             font: "helvetica",
 
-            fontSize: 7.4,
+            fontSize: 7.1,
 
-            cellPadding: 2,
+            cellPadding: 1.5,
 
             halign: "center",
 
@@ -2678,7 +2724,7 @@ doc.text(
 
         bodyStyles: {
 
-            minCellHeight: 10
+            minCellHeight: 8
         },
 
         columnStyles: {
@@ -2735,28 +2781,37 @@ doc.text(
 
 
 
-    // ==========================================
-    // POSITION AFTER TABLE
-    // ==========================================
-
-    let y =
-        doc.lastAutoTable.finalY + 5;
-
-
-    // New page if required
-    if (
-        y + 105 >
-        pageHeight - 15
-    ) {
-
-        doc.addPage();
-
-        drawPageBorder();
-
-        y = 18;
-    }
-
-
+   // ==========================================
+   // POSITION AFTER TABLE
+   // ==========================================
+   
+   let y =
+       doc.lastAutoTable.finalY + 3;
+   
+   
+   // ==========================================
+   // PAGE BREAK FOR 5 OR MORE ITEMS
+   // ==========================================
+   //
+   // 1–4 items
+   // → Complete invoice stays on Page 1
+   //
+   // 5+ items
+   // → Product table stays on Page 1
+   // → Remaining invoice details start on Page 2
+   //
+   // ==========================================
+   
+   if (billItems.length >= 5) {
+   
+       doc.addPage();
+   
+       drawPageBorder();
+   
+       // Start the remaining invoice details
+       // from the top of Page 2.
+       y = 18;
+   }
 
     // ==========================================
     // PAYMENT DETAILS
@@ -2766,7 +2821,7 @@ doc.text(
 
     const paymentW = 83;
 
-    const paymentH = 42;
+    const paymentH = 41;
 
 
     doc.setDrawColor(...GOLD);
@@ -2948,7 +3003,7 @@ doc.text(
         11;
 
     const amountH =
-        86;
+        82;
 
 
     doc.setDrawColor(...GOLD);
@@ -3292,12 +3347,12 @@ doc.text(
     // ==========================================
 
     const transportY =
-        y +
-        paymentH +
-        5;
+    y +
+    paymentH +
+    4;
 
     const transportH =
-        39;
+        38;
 
 
     doc.setDrawColor(...GOLD);
@@ -3418,12 +3473,13 @@ doc.text(
     // ==========================================
 
     const wordsY =
-        transportY +
-        transportH +
-        5;
+    Math.max(
+        transportY + transportH,
+        y + amountH
+    ) + 2;
 
     const wordsH =
-        22;
+        15;
 
 
     doc.setDrawColor(...GOLD);
@@ -3497,7 +3553,7 @@ doc.text(
     doc.text(
         amountLines,
         16,
-        wordsY + 16
+        wordsY + 13
     );
 
 
@@ -3508,14 +3564,14 @@ doc.text(
     const bankY =
         wordsY +
         wordsH +
-        5;
+        1;
 
 
     const bankW =
         98;
 
     const bankH =
-        34;
+        32;
 
 
     doc.setDrawColor(...GOLD);
