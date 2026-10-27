@@ -198,7 +198,64 @@
             updatedAt: container.updated_at || null
         };
     }
+    async function syncBrowserBillsFromCloud() {
+    try {
+        const { data: sessionData, error: sessionError } =
+            await supabaseClient.auth.getSession();
 
+        if (sessionError) throw sessionError;
+
+        if (!sessionData?.session) {
+            throw new Error("Browser cloud session is not available.");
+        }
+
+        const database = loadDatabase();
+
+        // Protect a bill save that has not reached the cloud yet.
+        if (database.syncMeta?.bills?.pendingSync === true) {
+            return {
+                success: false,
+                skipped: true,
+                error: "A local bill save is pending. Local bills were kept."
+            };
+        }
+
+        const cloudBills = await getCloudCollection(
+            "bills",
+            "SVSS_BILLS_COLLECTION"
+        );
+
+        if (!cloudBills.updatedAt) {
+            throw new Error(
+                "Cloud bills were not found. Local bills were kept."
+            );
+        }
+
+        database.bills = cloudBills.records;
+        database.syncMeta = database.syncMeta || {};
+        database.syncMeta.bills = {
+            ...(database.syncMeta.bills || {}),
+            lastCloudUpdatedAt: cloudBills.updatedAt,
+            lastSyncAt: new Date().toISOString(),
+            pendingSync: false,
+            localUpdatedAt: null
+        };
+
+        saveDatabase(database);
+
+        return {
+            success: true,
+            billCount: cloudBills.records.length
+        };
+    } catch (error) {
+        console.error("SVSS Browser Cloud: Bill refresh failed", error);
+
+        return {
+            success: false,
+            error: error?.message || "Cloud bill refresh failed."
+        };
+    }
+  }
     async function cloudLogin(email, password) {
 
         if (!email || !password) {
@@ -453,10 +510,13 @@ async saveSettings(settings) {
         return cloudLogin(email, password);
     },
 
+        async syncBillsFromCloud() {
+            return syncBrowserBillsFromCloud();
+        },
+        
         async syncFromCloud() {
             return syncFromCloud();
         },
-
         async updateCloudUser(email, password) {
 
             const updates = {};

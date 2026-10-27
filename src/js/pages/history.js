@@ -216,11 +216,22 @@ async function saveDatabase() {
 // ==============================
 
 async function loadBills() {
+    if (
+        window.api.isBrowser &&
+        typeof window.api.syncBillsFromCloud === "function"
+    ) {
+        const result = await window.api.syncBillsFromCloud();
+
+        if (!result.success) {
+            console.warn(
+                "SVSS: Cloud bill refresh did not complete:",
+                result.error
+            );
+        }
+    }
 
     await refreshDatabase();
-
     displayBills(bills);
-
 }
 
 // ==============================

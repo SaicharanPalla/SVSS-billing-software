@@ -1001,9 +1001,7 @@ document.addEventListener(
     // Search Product
     // ======================================
 
-    const searchBox = document.querySelector(
-        'input[placeholder="Search Product"]'
-    );
+    const searchBox = document.getElementById("productSearch");
     // ======================================
 // CATEGORY FILTER
 // ======================================
