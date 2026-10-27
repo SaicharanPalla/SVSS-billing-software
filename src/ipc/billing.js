@@ -1430,21 +1430,42 @@ discount.addEventListener("input", () => {
 // ==============================
 
 async function generateBillBookNumber() {
-
     await refreshDatabase();
 
-    if (!settings.nextBillBookNo) {
+    const highestSavedBookNo = bills.reduce((highest, bill) => {
+        const match = String(bill.billBookNo || "")
+            .trim()
+            .match(/^B-(\d+)$/i);
 
-        settings.nextBillBookNo = 1;
+        if (!match) {
+            return highest;
+        }
 
+        const number = Number.parseInt(match[1], 10);
+
+        return Number.isFinite(number)
+            ? Math.max(highest, number)
+            : highest;
+    }, 0);
+
+    const savedNext = Number.parseInt(settings.nextBillBookNo, 10);
+    const validSavedNext =
+        Number.isFinite(savedNext) && savedNext > 0
+            ? savedNext
+            : 1;
+
+    const nextBillBookNo = Math.max(
+        validSavedNext,
+        highestSavedBookNo + 1
+    );
+
+    if (settings.nextBillBookNo !== nextBillBookNo) {
+        settings.nextBillBookNo = nextBillBookNo;
         await saveDatabase();
-
     }
 
     billBookNo.value =
-        "B-" +
-        String(settings.nextBillBookNo).padStart(3, "0");
-
+        "B-" + String(nextBillBookNo).padStart(3, "0");
 }
 // ==============================
 // RESET BILL FORM
@@ -1454,7 +1475,7 @@ async function resetBillForm() {
 
     await refreshDatabase();
 
-    customerName.value = "Walk-in Customer";
+    customerName.value = "";
 
     mobile.value = "";
 

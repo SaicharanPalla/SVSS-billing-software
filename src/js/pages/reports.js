@@ -625,7 +625,7 @@ function loadSummaryCards(reportBills, activityBills = reportBills) {
     const customerSet = new Set();
     const productSet = new Set();
 
-    // Sales remain tied to the bill date.
+    // Sales stay associated with each bill's original date.
     reportBills.forEach(bill => {
         const billDate = getBillDate(bill);
 
@@ -634,14 +634,23 @@ function loadSummaryCards(reportBills, activityBills = reportBills) {
         }
     });
 
-    // Payment-linked bill context for summary cards.
+    const hasSelectedDateRange =
+        Boolean(fromDate.value || toDate.value);
+
+    const monthlySalesBills = hasSelectedDateRange
+        ? reportBills
+        : reportBills.filter(bill => {
+            const billDate = getBillDate(bill);
+            return !isNaN(billDate.getTime()) && isCurrentMonth(billDate);
+        });
+
+    monthSales = monthlySalesBills.reduce(
+        (total, bill) => total + getBillTotal(bill),
+        0
+    );
+
+    // Keep payment-linked bill context for the other summary cards.
     activityBills.forEach(bill => {
-        const billDate = getBillDate(bill);
-
-        if (!isNaN(billDate.getTime()) && isCurrentMonth(billDate)) {
-            monthSales += getBillTotal(bill);
-        }
-
         totalGST += parseAmount(bill.gstTotal);
 
         if (
@@ -682,7 +691,11 @@ function loadSummaryCards(reportBills, activityBills = reportBills) {
 // PAYMENT SUMMARY
 // ===========================================
 
-function loadPaymentSummary(reportBills, activityBills = reportBills) {
+function loadPaymentSummary(
+    reportBills,
+    activityBills = reportBills,
+    openingBalanceReceiptRows = null
+) {
 
     let cash = 0;
 
@@ -1216,9 +1229,29 @@ activityBills.forEach(bill => {
             // ==========================================
             // ADD OPENING BALANCE RECEIVED
             // ==========================================
-
-            openingBalanceReceived +=
-                openingPortion;
+            
+            // Add transaction details for the PDF when requested.
+            if (
+                Array.isArray(openingBalanceReceiptRows) &&
+                openingPortion > 0
+            ) {
+                openingBalanceReceiptRows.push({
+                    customer:
+                        customer.name ||
+                        customerBills[0]?.customer ||
+                        "Unknown Customer",
+                    date:
+                        payment.date ||
+                        payment.paymentDate ||
+                        payment.createdAt ||
+                        "",
+                    paymentMode: payment.paymentMode || "Cash",
+                    amount: openingPortion,
+                    remarks: payment.remarks || "-"
+                });
+            }
+            
+            openingBalanceReceived += openingPortion;
 
 
             // ==========================================
@@ -1320,20 +1353,19 @@ activityBills.forEach(bill => {
     // ==========================================
 
     const openingBalanceReceivedEl =
-        document.getElementById(
-            "openingBalanceReceivedTotal"
-        );
+    document.getElementById("openingBalanceReceivedTotal");
 
-
-    if (
-        openingBalanceReceivedEl
-    ) {
-
+    const openingBalanceReceivedCardEl =
+        document.getElementById("openingBalanceReceivedCard");
+    
+    if (openingBalanceReceivedEl) {
         openingBalanceReceivedEl.textContent =
-            formatCurrency(
-                openingBalanceReceived
-            );
-
+            formatCurrency(openingBalanceReceived);
+    }
+    
+    if (openingBalanceReceivedCardEl) {
+        openingBalanceReceivedCardEl.textContent =
+            formatCurrency(openingBalanceReceived);
     }
 
 
@@ -2483,18 +2515,122 @@ function updatePaidStatementTotals(bills, amount) {
     // ===========================================
     // PART 6 - MASTER LOADER
     // ===========================================
-    
-function loadReports(reportBills) {
-    const activityBills = getReportActivityBills(reportBills);
+    function loadOpeningBalanceReceiptDetails(receipts = []) {
+    const tbody = document.getElementById("openingBalanceReceiptsBody");
+    const totalElement = document.getElementById("openingBalanceReceiptsTotal");
+    const countElement = document.getElementById("openingBalanceReceiptCount");
 
-    loadSummaryCards(reportBills, activityBills);
-    loadPaymentSummary(reportBills, activityBills);
-    loadSalesChart(reportBills);
-    loadPaymentChart(reportBills, activityBills);
-    loadTables(reportBills, activityBills);
-    loadCreditStatement(activityBills);
-    loadPaidStatement(activityBills);
-}
+    if (!tbody) return;
+
+    const receiptRows = Array.isArray(receipts)
+        ? receipts.filter(receipt => parseAmount(receipt.amount) > 0)
+        : [];
+
+    tbody.replaceChildren();
+
+    if (receiptRows.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 4;
+        cell.className = "text-center text-muted py-4";
+        cell.textContent = "No opening balance receipts in this date range";
+
+        row.appendChild(cell);
+        tbody.appendChild(row);
+    } else {
+        receiptRows.forEach(receipt => {
+            const row = document.createElement("tr");
+            const date = receipt.date
+                ? formatDisplayDate(receipt.date)
+                : "-";
+
+            const values = [
+                receipt.customer || "Unknown Customer",
+                date,
+                receipt.paymentMode || "Cash",
+                formatCurrency(receipt.amount)
+            ];
+
+            values.forEach((value, index) => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+
+                if (index === 3) {
+                    cell.className = "text-end fw-semibold";
+                }
+
+                row.appendChild(cell);
+            });
+
+            tbody.appendChild(row);
+        });
+    }
+
+    const total = receiptRows.reduce(
+        (sum, receipt) => sum + parseAmount(receipt.amount),
+        0
+    );
+
+    if (totalElement) {
+        totalElement.textContent = formatCurrency(total);
+    }
+
+    if (countElement) {
+        countElement.textContent =
+            `${receiptRows.length} ${receiptRows.length === 1 ? "receipt" : "receipts"}`;
+    }
+    }
+    function loadReports(reportBills) {
+        const activityBills = getReportActivityBills(reportBills);
+        const openingBalanceReceiptRows = [];
+    
+        loadSummaryCards(reportBills, activityBills);
+    
+        loadPaymentSummary(
+            reportBills,
+            activityBills,
+            openingBalanceReceiptRows
+        );
+    
+        loadOpeningBalanceReceiptDetails(openingBalanceReceiptRows);
+    
+        loadSalesChart(reportBills);
+        loadPaymentChart(reportBills, activityBills);
+        loadTables(reportBills, activityBills);
+        loadCreditStatement(activityBills);
+        loadPaidStatement(activityBills);
+    } 
+       
+        function matchOpeningBalanceReceiptCardHeight() {
+        const paymentSummaryCard = document.querySelector(
+            ".payment-summary-card .dashboard-card"
+        );
+    
+        const receiptDetailsCard = document.querySelector(
+            ".opening-balance-receipts-card"
+        );
+    
+        if (!paymentSummaryCard || !receiptDetailsCard) {
+            return;
+        }
+    
+        if (window.matchMedia("(min-width: 992px)").matches) {
+            const summaryHeight =
+                paymentSummaryCard.getBoundingClientRect().height;
+    
+            receiptDetailsCard.style.setProperty(
+                "--payment-summary-height",
+                `${summaryHeight}px`
+            );
+        } else {
+            receiptDetailsCard.style.removeProperty(
+                "--payment-summary-height"
+            );
+        }
+    }
+    
+    window.addEventListener("resize", matchOpeningBalanceReceiptCardHeight);
     
     // ===========================================
     // INITIAL PAGE LOAD
@@ -2599,106 +2735,336 @@ exportExcel.addEventListener("click", async () => {
 // ===========================================
 // EXPORT PDF
 // ===========================================
-
 exportPDF.addEventListener("click", async () => {
-
     await refreshDatabase();
 
     const reportBills = getFilteredBills();
+    const activityBills = getReportActivityBills(reportBills);
+    const openingBalanceReceiptRows = [];
+
+    // Use the existing payment calculation and collect its opening-balance details.
+    loadPaymentSummary(
+        reportBills,
+        activityBills,
+        openingBalanceReceiptRows
+    );
+
+    const amountReceived = parseAmount(
+        document.getElementById("totalAmountReceived")?.textContent
+    );
+
+    const billPayments = parseAmount(
+        document.getElementById("billPaymentsTotal")?.textContent
+    );
+
+    const openingBalanceReceived = parseAmount(
+        document.getElementById("openingBalanceReceivedTotal")?.textContent
+    );
 
     const { jsPDF } = window.jspdf;
-
-    const doc = new jsPDF();
-
-    const settings = db.settings || {};
-
-    doc.setFontSize(18);
-
-    doc.text(
-
-        settings.shopName ||
-
-        "SVSS Billing Report",
-
-        14,
-
-        18
-
-    );
-
-    doc.setFontSize(11);
-
-    doc.text(
-
-        "Generated : " +
-
-        new Date().toLocaleString(),
-
-        14,
-
-        28
-
-    );
-
-   const rows = [];
-
-let pdfTotalSales = 0;
-
-reportBills.forEach(bill => {
-
-    const amount =
-        parseAmount(
-            bill.grandTotal
-        );
-
-    pdfTotalSales += amount;
-
-    rows.push([
-        bill.billNo,
-        formatDisplayDate(bill.date),
-        bill.customer,
-        bill.paymentMode,
-        amount.toFixed(2)
-    ]);
-
-});
-
-
-// ADD TOTAL ROW
-rows.push([
-    "",
-    "",
-    "",
-    "TOTAL",
-    pdfTotalSales.toFixed(2)
-]);
-
-    doc.autoTable({
-
-        startY: 38,
-
-        head: [[
-
-            "Bill No",
-
-            "Date",
-
-            "Customer",
-
-            "Payment",
-
-            "Amount"
-
-        ]],
-
-        body: rows
-
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
     });
 
+    const settings = db.settings || {};
+    const shopName = settings.shopName || "SVSS Billing System";
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
+
+    const formatPdfAmount = value =>
+        `Rs. ${Number(value || 0).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}`;
+
+    const formatFilterDate = value => {
+        if (!value) return "";
+
+        const [year, month, day] = value.split("-").map(Number);
+
+        if (!year || !month || !day) return value;
+
+        return new Date(year, month - 1, day).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+    };
+
+    let reportPeriod = "All dates";
+
+    if (fromDate.value && toDate.value) {
+        reportPeriod =
+            `${formatFilterDate(fromDate.value)} to ${formatFilterDate(toDate.value)}`;
+    } else if (fromDate.value) {
+        reportPeriod = `From ${formatFilterDate(fromDate.value)}`;
+    } else if (toDate.value) {
+        reportPeriod = `Up to ${formatFilterDate(toDate.value)}`;
+    }
+
+    let totalSales = 0;
+    let creditSales = 0;
+
+    const rows = reportBills.map(bill => {
+        const amount = getBillTotal(bill);
+        const paymentMode = String(bill.paymentMode || "-").trim();
+
+        totalSales += amount;
+
+        if (paymentMode.toLowerCase() === "credit") {
+            creditSales += amount;
+        }
+
+        return [
+            bill.billNo || "-",
+            formatDisplayDate(bill.date),
+            bill.customer || "Walk-in Customer",
+            paymentMode,
+            formatPdfAmount(amount)
+        ];
+    });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(24, 49, 86);
+    doc.text(shopName, pageWidth / 2, 15, {
+        align: "center",
+        maxWidth: pageWidth - margin * 2
+    });
+
+    doc.setDrawColor(190, 207, 226);
+    doc.line(margin, 20, pageWidth - margin, 20);
+
+    doc.setFontSize(18);
+    doc.text("SALES REPORT", pageWidth / 2, 29, {
+        align: "center"
+    });
+
+    doc.setFontSize(10);
+    doc.text(`Report Period: ${reportPeriod}`, pageWidth / 2, 36, {
+        align: "center"
+    });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(95, 105, 120);
+    doc.text(
+        `Generated: ${new Date().toLocaleString("en-IN")}`,
+        margin,
+        43
+    );
+
+    const summaryCards = [
+        { label: "Total Bills", value: String(reportBills.length) },
+        { label: "Total Sales", value: formatPdfAmount(totalSales) },
+        { label: "Credit Sales", value: formatPdfAmount(creditSales) },
+        { label: "Bill Payments", value: formatPdfAmount(billPayments) },
+        {
+            label: "Opening Balance Received",
+            value: formatPdfAmount(openingBalanceReceived)
+        },
+        {
+            label: "Total Amount Received",
+            value: formatPdfAmount(amountReceived)
+        }
+    ];
+
+    const cardGap = 4;
+    const cardY = 49;
+    const cardHeight = 20;
+    const cardsPerRow = 3;
+    const cardRowGap = 3;
+    const cardWidth =
+        (pageWidth - margin * 2 - cardGap * (cardsPerRow - 1)) /
+        cardsPerRow;
+
+    summaryCards.forEach((card, index) => {
+        const row = Math.floor(index / cardsPerRow);
+        const column = index % cardsPerRow;
+        const x = margin + column * (cardWidth + cardGap);
+        const y = cardY + row * (cardHeight + cardRowGap);
+
+        doc.setFillColor(239, 246, 255);
+        doc.setDrawColor(193, 218, 244);
+        doc.roundedRect(x, y, cardWidth, cardHeight, 2, 2, "FD");
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(75, 91, 112);
+        doc.text(card.label, x + cardWidth / 2, y + 7, {
+            align: "center",
+            maxWidth: cardWidth - 3
+        });
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(24, 49, 86);
+        doc.text(card.value, x + cardWidth / 2, y + 15, {
+            align: "center",
+            maxWidth: cardWidth - 3
+        });
+    });
+
+    // Create the sales table first.
+    doc.autoTable({
+        startY: 98,
+        margin: {
+            left: margin,
+            right: margin,
+            bottom: 16
+        },
+        head: [[
+            "Bill No",
+            "Date",
+            "Customer",
+            "Payment Mode",
+            "Amount"
+        ]],
+        body: rows,
+        foot: [[
+            "",
+            "",
+            "",
+            "GRAND TOTAL",
+            formatPdfAmount(totalSales)
+        ]],
+        showFoot: "lastPage",
+        theme: "grid",
+        styles: {
+            font: "helvetica",
+            fontSize: 8,
+            cellPadding: 2,
+            overflow: "linebreak",
+            textColor: [55, 62, 72],
+            lineColor: [215, 223, 232],
+            lineWidth: 0.15
+        },
+        headStyles: {
+            fillColor: [46, 130, 186],
+            textColor: [255, 255, 255],
+            fontStyle: "bold"
+        },
+        alternateRowStyles: {
+            fillColor: [245, 248, 252]
+        },
+        footStyles: {
+            fillColor: [225, 240, 255],
+            textColor: [24, 49, 86],
+            fontStyle: "bold"
+        },
+        columnStyles: {
+            0: { cellWidth: 32 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 70 },
+            3: { cellWidth: 29 },
+            4: { cellWidth: 26, halign: "right" }
+        }
+    });
+
+    // Add customer-level opening-balance receipts below the sales table.
+    if (openingBalanceReceiptRows.length > 0) {
+        let receiptSectionY = doc.lastAutoTable.finalY + 12;
+
+        if (receiptSectionY > pageHeight - 45) {
+            doc.addPage();
+            receiptSectionY = 20;
+        }
+
+        const openingBalanceReceiptTotal =
+            openingBalanceReceiptRows.reduce(
+                (total, receipt) => total + receipt.amount,
+                0
+            );
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(24, 49, 86);
+        doc.text("Opening Balance Receipts", margin, receiptSectionY);
+
+        doc.autoTable({
+            startY: receiptSectionY + 5,
+            margin: {
+                left: margin,
+                right: margin,
+                bottom: 16
+            },
+            head: [[
+                "Customer",
+                "Payment Date",
+                "Payment Mode",
+                "Opening Balance Received",
+                "Remarks"
+            ]],
+            body: openingBalanceReceiptRows.map(receipt => [
+                receipt.customer,
+                receipt.date
+                    ? formatDisplayDate(receipt.date)
+                    : "-",
+                receipt.paymentMode,
+                formatPdfAmount(receipt.amount),
+                receipt.remarks
+            ]),
+            foot: [[
+                "",
+                "",
+                "TOTAL",
+                formatPdfAmount(openingBalanceReceiptTotal),
+                ""
+            ]],
+            showFoot: "lastPage",
+            theme: "grid",
+            styles: {
+                font: "helvetica",
+                fontSize: 8,
+                cellPadding: 2,
+                overflow: "linebreak",
+                textColor: [55, 62, 72],
+                lineColor: [215, 223, 232],
+                lineWidth: 0.15
+            },
+            headStyles: {
+                fillColor: [46, 130, 186],
+                textColor: [255, 255, 255],
+                fontStyle: "bold"
+            },
+            alternateRowStyles: {
+                fillColor: [245, 248, 252]
+            },
+            footStyles: {
+                fillColor: [225, 240, 255],
+                textColor: [24, 49, 86],
+                fontStyle: "bold"
+            },
+            columnStyles: {
+                0: { cellWidth: 48 },
+                1: { cellWidth: 27 },
+                2: { cellWidth: 28 },
+                3: { cellWidth: 49, halign: "right" },
+                4: { cellWidth: "auto" }
+            }
+        });
+    }
+
+    const pageCount = doc.internal.getNumberOfPages();
+
+    for (let page = 1; page <= pageCount; page++) {
+        doc.setPage(page);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 108, 118);
+        doc.text(
+            `Page ${page} of ${pageCount}`,
+            pageWidth - margin,
+            pageHeight - 7,
+            { align: "right" }
+        );
+    }
+
     doc.save("Sales_Report.pdf");
-
 });
-
 // ===========================================
 // SAVE DATABASE BEFORE EXIT
 // ===========================================

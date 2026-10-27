@@ -1931,3 +1931,241 @@ body:has(#salesReportBody) .mb-4 {
 #creditStatementTable tfoot td:nth-child(n+4) {
     text-align: right !important;
 }
+/* Opening Balance Received highlight */
+.opening-balance-highlight {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+    min-height: 150px;
+    padding: 24px 32px;
+    margin-bottom: 24px;
+    border: 1px solid #e7edf5;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(22, 49, 86, 0.08);
+}
+
+.opening-balance-highlight-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 84px;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: #fff4d8;
+    color: #e6a000;
+    font-size: 36px;
+}
+
+.opening-balance-highlight-content h3 {
+    margin: 0 0 4px;
+    color: #172b4d;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.opening-balance-highlight-content strong {
+    display: block;
+    color: #17202f;
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.opening-balance-highlight-content p {
+    margin: 4px 0 0;
+    color: #68778d;
+    font-size: 15px;
+}
+
+@media (max-width: 576px) {
+    .opening-balance-highlight {
+        min-height: 120px;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .opening-balance-highlight-icon {
+        flex-basis: 60px;
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+
+    .opening-balance-highlight-content h3 {
+        font-size: 17px;
+    }
+
+    .opening-balance-highlight-content strong {
+        font-size: 24px;
+    }
+
+    .opening-balance-highlight-content p {
+        font-size: 13px;
+    }
+}
+/* Opening Balance Receipt Details */
+.opening-balance-receipts-card {
+    min-width: 0;
+}
+
+.opening-balance-receipts-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.opening-balance-receipts-heading .card-title {
+    margin-bottom: 0;
+}
+
+.opening-balance-receipts-heading .card-title i {
+    color: #198754;
+}
+
+.opening-balance-receipts-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.opening-balance-receipts-scroll table {
+    min-width: 620px;
+}
+
+.opening-balance-receipts-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f1f5f9;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.opening-balance-receipts-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #eaf8ef;
+    color: #17643a;
+    font-weight: 700;
+}
+
+.opening-balance-receipts-total strong {
+    white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+    .opening-balance-receipts-heading {
+        align-items: flex-start;
+    }
+
+    .opening-balance-receipts-total {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+/* Stacked rows in the Payment Summary */
+.payment-list .payment-item-stacked {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: center;
+    justify-content: initial;
+    gap: 12px;
+    padding: 16px 0;
+}
+
+.payment-list .payment-item-stacked .payment-item-icon {
+    width: 28px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.payment-list .payment-item-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+}
+
+.payment-list .payment-item-label {
+    color: #555;
+    line-height: 1.35;
+}
+
+.payment-list .payment-item-content > strong {
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.payment-list .total-payment-item {
+    border-top: 3px double #d7dde3;
+    margin-top: 4px;
+    padding-top: 18px;
+}
+
+.payment-list .total-payment-label {
+    color: #222;
+    font-weight: 700;
+}
+
+.payment-list .total-payment-item .payment-item-content > strong {
+    color: #222;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+/* Compact Opening Balance Receipt Details with a scrollable table */
+.opening-balance-receipts-card {
+    display: flex;
+    flex-direction: column;
+    height: 260px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.opening-balance-receipts-heading,
+.opening-balance-receipts-total {
+    flex: 0 0 auto;
+}
+
+.opening-balance-receipts-heading {
+    margin-bottom: 16px;
+}
+
+.opening-balance-receipts-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.opening-balance-receipts-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.opening-balance-receipts-total {
+    margin-top: 12px;
+}
+
+@media (max-width: 991.98px) {
+    .opening-balance-receipts-card {
+        height: min(300px, 60vh);
+    }
+}

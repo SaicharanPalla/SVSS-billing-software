@@ -2753,6 +2753,153 @@ h1{
         grid-template-columns: 1fr;
     }
 }
+/* Mobile Customer Details: show payment history as readable rows */
+@media (max-width: 576px) {
+    #customerModal .payment-history-box {
+        max-height: none !important;
+        overflow: visible !important;
+    }
 
+    #customerModal .payment-history-box .table-responsive {
+        overflow: visible !important;
+    }
 
+    #customerModal .payment-history-box table {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        table-layout: auto !important;
+    }
 
+    #customerModal .payment-history-box thead {
+        display: none !important;
+    }
+
+    #customerModal .payment-history-box tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    #customerModal .payment-history-box tbody tr {
+        display: block !important;
+        margin: 0 0 10px !important;
+        padding: 6px 10px !important;
+        border: 1px solid #d9e1ea !important;
+        border-radius: 9px !important;
+        background: #fff !important;
+    }
+
+    #customerModal .payment-history-box tbody td {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        width: 100% !important;
+        padding: 7px 2px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #edf0f4 !important;
+        font-size: 13px !important;
+        line-height: 1.35 !important;
+        text-align: right !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    #customerModal .payment-history-box tbody td::before {
+        flex: 0 0 auto;
+        color: #52647a;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    #customerModal .payment-history-box tbody td:nth-child(1)::before { content: "S.No"; }
+    #customerModal .payment-history-box tbody td:nth-child(2)::before { content: "Date"; }
+    #customerModal .payment-history-box tbody td:nth-child(3)::before { content: "Payment"; }
+    #customerModal .payment-history-box tbody td:nth-child(4)::before { content: "Total Paid"; }
+    #customerModal .payment-history-box tbody td:nth-child(5)::before { content: "Balance Due"; }
+    #customerModal .payment-history-box tbody td:nth-child(6)::before { content: "Payment Mode"; }
+    #customerModal .payment-history-box tbody td:nth-child(7)::before { content: "Remarks"; }
+
+    #customerModal .payment-history-box tbody td.payment-history-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        gap: 8px !important;
+        border-bottom: 0 !important;
+    }
+
+    #customerModal .payment-history-box tbody td.payment-history-actions::before {
+        content: "Actions";
+        margin-right: auto;
+    }
+
+    #customerModal .payment-history-box tbody td.payment-history-actions .btn {
+        width: auto !important;
+        min-height: 34px !important;
+        margin: 0 !important;
+        padding: 4px 9px !important;
+        font-size: 12px !important;
+    }
+
+    #customerModal .payment-history-box tbody td[colspan] {
+        display: block !important;
+        text-align: center !important;
+    }
+
+    #customerModal .payment-history-box tbody td[colspan]::before {
+        content: none !important;
+    }
+}
+/* Payment History: keep column headings visible while rows scroll */
+#customerModal .payment-history-box {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+#customerModal .payment-history-box .table-responsive {
+    max-height: 230px !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+#customerModal .payment-history-box thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    background: #212529 !important;
+}
+
+/* Keep the header visible while scrolling on a phone too */
+@media (max-width: 576px) {
+    #customerModal .payment-history-box .table-responsive {
+        max-height: 45vh !important;
+    }
+}
+#customerModal .payment-history-box .table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: #aeb7c2 transparent;
+}
+
+#customerModal .payment-history-box .table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+#customerModal .payment-history-box .table-responsive::-webkit-scrollbar-thumb {
+    background: #aeb7c2;
+    border-radius: 6px;
+}
+
+#customerModal .payment-history-box .table-responsive::-webkit-scrollbar-track {
+    background: transparent;
+}
+@media (min-width: 769px) {
+    #customerModal .modal-dialog {
+        position: relative;
+        left: 53%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        transform: translateX(-50%) !important;
+    }
+}

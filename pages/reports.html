@@ -32,10 +32,7 @@
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/theme-colors.css">
     <style>
-    #creditStatementTable tfoot,
-    #paidStatementTable tfoot {
-        z-index: auto !important;
-    }
+  
 </style>
 
 </head>
@@ -490,6 +487,18 @@
     </div>
 
 </div>
+<!-- Opening Balance Received highlight -->
+<div class="opening-balance-highlight mb-4">
+    <div class="opening-balance-highlight-icon">
+        <i class="bi bi-wallet2"></i>
+    </div>
+
+    <div class="opening-balance-highlight-content">
+        <h3>Opening Balance Received</h3>
+        <strong id="openingBalanceReceivedCard">Rs. 0.00</strong>
+        <p>Received from customers' opening balances during this period</p>
+    </div>
+</div>
 <!-- ==========================================
      PAYMENT SUMMARY + GST + CHARTS
 ========================================== -->
@@ -497,223 +506,178 @@
 <div class="row g-4 mb-4">
 
     <!-- Payment Summary -->
-
     <div class="col-lg-3 payment-summary-card">
-
         <div class="dashboard-card">
-
             <div class="card-title">
-
                 <i class="bi bi-wallet2"></i>
-
                 Payment Summary
-
             </div>
 
             <div class="payment-list">
 
-                <div class="payment-item">
-
-                    <span>
-
-                        <i class="bi bi-cash-coin text-success"></i>
-
-                        Cash
-
-                    </span>
-
-                    <strong id="cashTotal">Rs. 0.00</strong>
-
-                </div>
-
-                <div class="payment-item">
-
-                    <span>
-
-                        <i class="bi bi-phone text-primary"></i>
-
-                        UPI
-
-                    </span>
-
-                    <strong id="upiTotal">Rs. 0.00</strong>
-
-                </div>
-
-                <div class="payment-item">
-
-                    <span>
-
-                        <i class="bi bi-credit-card text-warning"></i>
-
-                        Card
-
-                    </span>
-
-                    <strong id="cardTotal">Rs. 0.00</strong>
-
-                </div>
-
-                <div class="payment-item">
-
-                    <span>
-
-                        <i class="bi bi-journal-text text-danger"></i>
-
-                        Credit
-
-                    </span>
-
-                    <strong id="creditTotal">Rs. 0.00</strong>
-
-                </div>
-                <!-- ==========================================
-     BILL PAYMENTS
-========================================== -->
-
-<div class="payment-item">
-
-    <span>
-        <i class="bi bi-receipt text-success"></i>
-        Bill Payments
-    </span>
-
-    <strong id="billPaymentsTotal">
-        Rs. 0.00
-    </strong>
-
-</div>
-
-
-<!-- ==========================================
-     OPENING BALANCE RECEIVED
-========================================== -->
-
-<div class="payment-item">
-
-    <span>
-        <i class="bi bi-wallet2 text-warning"></i>
-        Opening Balance Received
-    </span>
-
-    <strong id="openingBalanceReceivedTotal">
-        Rs. 0.00
-    </strong>
-
-</div>
-
-
-            <!-- ==========================================
-                 TOTAL AMOUNT RECEIVED
-            ========================================== -->
-            
-            <div class="payment-item total-payment-item">
-            
-                <span>
-                    <i class="bi bi-cash-stack text-primary"></i>
-                    <strong>Total Amount Received</strong>
-                </span>
-            
-                <strong id="totalAmountReceived">
-                    Rs. 0.00
-                </strong>
-            
-            </div>
-
-            </div>
-
+    <div class="payment-item payment-item-stacked">
+        <i class="bi bi-cash-coin text-success payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label">Cash</span>
+            <strong id="cashTotal">Rs. 0.00</strong>
         </div>
-
     </div>
 
-    <!-- GST Summary -->
-
-    <div class="col-lg-3 gst-summary-card">
-
-        <div class="dashboard-card">
-
-            <div class="card-title">
-
-                <i class="bi bi-percent"></i>
-
-                GST Summary
-
-            </div>
-
-            <div class="gst-summary">
-
-                <div>
-
-                    <small>CGST</small>
-
-                    <h3 id="cgstCollected">Rs. 0.00</h3>
-
-                </div>
-
-                <div>
-
-                    <small>SGST</small>
-
-                    <h3 id="sgstCollected">Rs. 0.00</h3>
-
-                </div>
-
-                <div>
-
-                    <small>Total GST</small>
-
-                    <h3 id="totalGSTSummary">Rs. 0.00</h3>
-
-                </div>
-
-            </div>
-
+    <div class="payment-item payment-item-stacked">
+        <i class="bi bi-phone text-primary payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label">UPI</span>
+            <strong id="upiTotal">Rs. 0.00</strong>
         </div>
-
     </div>
 
-    <!-- Daily Sales Chart -->
-
-    <div class="col-lg-3 chart-card"> 
-
-        <div class="dashboard-card">
-
-            <div class="card-title">
-
-                <i class="bi bi-bar-chart-fill"></i>
-
-                Daily Sales
-
-            </div>
-
-            <canvas id="salesChart"></canvas>
-
+    <div class="payment-item payment-item-stacked">
+        <i class="bi bi-credit-card text-warning payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label">Card</span>
+            <strong id="cardTotal">Rs. 0.00</strong>
         </div>
-
     </div>
 
-    <!-- Payment Method Chart -->
-
-    <div class="col-lg-3 chart-card">
-
-       <div class="dashboard-card">
-
-            <div class="card-title">
-
-                <i class="bi bi-pie-chart-fill"></i>
-
-                Payment Method
-
-            </div>
-
-            <canvas id="paymentChart"></canvas>
-
+    <div class="payment-item payment-item-stacked">
+        <i class="bi bi-journal-text text-danger payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label">Credit</span>
+            <strong id="creditTotal">Rs. 0.00</strong>
         </div>
+    </div>
 
+    <div class="payment-item payment-item-stacked">
+        <i class="bi bi-receipt text-success payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label">Bill Payments</span>
+            <strong id="billPaymentsTotal">Rs. 0.00</strong>
+        </div>
+    </div>
+
+    <div class="payment-item payment-item-stacked">
+        <i class="bi bi-wallet2 text-warning payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label">Opening Balance Received</span>
+            <strong id="openingBalanceReceivedTotal">Rs. 0.00</strong>
+        </div>
+    </div>
+
+    <div class="payment-item payment-item-stacked total-payment-item">
+        <i class="bi bi-cash-stack text-primary payment-item-icon"></i>
+        <div class="payment-item-content">
+            <span class="payment-item-label total-payment-label">
+                Total Amount Received
+            </span>
+            <strong id="totalAmountReceived">Rs. 0.00</strong>
+        </div>
     </div>
 
 </div>
+        </div>
+    </div>
 
+    <!-- Right side: summaries, charts, then receipt details -->
+    <div class="col-lg-9">
+        <div class="row g-4">
+
+            <!-- GST Summary -->
+            <div class="col-lg-4 col-md-6 gst-summary-card">
+                <div class="dashboard-card">
+                    <div class="card-title">
+                        <i class="bi bi-percent"></i>
+                        GST Summary
+                    </div>
+
+                    <div class="gst-summary">
+                        <div>
+                            <small>CGST</small>
+                            <h3 id="cgstCollected">Rs. 0.00</h3>
+                        </div>
+
+                        <div>
+                            <small>SGST</small>
+                            <h3 id="sgstCollected">Rs. 0.00</h3>
+                        </div>
+
+                        <div>
+                            <small>Total GST</small>
+                            <h3 id="totalGSTSummary">Rs. 0.00</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Sales Chart -->
+            <div class="col-lg-4 col-md-6 chart-card">
+                <div class="dashboard-card">
+                    <div class="card-title">
+                        <i class="bi bi-bar-chart-fill"></i>
+                        Daily Sales
+                    </div>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Payment Method Chart -->
+            <div class="col-lg-4 col-md-6 chart-card">
+                <div class="dashboard-card">
+                    <div class="card-title">
+                        <i class="bi bi-pie-chart-fill"></i>
+                        Payment Method
+                    </div>
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Opening Balance Receipt Details -->
+            <div class="col-12">
+                <div class="dashboard-card opening-balance-receipts-card">
+                    <div class="opening-balance-receipts-heading">
+                        <div class="card-title">
+                            <i class="bi bi-receipt"></i>
+                            Opening Balance Receipt Details
+                        </div>
+
+                        <span
+                            id="openingBalanceReceiptCount"
+                            class="badge bg-warning text-dark">
+                            0 receipts
+                        </span>
+                    </div>
+
+                    <div class="opening-balance-receipts-scroll">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Payment Date</th>
+                                    <th>Payment Mode</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="openingBalanceReceiptsBody">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        No opening balance receipts in this date range
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="opening-balance-receipts-total">
+                        <span>Total Opening Balance Received</span>
+                        <strong id="openingBalanceReceiptsTotal">Rs. 0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
 <!-- ==========================================
      SALES REPORT STARTS BELOW
 ========================================== -->

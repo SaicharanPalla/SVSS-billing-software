@@ -232,6 +232,72 @@ async function repairLegacyBillTotals() {
     });
 
 
+    // Recover bill payments when the payment history saved but the bill
+    // collection did not. New history records carry an explicit bill target.
+    // Legacy records are only unambiguous when there is no opening balance.
+    db.customers.forEach(customer => {
+        const history = Array.isArray(customer.paymentHistory)
+            ? customer.paymentHistory
+            : [];
+        const customerBills = getCustomerBillsForPaymentHistory(customer);
+        const openingBalance = Number(customer.openingBalance) || 0;
+
+        for (const bill of customerBills) {
+            const explicitlyAllocated = history.reduce((sum, payment) => {
+                const sameBill = payment.allocationType === "bill" &&
+                    String(payment.allocationBillNo || "") === String(bill.billNo || "") &&
+                    (!payment.allocationBillDate ||
+                        String(payment.allocationBillDate) === String(bill.date || ""));
+                return sum + (sameBill ? paymentHistoryAmount(payment.amount) : 0);
+            }, 0);
+            const currentPaid = paymentHistoryAmount(bill.amountPaid);
+            const missingExplicit = Math.max(explicitlyAllocated - currentPaid, 0);
+            if (missingExplicit <= 0) continue;
+
+            const grandTotal = paymentHistoryAmount(bill.grandTotal) ||
+                currentPaid + paymentHistoryAmount(bill.balanceDue);
+            const balance = Math.max(Number((grandTotal - currentPaid).toFixed(2)), 0);
+            const applied = Math.min(balance, missingExplicit);
+            if (applied <= 0) continue;
+
+            bill.amountPaid = Number((currentPaid + applied).toFixed(2));
+            bill.balanceDue = Number((balance - applied).toFixed(2));
+            bill.paymentStatus = bill.balanceDue <= 0 ? "Paid" : "Pending";
+            changed = true;
+        }
+
+        if (openingBalance > 0) return;
+
+        const received = history.reduce(
+            (sum, payment) => sum + paymentHistoryAmount(payment.amount),
+            0
+        );
+        let unassigned = Number(Math.max(
+            received - customerBills.reduce(
+                (sum, bill) => sum + paymentHistoryAmount(bill.amountPaid),
+                0
+            ),
+            0
+        ).toFixed(2));
+
+        for (const bill of customerBills) {
+            if (unassigned <= 0) break;
+
+            const paid = paymentHistoryAmount(bill.amountPaid);
+            const grandTotal = paymentHistoryAmount(bill.grandTotal) ||
+                paid + paymentHistoryAmount(bill.balanceDue);
+            const balance = Math.max(Number((grandTotal - paid).toFixed(2)), 0);
+            const applied = Math.min(balance, unassigned);
+            if (applied <= 0) continue;
+
+            bill.amountPaid = Number((paid + applied).toFixed(2));
+            bill.balanceDue = Number((balance - applied).toFixed(2));
+            bill.paymentStatus = bill.balanceDue <= 0 ? "Paid" : "Pending";
+            unassigned = Number((unassigned - applied).toFixed(2));
+            changed = true;
+        }
+    });
+
     // ------------------------------------------
     // SAVE REPAIRED BILLS
     // ------------------------------------------
@@ -2284,7 +2350,6 @@ function addPaymentHistoryHeader() {
 // ==========================================
 
 function loadPaymentHistory(customer) {
-    addPaymentHistoryHeader();
 
     const tbody =
         document.getElementById("paymentHistoryBody");
@@ -3129,11 +3194,46 @@ document
 // SAVE PAYMENT + PAYMENT HISTORY
 // ==========================================
 
+let paymentCloudSyncPending = false;
+let paymentSaveInProgress = false;
+let pendingPaymentConfirmation = "";
+
+async function syncPaymentCollections() {
+    const results = await Promise.allSettled([
+        window.api.saveCustomers(db.customers),
+        window.api.saveBills(db.bills)
+    ]);
+    const failedSave = results.find(result => result.status === "rejected");
+    if (failedSave) throw failedSave.reason;
+}
+
 document
     .getElementById("savePayment")
     .addEventListener("click", async function () {
 
-        if (!currentCustomer) return;
+        if (!currentCustomer || paymentSaveInProgress) return;
+
+        // Retry only the existing saved records, never add the receipt twice.
+        if (paymentCloudSyncPending) {
+            paymentSaveInProgress = true;
+            try {
+                await syncPaymentCollections();
+                paymentCloudSyncPending = false;
+                sessionStorage.setItem("svssPendingPaymentNotice", pendingPaymentConfirmation);
+                window.location.reload();
+            } catch (syncError) {
+                console.error("Payment cloud sync retry failed.", syncError);
+                showToast(
+                    "Cloud sync failed again. The payment is saved locally; click Retry Cloud Sync when connected. Do not enter it again.",
+                    "error"
+                );
+            } finally {
+                paymentSaveInProgress = false;
+            }
+            return;
+        }
+
+        paymentSaveInProgress = true;
 
         try {
 
@@ -3509,6 +3609,14 @@ const paymentRecord = {
     paymentMode:
         paymentMode || "Cash",
 
+    allocationType,
+
+    allocationBillNo:
+        allocationType === "bill" ? selectedBill.billNo : "",
+
+    allocationBillDate:
+        allocationType === "bill" ? selectedBill.date : "",
+
     remarks:
         remarks || ""
 
@@ -3538,33 +3646,21 @@ dbCustomer.paymentHistory.push(
              return;
          }
          
-         // Sync customer and bill records after the local database save.
-         // A sync failure should not leave the payment dialog open or stop
-         // the local customer list from refreshing.
-         try {
-             await Promise.race([
-                 Promise.all([
-                     window.api.saveCustomers(db.customers),
-                     window.api.saveBills(db.bills)
-                 ]),
-                 new Promise(resolve => setTimeout(resolve, 1500))
-             ]);
-         } catch (syncError) {
-             console.warn(
-                 "Payment was saved locally, but customer/bill sync failed.",
-                 syncError
-             );
-         }
+         paymentCloudSyncPending = true;
+         const receivedAmount = Number(requestedAmount).toLocaleString("en-IN", {
+             minimumFractionDigits: 2,
+             maximumFractionDigits: 2
+         });
+         pendingPaymentConfirmation = `Amount credited: Rs. ${receivedAmount}`;
 
+         // Wait until both records have finished syncing before reloading.
+         await syncPaymentCollections();
+         paymentCloudSyncPending = false;
 
         // Preserve a confirmation across the page reload.
-        const receivedAmount = Number(requestedAmount).toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
         sessionStorage.setItem(
             "svssPendingPaymentNotice",
-            `Amount credited: Rs. ${receivedAmount}`
+            pendingPaymentConfirmation
         );
 
         // Reload from the saved database so the Paid and Balance columns
@@ -3574,10 +3670,21 @@ dbCustomer.paymentHistory.push(
 
         } catch (paymentError) {
             console.error("Receive Payment failed.", paymentError);
-            showToast(
-                "Payment process failed. Refresh and check payment history before trying again.",
-                "error"
-            );
+            if (paymentCloudSyncPending) {
+                const saveButton = document.getElementById("savePayment");
+                if (saveButton) saveButton.textContent = "Retry Cloud Sync";
+                showToast(
+                    "Payment saved locally, but cloud sync failed. Click Retry Cloud Sync; do not enter it again.",
+                    "error"
+                );
+            } else {
+                showToast(
+                    "Payment process failed. Refresh and check payment history before trying again.",
+                    "error"
+                );
+            }
+        } finally {
+            paymentSaveInProgress = false;
         }
 
     });
@@ -3620,6 +3727,10 @@ dbCustomer.paymentHistory.push(
     
     const openingBalanceDate =
         latestCustomer.openingBalanceDate || "";
+    const statementBills = getCustomerBillsForPaymentHistory(latestCustomer);
+    const statementPayments = Array.isArray(latestCustomer.paymentHistory)
+        ? latestCustomer.paymentHistory
+        : [];
 
     // ======================================
     // CALCULATE LATEST STATEMENT TOTALS
@@ -3638,7 +3749,7 @@ let statementBillBalance = 0;
 // CALCULATE FROM CUSTOMER BILLS
 // ======================================
 
-(customer.bills || []).forEach(
+statementBills.forEach(
     bill => {
 
         let grandTotal =
@@ -3701,14 +3812,10 @@ let statementBillBalance = 0;
 // TOTAL PAYMENTS FROM PAYMENT HISTORY
 // ======================================
 
-if (
-    Array.isArray(
-        customer.paymentHistory
-    )
-) {
+if (statementPayments.length > 0) {
 
     statementTotalPaid =
-        customer.paymentHistory.reduce(
+        statementPayments.reduce(
             (total, payment) =>
                 total +
                 (
@@ -3729,10 +3836,12 @@ statementTotalPaid = Math.max(
 // PAYMENT USED AGAINST OPENING BALANCE
 // ======================================
 
-const statementOpeningPaid = Math.max(
-    statementTotalPaid - statementBillPaid,
-    0
-);
+const statementOpeningPaid = openingBalance > 0
+    ? Math.min(
+        openingBalance,
+        Math.max(statementTotalPaid - statementBillPaid, 0)
+    )
+    : 0;
 
 
 // ======================================
@@ -4272,7 +4381,7 @@ if (openingBalance > 0) {
 // NORMAL BILL ROWS
 // ======================================
 
-(customer.bills || []).forEach((bill, index) => {
+statementBills.forEach((bill, index) => {
 
     const total =
         Number(
@@ -4473,9 +4582,7 @@ doc.autoTable({
 // PAYMENT HISTORY
 // ======================================
 
-const paymentHistory = Array.isArray(customer.paymentHistory)
-    ? customer.paymentHistory
-    : [];
+const paymentHistory = statementPayments;
 
 // Keep the detailed movement and allocation tables only when there are
 // payment records to explain. Without payment history, the bill table and
@@ -4516,7 +4623,7 @@ if (openingBalance > 0) {
     });
 }
 
-(customer.bills || []).forEach(bill => {
+statementBills.forEach(bill => {
     const total = statementNumber(bill.grandTotal) ||
         statementNumber(bill.amountPaid) + statementNumber(bill.balanceDue);
 
