@@ -580,7 +580,65 @@
                         </span>
 
                     </div>
+                      <div
+    id="paymentHistoryEditForm"
+    class="border rounded p-3 mb-3 bg-light"
+    style="display: none;">
 
+    <h6 class="mb-3">Edit Payment</h6>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="paymentEditDate" class="form-label">Payment Date</label>
+            <input
+                type="date"
+                id="paymentEditDate"
+                class="form-control">
+        </div>
+
+        <div class="col-md-3">
+            <label for="paymentEditAmount" class="form-label">Amount</label>
+            <input
+                type="text"
+                id="paymentEditAmount"
+                class="form-control"
+                inputmode="decimal">
+        </div>
+
+        <div class="col-md-3">
+            <label for="paymentEditMode" class="form-label">Payment Mode</label>
+            <select id="paymentEditMode" class="form-select">
+                <option>Cash</option>
+                <option>UPI</option>
+                <option>Bank Transfer</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label for="paymentEditRemarks" class="form-label">Remarks</label>
+            <input
+                type="text"
+                id="paymentEditRemarks"
+                class="form-control">
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <button
+            type="button"
+            id="cancelPaymentEdit"
+            class="btn btn-secondary">
+            Cancel
+        </button>
+
+        <button
+            type="button"
+            id="savePaymentEdit"
+            class="btn btn-success">
+            Save Changes
+        </button>
+    </div>
+</div>
 
                     <div class="payment-history-box">
 

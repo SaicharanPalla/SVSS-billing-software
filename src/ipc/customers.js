@@ -64,7 +64,45 @@ document.addEventListener("DOMContentLoaded", async () => {
     new bootstrap.Modal(
         document.getElementById("addCustomerModal")
     );
+function parseAmountInput(value) {
+    return Number(String(value || "").replace(/,/g, "")) || 0;
+}
 
+function formatAmountInput(input) {
+    const value = String(input.value || "").replace(/,/g, "");
+    if (!value) return;
+
+    const [wholePart, decimalPart] = value.split(".");
+    const wholeDigits = (wholePart || "0").replace(/\D/g, "");
+
+    const lastThree = wholeDigits.slice(-3);
+    const leadingDigits = wholeDigits.slice(0, -3);
+    const groupedLeading =
+        leadingDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+
+    input.value =
+        (groupedLeading ? `${groupedLeading},` : "") +
+        lastThree +
+        (decimalPart === undefined ? "" : `.${decimalPart}`);
+}
+
+["openingBalance", "payAmount"].forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.type = "text";
+    input.inputMode = "decimal";
+
+    // Add commas as the amount is typed.
+    input.addEventListener("input", () => {
+        formatAmountInput(input);
+    });
+
+    // Keep the final amount formatted when leaving the field.
+    input.addEventListener("blur", () => {
+        formatAmountInput(input);
+    });
+});
     // ==============================
     // Variables
     // ==============================
@@ -863,9 +901,7 @@ Object.values(customers).forEach(customer => {
    // ==========================================
 // Save / Update Customer
 // ==========================================
-
 saveCustomerBtn.addEventListener("click", async function () {
-
     const name =
         document.getElementById("customerName").value.trim();
 
@@ -885,267 +921,322 @@ saveCustomerBtn.addEventListener("click", async function () {
         document.getElementById("customerNotes").value.trim();
 
     const openingBalance =
-        Number(
-            document.getElementById("openingBalance").value
-        ) || 0;
+        parseAmountInput(document.getElementById("openingBalance").value)
 
     const openingBalanceDate =
-            document.getElementById("openingBalanceDate").value || ""; 
-               
+        document.getElementById("openingBalanceDate").value || "";
 
     if (!name) {
-
-        showToast("Please enter Customer Name.","info");
-
+        showToast("Please enter Customer Name.", "info");
         return;
-
     }
 
-    // Mobile validation
-    // Mobile validation (Optional)
     let contact = mobile.trim();
 
-if (contact === "-") {
-    contact = "";
-}
-
-if (contact !== "") {
-
-    const isMobile = /^\d{10}$/.test(contact);
-
-    const isGST =
-        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/
-        .test(contact.toUpperCase());
-
-    if (!isMobile && !isGST) {
-
-        showToast(
-            "Please enter a valid Mobile Number or GST Number.",
-            "warning"
-        );
-
-        return;
-
+    if (contact === "-") {
+        contact = "";
     }
 
-}
+    if (contact !== "") {
+        const isMobile = /^\d{10}$/.test(contact);
+
+        const isGST =
+            /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/
+                .test(contact.toUpperCase());
+
+        if (!isMobile && !isGST) {
+            showToast(
+                "Please enter a valid Mobile Number or GST Number.",
+                "warning"
+            );
+            return;
+        }
+    }
 
     await refreshDatabase();
 
-    // ======================================
-    // UPDATE CUSTOMER
-    // ======================================
+    const normalizedName = name.trim().toLowerCase();
+
+    const normalizeContact = value =>
+        String(value || "")
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, "");
+
+    const enteredContacts = [
+        normalizeContact(mobile),
+        normalizeContact(gst)
+    ].filter(value => value && value !== "-");
+
+    const matchesCustomer = customer => {
+        const existingName =
+            String(customer.name || "").trim().toLowerCase();
+
+        const existingContacts = [
+            normalizeContact(customer.mobile),
+            normalizeContact(customer.gst)
+        ].filter(value => value && value !== "-");
+
+        const sameContact = enteredContacts.some(value =>
+            existingContacts.includes(value)
+        );
+
+        const sameNameWithoutReliableContact =
+            existingName === normalizedName &&
+            (enteredContacts.length === 0 ||
+                existingContacts.length === 0);
+
+        return sameContact || sameNameWithoutReliableContact;
+    };
+
     if (editIndex >= 0) {
-
         const oldCustomer = customerData[editIndex];
+        let dbIndex = oldCustomer.dbIndex;
+        const isBillHistoryOnly = dbIndex === -1;
 
-        const dbIndex = oldCustomer.dbIndex;
+        const billIdentityKey = bill =>
+            `${String(bill.billNo || "").trim()}|${String(bill.date || "").trim()}`;
 
-        if (dbIndex === undefined || dbIndex === -1) {
+        const linkedBillKeys = new Set(
+            (oldCustomer.bills || [])
+                .filter(bill => bill.billNo)
+                .map(billIdentityKey)
+        );
 
-    showToast(
-        "This customer exists only in Bill History.\nPlease create a customer record first.",
-        "info"
-    );
-
-    return;
-
-    }
-    const duplicate = db.customers.find((c,i)=>
-
-    i !== dbIndex &&
-
-    mobile &&
-
-    (c.mobile || "").trim() === mobile.trim()
-
-);
-
-        if (duplicate) {
-
-            showToast("Mobile Number already exists.","error");
-
+        if (dbIndex === undefined) {
+            showToast("Could not identify this customer record.", "error");
             return;
-
         }
+
+        if (isBillHistoryOnly && linkedBillKeys.size === 0) {
+            showToast(
+                "Could not safely identify this customer's bills.",
+                "error"
+            );
+            return;
+        }
+
+        // If this bill-history-only customer already matches a saved
+        // customer, update that saved record instead of creating another.
+        if (isBillHistoryOnly) {
+            const matchingIndex =
+                db.customers.findIndex(matchesCustomer);
+
+            if (matchingIndex >= 0) {
+                dbIndex = matchingIndex;
+            }
+        }
+
+        const editingCustomerId =
+    String(oldCustomer.customerId || "").trim();
+
+const duplicateIndex = db.customers.findIndex((customer, index) => {
+    const sameCustomerId =
+        editingCustomerId &&
+        String(customer.customerId || "").trim() === editingCustomerId;
+
+    // Ignore the record being edited.
+    if (index === dbIndex || sameCustomerId) {
+        return false;
+    }
+
+    const existingContacts = [
+        normalizeContact(customer.mobile),
+        normalizeContact(customer.gst)
+    ].filter(value => value && value !== "-");
+
+    // A blank phone number is not a shared contact.
+    // Only treat another record as a duplicate when a real,
+    // nonblank phone number or GST number matches.
+    return enteredContacts.some(value =>
+        existingContacts.includes(value)
+    );
+});
+
+        if (duplicateIndex >= 0) {
+            showToast(
+                "Another saved customer has this mobile number or GST number.",
+                "error"
+            );
+            return;
+        }
+
+        // Promote a customer that exists only in Bill History into the
+        // customer list, then link their existing bills to this record.
+        if (isBillHistoryOnly && dbIndex === -1) {
+            const newCustomerId =
+                "CUS_" +
+                Date.now() +
+                "_" +
+                Math.random().toString(36).substring(2, 8);
+
+            db.customers.push({
+                customerId: newCustomerId,
+                name,
+                mobile,
+                address,
+                gst,
+                email,
+                notes,
+                openingBalance,
+                openingBalanceDate,
+                paymentHistory: Array.isArray(oldCustomer.paymentHistory)
+                    ? oldCustomer.paymentHistory
+                    : [],
+                createdDate: new Date().toISOString()
+            });
+
+            dbIndex = db.customers.length - 1;
+        }
+
+        const oldName = oldCustomer.name;
+        const oldMobile = oldCustomer.mobile;
 
         db.customers[dbIndex] = {
-
             ...db.customers[dbIndex],
-        
             name,
-        
             mobile,
-        
             address,
-        
             gst,
-        
             email,
-        
             notes,
-        
             openingBalance,
-        
             openingBalanceDate
-        
         };
-            const oldName = oldCustomer.name;
-           const oldMobile = oldCustomer.mobile;
-           
-           bills.forEach(bill => {
-           
-               if (
-           
-               (bill.customer || "").trim() === oldName &&
-           
-               (
-                   (bill.mobile || "").trim() === oldMobile ||
-           
-                   !oldMobile ||
-           
-                   oldMobile === "-"
-               )
-           
-           ) {
-           
-               bill.customer = name;
-               bill.mobile = mobile;
-               bill.address = address;
-           
-           }
-    
-    });
-    
-            db.bills = bills;
-    
-    await window.api.saveDatabase(db);
-    
-    // ==========================================
-    // CLOUD SYNC — CUSTOMERS
-    // ==========================================
-    
-    try {
-    
-        await window.api.saveCustomers(db.customers);
-    
-        console.log(
-            "SVSS Cloud: Customers synchronized successfully."
-        );
-    
-    } catch (cloudError) {
-    
-        console.warn(
-            "SVSS Cloud: Customer synchronization failed."
-        );
-    
-        console.warn(cloudError);
-    
-    }
-    
-    showToast("Customer Updated Successfully.","success");
 
-    }
+        const billMobile = /^\d{10}$/.test(mobile.trim())
+            ? mobile.trim()
+            : "";
 
-    // ======================================
-    // ADD CUSTOMER
-    // ======================================
+        const gstPattern =
+            /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/;
 
-    else {
+        const enteredGst = gst.trim().toUpperCase();
+        const gstFromMobile = mobile.trim().toUpperCase();
 
-        let duplicate = null;
-    
-    if (mobile !== "" && mobile !== "-") {
-    
-        duplicate =
-db.customers.find(c=>{
+        const billGst = gstPattern.test(enteredGst)
+            ? enteredGst
+            : gstPattern.test(gstFromMobile)
+                ? gstFromMobile
+                : "";
 
-const sameMobile=
+        bills.forEach(bill => {
+            const matchesBillHistoryRecord =
+                isBillHistoryOnly &&
+                linkedBillKeys.has(billIdentityKey(bill));
 
-mobile &&
-(c.mobile||"").trim()==mobile.trim();
+            const matchesSavedCustomer =
+                !isBillHistoryOnly &&
+                (bill.customer || "").trim() === oldName &&
+                (
+                    (bill.mobile || "").trim() === oldMobile ||
+                    !oldMobile ||
+                    oldMobile === "-"
+                );
 
-const sameName=
+            if (matchesBillHistoryRecord || matchesSavedCustomer) {
+                bill.customerId = db.customers[dbIndex].customerId;
+                bill.customer = name;
+                bill.address = address;
 
-!mobile &&
-(c.name||"").trim().toLowerCase()==
-name.trim().toLowerCase();
+                if (isBillHistoryOnly) {
+                    bill.mobile = billMobile;
+                    bill.gst = billGst;
+                } else {
+                    bill.mobile = mobile;
+                }
+            }
+        });
 
-return sameMobile||sameName;
-
-});
-    
-    }
-    
-    if (duplicate) {
-    
-        showToast("Customer already exists", "warning");
-    
-        return;
-    
-    }
-
-        if (duplicate) {
-
-            showToast("Customer already exists", "warning");
-
-            return;
-
-        }
-
-        db.customers.push({
-
-    customerId:
-        "CUS_" +
-        Date.now() +
-        "_" +
-        Math.random().toString(36).substring(2,8),
-
-    name,
-    mobile,
-    address,
-    gst,
-    email,
-    notes,
-    openingBalance,
-    openingBalanceDate,
-    
-    createdDate: new Date().toISOString()
-
-});
-db.bills = bills;
-
-await saveDatabase();
-
-// ==========================================
-// CLOUD SYNC — CUSTOMERS
-// ==========================================
-
+        db.bills = bills;
+        await window.api.saveDatabase(db);
 try {
-
-    await window.api.saveCustomers(db.customers);
+    await Promise.all([
+        window.api.saveCustomers(db.customers),
+        window.api.saveBills(bills)
+    ]);
 
     console.log(
-        "SVSS Cloud: Customers synchronized successfully."
+        "SVSS Cloud: Customer and bill details synchronized successfully."
     );
-
 } catch (cloudError) {
-
     console.warn(
-        "SVSS Cloud: Customer synchronization failed."
+        "SVSS Cloud: Customer or bill synchronization failed.",
+        cloudError
     );
-
-    console.warn(cloudError);
-
 }
 
-showToast("Customer Added Successfully", "success");
+        showToast(
+            isBillHistoryOnly
+                ? "Customer details saved and linked to existing bills."
+                : "Customer Updated Successfully.",
+            "success"
+        );
+    } else {
+        const existingCustomer =
+            db.customers.find(matchesCustomer);
 
+        if (existingCustomer) {
+            // Keep the existing customer row and update its opening balance.
+            existingCustomer.openingBalance = openingBalance;
+            existingCustomer.openingBalanceDate = openingBalanceDate;
+
+            db.bills = bills;
+            await saveDatabase();
+
+            try {
+                await window.api.saveCustomers(db.customers);
+                console.log(
+                    "SVSS Cloud: Customers synchronized successfully."
+                );
+            } catch (cloudError) {
+                console.warn(
+                    "SVSS Cloud: Customer synchronization failed.",
+                    cloudError
+                );
+            }
+
+            showToast(
+                "Opening balance updated on the existing customer.",
+                "success"
+            );
+        } else {
+            db.customers.push({
+                customerId:
+                    "CUS_" +
+                    Date.now() +
+                    "_" +
+                    Math.random().toString(36).substring(2, 8),
+
+                name,
+                mobile,
+                address,
+                gst,
+                email,
+                notes,
+                openingBalance,
+                openingBalanceDate,
+                createdDate: new Date().toISOString()
+            });
+
+            db.bills = bills;
+            await saveDatabase();
+
+            try {
+                await window.api.saveCustomers(db.customers);
+                console.log(
+                    "SVSS Cloud: Customers synchronized successfully."
+                );
+            } catch (cloudError) {
+                console.warn(
+                    "SVSS Cloud: Customer synchronization failed.",
+                    cloudError
+                );
+            }
+
+            showToast("Customer Added Successfully.", "success");
+        }
     }
-
-    // ======================================
-    // RESET FORM
-    // ======================================
 
     editIndex = -1;
 
@@ -1156,17 +1247,15 @@ showToast("Customer Added Successfully", "success");
     document.getElementById("customerEmail").value = "";
     document.getElementById("customerNotes").value = "";
     document.getElementById("openingBalance").value = "0";
-
     document.getElementById("openingBalanceDate").value = "";
+
     document.getElementById("saveCustomer").innerHTML = `
         <i class="bi bi-check-circle-fill"></i>
         Save Customer
     `;
 
     addCustomerModal.hide();
-
     await loadCustomers();
-
 });
     // ==========================================
     // View Customer
@@ -1800,7 +1889,7 @@ const customer = customerData.find(c =>
         customer.name;
 
     document.getElementById("customerMobile").value =
-    customer.mobile || customer.gst || "";
+    customer.mobile || "";
 
     document.getElementById("customerAddress").value =
         customer.address;
@@ -2829,89 +2918,217 @@ async function savePaymentHistoryChanges(nextHistory) {
         name: currentCustomer?.name,
         mobile: currentCustomer?.mobile
     };
+
     await refreshDatabase();
 
-    const sameIdentity = customer => identity.customerId &&
-        String(customer.customerId || "").trim() === String(identity.customerId).trim();
-    const dbCustomer = db.customers.find(sameIdentity) || db.customers.find(customer =>
-        String(customer.name || "").trim().toLowerCase() === String(identity.name || "").trim().toLowerCase() &&
-        String(customer.mobile || "").trim() === String(identity.mobile || "").trim()
-    );
-    if (!dbCustomer) throw new Error("Customer record was not found.");
+    const sameIdentity = customer =>
+        identity.customerId &&
+        String(customer.customerId || "").trim() ===
+            String(identity.customerId).trim();
 
-    const oldHistory = Array.isArray(dbCustomer.paymentHistory) ? [...dbCustomer.paymentHistory] : [];
-    recalculateBillsForPaymentHistory(getCustomerBillsForPaymentHistory(dbCustomer), oldHistory, nextHistory);
+    const dbCustomer =
+        db.customers.find(sameIdentity) ||
+        db.customers.find(customer =>
+            String(customer.name || "").trim().toLowerCase() ===
+                String(identity.name || "").trim().toLowerCase() &&
+            String(customer.mobile || "").trim() ===
+                String(identity.mobile || "").trim()
+        );
+
+    if (!dbCustomer) {
+        throw new Error("Customer record was not found.");
+    }
+
+    const oldHistory = Array.isArray(dbCustomer.paymentHistory)
+        ? [...dbCustomer.paymentHistory]
+        : [];
+
+    recalculateBillsForPaymentHistory(
+        getCustomerBillsForPaymentHistory(dbCustomer),
+        oldHistory,
+        nextHistory
+    );
+
     dbCustomer.paymentHistory = nextHistory;
     db.bills = bills;
 
+    // Save customer payment history and updated bill balances together.
     await window.api.saveDatabase(db);
-    await Promise.all([
-        window.api.saveCustomers(db.customers),
-        window.api.saveBills(db.bills)
-    ]);
+
     await loadCustomers();
 
-    currentCustomer = customerData.find(sameIdentity) || customerData.find(customer =>
-        String(customer.name || "").trim().toLowerCase() === String(identity.name || "").trim().toLowerCase() &&
-        String(customer.mobile || "").trim() === String(identity.mobile || "").trim()
-    );
+    currentCustomer =
+        customerData.find(sameIdentity) ||
+        customerData.find(customer =>
+            String(customer.name || "").trim().toLowerCase() ===
+                String(identity.name || "").trim().toLowerCase() &&
+            String(customer.mobile || "").trim() ===
+                String(identity.mobile || "").trim()
+        );
+
     if (currentCustomer) {
-        document.getElementById("customerPurchase").textContent = formatCurrency(currentCustomer.totalPurchase);
-        document.getElementById("customerPaid").textContent = formatCurrency(currentCustomer.totalPaid);
-        document.getElementById("customerBalance").textContent = formatCurrency(currentCustomer.totalBalance);
+        document.getElementById("customerPurchase").textContent =
+            formatCurrency(currentCustomer.totalPurchase);
+
+        document.getElementById("customerPaid").textContent =
+            formatCurrency(currentCustomer.totalPaid);
+
+        document.getElementById("customerBalance").textContent =
+            formatCurrency(currentCustomer.totalBalance);
+
         loadBillHistory(currentCustomer);
         loadPaymentHistory(currentCustomer);
     }
 }
 
-const paymentHistoryBody = document.getElementById("paymentHistoryBody");
+let editingPaymentIndex = -1;
+
+const paymentHistoryBody =
+    document.getElementById("paymentHistoryBody");
+
+const paymentHistoryEditForm =
+    document.getElementById("paymentHistoryEditForm");
+
+const paymentEditDate =
+    document.getElementById("paymentEditDate");
+
+const paymentEditAmount =
+    document.getElementById("paymentEditAmount");
+
+const paymentEditMode =
+    document.getElementById("paymentEditMode");
+
+const paymentEditRemarks =
+    document.getElementById("paymentEditRemarks");
+
 paymentHistoryBody?.addEventListener("click", async event => {
-    const button = event.target.closest(".editPaymentHistoryBtn, .deletePaymentHistoryBtn");
+    const button = event.target.closest(
+        ".editPaymentHistoryBtn, .deletePaymentHistoryBtn"
+    );
+
     if (!button || !currentCustomer) return;
 
     const index = Number(button.dataset.paymentIndex);
-    const history = Array.isArray(currentCustomer.paymentHistory) ? currentCustomer.paymentHistory : [];
+    const history = Array.isArray(currentCustomer.paymentHistory)
+        ? currentCustomer.paymentHistory
+        : [];
     const payment = history[index];
+
     if (!payment) return;
 
+    if (button.classList.contains("editPaymentHistoryBtn")) {
+        editingPaymentIndex = index;
+
+        paymentEditDate.value =
+            normalizePaymentHistoryDate(payment.date) || "";
+
+        paymentEditAmount.value =
+            Number(payment.amount || 0).toFixed(2);
+
+        paymentEditMode.value =
+            payment.paymentMode || "Cash";
+
+        paymentEditRemarks.value =
+            payment.remarks || "";
+
+        paymentHistoryEditForm.style.display = "block";
+        paymentHistoryEditForm.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+
+        paymentEditDate.focus();
+        return;
+    }
+
     try {
-        if (button.classList.contains("editPaymentHistoryBtn")) {
-            const dateInput = window.prompt("Payment date (YYYY-MM-DD):", payment.date || "");
-            if (dateInput === null) return;
-            const amountInput = window.prompt("Payment amount:", String(payment.amount ?? ""));
-            if (amountInput === null) return;
-            const modeInput = window.prompt("Payment mode:", payment.paymentMode || "Cash");
-            if (modeInput === null) return;
-            const remarksInput = window.prompt("Remarks (leave blank for none):", payment.remarks || "");
-            if (remarksInput === null) return;
-
-            const date = normalizePaymentHistoryDate(dateInput);
-            const amount = Number(amountInput);
-            if (!date || !Number.isFinite(amount) || amount <= 0) {
-                showToast("Enter a valid date and an amount greater than zero.", "error");
-                return;
-            }
-
-            const nextHistory = [...history];
-            nextHistory[index] = {
-                ...payment,
-                date,
-                amount: Number(amount.toFixed(2)),
-                paymentMode: modeInput.trim() || "Cash",
-                remarks: remarksInput.trim()
-            };
-            await savePaymentHistoryChanges(nextHistory);
-            showToast("Payment updated successfully.", "success");
-        } else {
-            if (!window.confirm(`Delete this payment of ${formatCurrency(payment.amount)}? Bill balances will be recalculated.`)) return;
-            await savePaymentHistoryChanges(history.filter((_, i) => i !== index));
-            showToast("Payment deleted successfully.", "success");
+        if (!window.confirm(
+            `Delete this payment of ${formatCurrency(payment.amount)}? Bill balances will be recalculated.`
+        )) {
+            return;
         }
+
+        await savePaymentHistoryChanges(
+            history.filter((_, paymentIndex) => paymentIndex !== index)
+        );
+
+        showToast("Payment deleted successfully.", "success");
     } catch (error) {
         console.error("Payment history update failed:", error);
-        showToast("Could not save this payment change.", "error");
+        showToast(
+            `Payment update failed: ${error?.message || String(error)}`,
+            "error"
+        );
     }
 });
+
+document
+    .getElementById("cancelPaymentEdit")
+    ?.addEventListener("click", () => {
+        editingPaymentIndex = -1;
+        paymentHistoryEditForm.style.display = "none";
+    });
+
+document
+    .getElementById("savePaymentEdit")
+    ?.addEventListener("click", async () => {
+        if (!currentCustomer || editingPaymentIndex < 0) return;
+
+        const history = Array.isArray(currentCustomer.paymentHistory)
+            ? [...currentCustomer.paymentHistory]
+            : [];
+
+        const payment = history[editingPaymentIndex];
+
+        if (!payment) {
+            showToast("Payment record was not found.", "error");
+            return;
+        }
+
+        const date =
+            normalizePaymentHistoryDate(paymentEditDate.value);
+
+        const amount =
+            parseAmountInput(paymentEditAmount.value);
+
+        if (!date || !Number.isFinite(amount) || amount <= 0) {
+            showToast(
+                "Enter a valid payment date and an amount greater than zero.",
+                "error"
+            );
+            return;
+        }
+
+        history[editingPaymentIndex] = {
+            ...payment,
+            date,
+            amount: Number(amount.toFixed(2)),
+            paymentMode: paymentEditMode.value || "Cash",
+            remarks: paymentEditRemarks.value.trim()
+        };
+
+        const saveButton =
+            document.getElementById("savePaymentEdit");
+
+        saveButton.disabled = true;
+
+        try {
+            await savePaymentHistoryChanges(history);
+
+            editingPaymentIndex = -1;
+            paymentHistoryEditForm.style.display = "none";
+
+            showToast("Payment updated successfully.", "success");
+        } catch (error) {
+            console.error("Payment history update failed:", error);
+            showToast(
+                `Payment update failed: ${error?.message || String(error)}`,
+                "error"
+            );
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
 function getOpeningBalanceRemaining(customer, customerBills) {
     const history = Array.isArray(customer?.paymentHistory)
         ? customer.paymentHistory
@@ -3247,7 +3464,7 @@ document
             document.getElementById("payRemarks").value.trim();
 
         const requestedAmount =
-            Number(paymentInput.value);
+            parseAmountInput(paymentInput.value)
         
         const paymentDate =
             document.getElementById("payDate").value;    
@@ -3289,20 +3506,57 @@ document
       // ==========================================
 // CHECK CUSTOMER BALANCE AND PAYMENT TARGET
 // ==========================================
-
-const paymentCustomer =
+let paymentCustomer =
     db.customers.find(customer =>
         currentCustomer.customerId &&
         String(customer.customerId || "").trim() ===
             String(currentCustomer.customerId || "").trim()
     ) ||
-    db.customers.find(customer =>
-        String(customer.name || "").trim().toLowerCase() ===
-            String(currentCustomer.name || "").trim().toLowerCase() &&
-        String(customer.mobile || "").trim() ===
-            String(currentCustomer.mobile || "").trim()
-    ) ||
-    latestCustomer;
+    db.customers.find(customer => {
+        const sameName =
+            String(customer.name || "").trim().toLowerCase() ===
+            String(currentCustomer.name || "").trim().toLowerCase();
+
+        const customerMobile =
+            String(customer.mobile || "").trim();
+
+        const selectedMobile =
+            String(currentCustomer.mobile || "").trim();
+
+        return sameName && (
+            customerMobile === selectedMobile ||
+            !customerMobile ||
+            customerMobile === "-" ||
+            !selectedMobile ||
+            selectedMobile === "-"
+        );
+    });
+
+if (!paymentCustomer) {
+    paymentCustomer = {
+        customerId:
+            currentCustomer.customerId ||
+            (
+                "AUTO_" +
+                Date.now() +
+                "_" +
+                Math.random().toString(36).substring(2, 8)
+            ),
+        name: String(currentCustomer.name || "").trim(),
+        mobile: String(currentCustomer.mobile || "").trim(),
+        address: currentCustomer.address || "-",
+        gst: currentCustomer.gst || "",
+        email: currentCustomer.email || "",
+        notes: currentCustomer.notes || "",
+        openingBalance: Number(currentCustomer.openingBalance) || 0,
+        openingBalanceDate: currentCustomer.openingBalanceDate || "",
+        paymentHistory: Array.isArray(currentCustomer.paymentHistory)
+            ? [...currentCustomer.paymentHistory]
+            : []
+    };
+
+    db.customers.push(paymentCustomer);
+}
 
 const customerBills =
     getCustomerBillsForPaymentHistory(paymentCustomer);

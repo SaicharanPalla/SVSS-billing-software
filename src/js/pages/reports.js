@@ -45,7 +45,7 @@ const totalGSTEl = document.getElementById("totalGST");
 
 const cashTotalEl = document.getElementById("cashTotal");
 const upiTotalEl = document.getElementById("upiTotal");
-const cardTotalEl = document.getElementById("cardTotal");
+const cardTotalEl = document.getElementById("bankTransferTotal");
 const creditTotalEl = document.getElementById("creditTotal");
 
 const cgstCollectedEl = document.getElementById("cgstCollected");
@@ -782,28 +782,20 @@ function loadPaymentSummary(
                 .toLowerCase();
 
 
-        switch (mode) {
-
+                switch (mode) {
             case "cash":
-
                 cash += paid;
-
                 break;
-
 
             case "upi":
-
                 upi += paid;
-
                 break;
-
 
             case "card":
-
-                card += paid;
-
+            case "bank transfer":
+            case "banktransfer":
+                card += paid; // This total is displayed as Bank Transfer
                 break;
-
         }
 
 
@@ -1272,17 +1264,19 @@ activityBills.forEach(bill => {
     openingPortion +
     billPaymentOutsideBillDateFilter;
 
-        switch (paymentMode) {
+                switch (paymentMode) {
             case "cash":
                 cash += paymentMethodAmount;
                 break;
-        
+
             case "upi":
                 upi += paymentMethodAmount;
                 break;
-        
+
             case "card":
-                card += paymentMethodAmount;
+            case "bank transfer":
+            case "banktransfer":
+                card += paymentMethodAmount; // Displayed as Bank Transfer
                 break;
         }
 
@@ -1704,7 +1698,7 @@ function loadPaymentChart(reportBills, activityBills = reportBills) {
             labels: [
                 "Cash",
                 "UPI",
-                "Card",
+                "Bank Transfer",
                 "Credit"
             ],
 
@@ -2581,26 +2575,261 @@ function updatePaidStatementTotals(bills, amount) {
             `${receiptRows.length} ${receiptRows.length === 1 ? "receipt" : "receipts"}`;
     }
     }
-    function loadReports(reportBills) {
-        const activityBills = getReportActivityBills(reportBills);
-        const openingBalanceReceiptRows = [];
-    
-        loadSummaryCards(reportBills, activityBills);
-    
-        loadPaymentSummary(
-            reportBills,
-            activityBills,
-            openingBalanceReceiptRows
+    function applyReportReceivedPaymentMethodCorrections(reportBills) {
+    const totals = {
+        cash: parseAmount(cashTotalEl?.textContent || 0),
+        upi: parseAmount(upiTotalEl?.textContent || 0),
+        bank: parseAmount(cardTotalEl?.textContent || 0)
+    };
+
+    function getMethodKey(mode) {
+        const normalized = String(mode || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[\s_-]/g, "");
+
+                if (normalized === "cash") return "cash";
+        if (normalized === "upi") return "upi";
+        if (
+            normalized === "card" ||
+            normalized === "bank transfer" ||
+            normalized === "banktransfer"
+        ) {
+            return "bank";
+        }
+
+        return null;
+    }
+
+    function getPreviouslyCountedBillMethod(mode) {
+        const normalized = String(mode || "")
+            .trim()
+            .toLowerCase();
+
+        // These are the modes the existing bill summary counts directly.
+        if (normalized === "cash") return "cash";
+        if (normalized === "upi") return "upi";
+        if (normalized === "card") return "bank";
+
+        return null;
+    }
+
+    function isInReport(bill) {
+        return reportBills.some(reportBill =>
+            String(reportBill.billNo || "") === String(bill.billNo || "") &&
+            String(reportBill.date || "") === String(bill.date || "")
         );
-    
-        loadOpeningBalanceReceiptDetails(openingBalanceReceiptRows);
-    
-        loadSalesChart(reportBills);
-        loadPaymentChart(reportBills, activityBills);
-        loadTables(reportBills, activityBills);
-        loadCreditStatement(activityBills);
-        loadPaidStatement(activityBills);
-    } 
+    }
+
+    (db.customers || []).forEach(customer => {
+        if (!Array.isArray(customer.paymentHistory)) return;
+
+        customer.paymentHistory.forEach(payment => {
+            const paymentDate = getBillDate({
+                date: payment.date || payment.paymentDate || payment.createdAt
+            });
+
+            if (!isDateInReportRange(paymentDate)) return;
+
+            const amount = Math.max(0, parseAmount(payment.amount));
+            if (amount <= 0) return;
+
+            const paymentMode = String(
+                payment.paymentMode || payment.mode || "Cash"
+            ).trim().toLowerCase();
+
+            // Bank Transfer receipts applied to opening balance are not
+            // included by the existing payment-mode switch.
+            if (payment.allocationType === "openingBalance") {
+                if (getMethodKey(paymentMode) === "bank" &&
+                    paymentMode.replace(/[\s_-]/g, "") === "banktransfer") {
+                    totals.bank += amount;
+                }
+                return;
+            }
+
+            if (payment.allocationType !== "bill") return;
+
+            const linkedBill = bills.find(bill =>
+                String(bill.billNo || "") ===
+                    String(payment.allocationBillNo || "") &&
+                String(bill.date || "") ===
+                    String(payment.allocationBillDate || "")
+            );
+
+            if (!linkedBill || !isInReport(linkedBill)) return;
+
+            // Remove this receipt from the bill's original mode, then
+            // assign it to the method used for this received payment.
+            const previousMethod =
+                getPreviouslyCountedBillMethod(linkedBill.paymentMode);
+
+            if (previousMethod) {
+                totals[previousMethod] -= amount;
+            }
+
+            const actualMethod = getMethodKey(paymentMode);
+
+            if (actualMethod) {
+                totals[actualMethod] += amount;
+            }
+        });
+    });
+
+    if (cashTotalEl) {
+        cashTotalEl.textContent =
+            formatCurrency(Math.max(0, totals.cash));
+    }
+
+    if (upiTotalEl) {
+        upiTotalEl.textContent =
+            formatCurrency(Math.max(0, totals.upi));
+    }
+
+    if (cardTotalEl) {
+        cardTotalEl.textContent =
+            formatCurrency(Math.max(0, totals.bank));
+    }
+}
+    function loadOpeningBalanceDueCard() {
+    const dueCard = document.getElementById("openingBalanceDueCard");
+    if (!dueCard) return;
+
+    const reportEnd = getReportEndDate();
+
+    const openingBalanceDue = (Array.isArray(db.customers) ? db.customers : [])
+        .reduce((totalDue, customer) => {
+            const openingBalance = Math.max(
+                0,
+                parseAmount(customer.openingBalance)
+            );
+
+            if (openingBalance <= 0) return totalDue;
+
+            // Do not include an opening balance before its due date.
+            if (customer.openingBalanceDate) {
+                const openingDate = getBillDate({
+                    date: customer.openingBalanceDate
+                });
+
+                if (
+                    !Number.isNaN(openingDate.getTime()) &&
+                    openingDate > reportEnd
+                ) {
+                    return totalDue;
+                }
+            }
+
+            const history = Array.isArray(customer.paymentHistory)
+                ? customer.paymentHistory
+                : [];
+
+            const paymentsThroughEndDate = history.filter(payment => {
+                const paymentDate = getBillDate({
+                    date:
+                        payment.date ||
+                        payment.paymentDate ||
+                        payment.createdAt
+                });
+
+                return (
+                    !Number.isNaN(paymentDate.getTime()) &&
+                    paymentDate <= reportEnd
+                );
+            });
+
+            const hasExplicitAllocation = paymentsThroughEndDate.some(
+                payment =>
+                    payment.allocationType === "openingBalance" ||
+                    payment.allocationType === "bill"
+            );
+
+            let openingPaid = 0;
+
+            if (hasExplicitAllocation) {
+                // Use the saved allocation when the payment record identifies
+                // whether it was applied to the opening balance or a bill.
+                openingPaid = paymentsThroughEndDate
+                    .filter(payment =>
+                        payment.allocationType === "openingBalance"
+                    )
+                    .reduce(
+                        (sum, payment) => sum + Math.max(0, parseAmount(payment.amount)),
+                        0
+                    );
+            } else {
+                // Legacy records have no allocation field. Infer the opening
+                // portion using the existing payment-history and bill totals.
+                const totalReceivedByEndDate = paymentsThroughEndDate.reduce(
+                    (sum, payment) =>
+                        sum + Math.max(0, parseAmount(payment.amount)),
+                    0
+                );
+
+                const customerBills = bills.filter(bill => {
+                    const sameId =
+                        customer.customerId &&
+                        bill.customerId &&
+                        String(customer.customerId).trim() ===
+                            String(bill.customerId).trim();
+
+                    const sameName =
+                        String(customer.name || "").trim().toLowerCase() ===
+                        String(bill.customer || "").trim().toLowerCase();
+
+                    const customerMobile = String(customer.mobile || "").trim();
+                    const billMobile = String(bill.mobile || "").trim();
+
+                    const sameMobile =
+                        !customerMobile ||
+                        !billMobile ||
+                        customerMobile === "-" ||
+                        billMobile === "-" ||
+                        customerMobile === billMobile;
+
+                    return sameId || (sameName && sameMobile);
+                });
+
+                const billPaidByEndDate = customerBills.reduce(
+                    (sum, bill) => sum + getBillPaidAsOfReportDate(bill),
+                    0
+                );
+
+                openingPaid = Math.max(
+                    totalReceivedByEndDate - billPaidByEndDate,
+                    0
+                );
+            }
+
+            return totalDue + Math.max(openingBalance - openingPaid, 0);
+        }, 0);
+
+    dueCard.textContent = formatCurrency(openingBalanceDue);
+}
+    function loadReports(reportBills) {
+    const activityBills = getReportActivityBills(reportBills);
+    const openingBalanceReceiptRows = [];
+
+    loadSummaryCards(reportBills, activityBills);
+
+    loadPaymentSummary(
+        reportBills,
+        activityBills,
+        openingBalanceReceiptRows
+    );
+
+    loadOpeningBalanceDueCard();
+
+    applyReportReceivedPaymentMethodCorrections(reportBills);
+
+    loadOpeningBalanceReceiptDetails(openingBalanceReceiptRows);
+
+    loadSalesChart(reportBills);
+    loadPaymentChart(reportBills, activityBills);
+    loadTables(reportBills, activityBills);
+    loadCreditStatement(activityBills);
+    loadPaidStatement(activityBills);
+}
        
         function matchOpeningBalanceReceiptCardHeight() {
         const paymentSummaryCard = document.querySelector(

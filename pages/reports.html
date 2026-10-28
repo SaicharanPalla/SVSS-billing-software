@@ -487,17 +487,33 @@
     </div>
 
 </div>
-<!-- Opening Balance Received highlight -->
-<div class="opening-balance-highlight mb-4">
-    <div class="opening-balance-highlight-icon">
-        <i class="bi bi-wallet2"></i>
+<!-- Opening Balance Due and Received cards -->
+<div class="opening-balance-highlights mb-4">
+
+    <div class="opening-balance-highlight opening-balance-due-highlight">
+        <div class="opening-balance-highlight-icon">
+            <i class="bi bi-wallet2"></i>
+        </div>
+
+        <div class="opening-balance-highlight-content">
+            <h3>Opening Balance Due</h3>
+            <strong id="openingBalanceDueCard">Rs. 0.00</strong>
+            <p>Outstanding opening balances as of the selected end date</p>
+        </div>
     </div>
 
-    <div class="opening-balance-highlight-content">
-        <h3>Opening Balance Received</h3>
-        <strong id="openingBalanceReceivedCard">Rs. 0.00</strong>
-        <p>Received from customers' opening balances during this period</p>
+    <div class="opening-balance-highlight opening-balance-received-highlight">
+        <div class="opening-balance-highlight-icon">
+            <i class="bi bi-wallet2"></i>
+        </div>
+
+        <div class="opening-balance-highlight-content">
+            <h3>Opening Balance Received</h3>
+            <strong id="openingBalanceReceivedCard">Rs. 0.00</strong>
+            <p>Received from customers' opening balances during this period</p>
+        </div>
     </div>
+
 </div>
 <!-- ==========================================
      PAYMENT SUMMARY + GST + CHARTS
@@ -532,11 +548,11 @@
     </div>
 
     <div class="payment-item payment-item-stacked">
-        <i class="bi bi-credit-card text-warning payment-item-icon"></i>
-        <div class="payment-item-content">
-            <span class="payment-item-label">Card</span>
-            <strong id="cardTotal">Rs. 0.00</strong>
-        </div>
+    <i class="bi bi-bank text-warning payment-item-icon"></i>
+    <div class="payment-item-content">
+        <span class="payment-item-label">Bank Transfer</span>
+        <strong id="bankTransferTotal">Rs. 0.00</strong>
+    </div>
     </div>
 
     <div class="payment-item payment-item-stacked">

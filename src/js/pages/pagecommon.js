@@ -319,20 +319,22 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================================
 
 async function logout() {
-
     const modal = document.getElementById("logoutModal");
 
     if (!modal) {
-
         console.error("Logout modal not found.");
-
         return;
+    }
 
+    // Place the modal directly under <body> so parent layout styles
+    // cannot clip it.
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
     }
 
     modal.classList.add("show");
-
 }
+window.logout = logout;
 // ================================
 // LOGOUT MODAL EVENTS
 // ================================
