@@ -1760,51 +1760,54 @@ async function saveCurrentBill() {
 
     await refreshDatabase();
 
-    const enteredBillNo = billNo.value.trim();
-
-    // ==============================
-    // CHECK IF BILL ALREADY EXISTS
-    // ==============================
-
-    const existingBillIndex = bills.findIndex(
-        bill => bill.billNo === enteredBillNo
-    );
-
-    // ==============================
-    // CHECK DUPLICATE BILL BOOK NO
-    // ==============================
-    
-    const enteredBookNo = billBookNo.value.trim();
-
-    if (enteredBookNo !== "") {
-
-        const duplicateBook = bills.find((bill, index) =>
-
-            index !== existingBillIndex &&
-            bill.billBookNo &&
-            bill.billBookNo.toUpperCase() === enteredBookNo.toUpperCase()
-
-        );
-
-        if (duplicateBook) {
-
-            showToast(
-                "Bill Book No already exists.",
-                "warning"
-            );
-
-            billBookNo.focus();
-
-            return false;
-
-        }
-
-    }
-
-    await saveCustomer();
-    const contactValue = mobile.value.trim();
-    
-    const billMobile =
+     const enteredBillNo = billNo.value.trim();
+     const enteredBookNo = billBookNo.value.trim();
+     
+     // ==========================================
+     // CHECK DUPLICATE BILL NUMBER
+     // ==========================================
+     
+     const duplicateBill = bills.some(bill =>
+         String(bill.billNo || "").trim().toUpperCase() ===
+         enteredBillNo.toUpperCase()
+     );
+     
+     // ==========================================
+     // CHECK DUPLICATE BILL BOOK NUMBER
+     // ==========================================
+     
+     const duplicateBook = bills.some(bill =>
+         String(bill.billBookNo || "").trim().toUpperCase() ===
+         enteredBookNo.toUpperCase()
+     );
+     
+     // ==========================================
+     // PREVENT DUPLICATE BILL SAVING
+     // ==========================================
+     
+     if (duplicateBill || duplicateBook) {
+     
+         showToast(
+             duplicateBill && duplicateBook
+                 ? "Bill No. and Bill Book No. already exist. New numbers generated."
+                 : duplicateBill
+                     ? "Bill No. already exists. New numbers generated."
+                     : "Bill Book No. already exists. New numbers generated.",
+             "warning"
+         );
+     
+         await generateBillNumber();
+         await generateBillBookNumber();
+     
+         return false;
+     }
+     
+     
+     
+         await saveCustomer();
+         const contactValue = mobile.value.trim();
+         
+         const billMobile =
         /^\d{10}$/.test(contactValue)
             ? contactValue
             : "";
@@ -1886,19 +1889,11 @@ async function saveCurrentBill() {
 
     };
 
-    // ==============================
-    // SAVE OR UPDATE BILL
-    // ==============================
-    
-    if (existingBillIndex >= 0) {
-    
-        bills[existingBillIndex] = bill;
-    
-    } else {
-    
-        bills.push(bill);
-    
-    }
+// ==========================================
+// SAVE NEW BILL ONLY — NEVER OVERWRITE
+// ==========================================
+
+bills.push(bill);
     
     // ==========================================
     // UPDATE NEXT BILL BOOK NO
@@ -3990,6 +3985,28 @@ document.addEventListener("svss:escape", () => {
     productList.style.display = "none";
 
     customerSuggestion.style.display = "none";
+
+});
+// ======================================
+// BILLING KEYBOARD SHORTCUT
+// F2 = Focus Search Product
+// ======================================
+
+document.addEventListener("keydown", function (event) {
+
+    if (event.key === "F2") {
+
+        event.preventDefault();
+
+        const searchProduct =
+            document.getElementById("searchProduct");
+
+        if (searchProduct) {
+            searchProduct.focus();
+            searchProduct.select();
+        }
+
+    }
 
 });
 

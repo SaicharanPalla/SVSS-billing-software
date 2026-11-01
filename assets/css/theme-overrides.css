@@ -102,18 +102,25 @@
    ========================================== */
 
 /* Remove black top gap */
+/* ==========================================
+   GLOBAL BACKGROUND - THEME AWARE
+========================================== */
+
 html,
 body {
     margin: 0 !important;
     padding: 0 !important;
-    background: #f4f6fa !important;
 }
 
-/* Main dashboard should start from top */
+body {
+    background: var(--bg) !important;
+    color: var(--text);
+}
+
 .main {
     margin-top: 0 !important;
     padding-top: 0 !important;
-    background: #f4f6fa !important;
+    background: var(--bg) !important;
 }
 
 /* Fix Today's Sales amount alignment */
@@ -160,4 +167,42 @@ body {
 #todaySales {
     font-size: 22px !important;
     letter-spacing: -1px !important;
+}
+/* ==========================================
+   MOBILE HEADER - FOLLOW GLOBAL THEME
+========================================== */
+
+.mobile-header {
+    background: var(--theme) !important;
+    color: #ffffff !important;
+}
+
+.mobile-header .menu-btn,
+.mobile-header .mobile-title,
+.mobile-header .menu-btn i {
+    color: #ffffff !important;
+}
+/* ==========================================
+   GLOBAL MOBILE HEADER THEME FIX
+========================================== */
+
+body[data-theme="blue"] .mobile-header {
+    background: linear-gradient(135deg, #0b172a, #2563eb) !important;
+}
+
+body[data-theme="green"] .mobile-header {
+    background: linear-gradient(135deg, #0b172a, #16a34a) !important;
+}
+
+body[data-theme="purple"] .mobile-header {
+    background: linear-gradient(135deg, #0b172a, #9333ea) !important;
+}
+
+body[data-theme="orange"] .mobile-header {
+    background: linear-gradient(135deg, #ae4b2a, #f97316) !important;
+}
+
+.mobile-header,
+.mobile-header * {
+    color: #ffffff !important;
 }

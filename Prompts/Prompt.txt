@@ -1,0 +1,66 @@
+I need help maintaining and improving my SVSS Billing Software. Please read this prompt first, then inspect the current files I provide before recommending or changing anything.
+
+## Project overview
+
+- Application name: SVSS Billing Software.
+- It is a billing and customer-management application built with HTML, CSS, and JavaScript, packaged for Windows using Electron.
+- The project has also had an online/browser version, hosted on Netlify, with cloud data stored using Supabase.
+- The desktop app and browser app may use different data-access paths. The desktop app may expose database functions through Electron’s `window.api`; the browser version may provide a browser-compatible API. Confirm the current implementation in the files I upload.
+- The project has included pages for Dashboard, Products, Customers, Billing, Bill History, Reports, and Settings.
+- The software stores customers, bills, products, payment history, settings, and related business data. Some data may be local to a computer, while cloud synchronization may provide data across devices. Inspect the current code to confirm where and how each type of data is stored.
+
+## Most important working rules
+
+1. Read the current files I upload before proposing changes. Do not rely on code from older conversations or assume that earlier fixes are still present.
+2. Treat my uploaded current project as the source of truth. If a required file or data structure is missing, tell me exactly which file you need.
+3. First explain the problem in plain language and identify the specific file and function or code section responsible.
+4. Make only the changes needed for the issue I describe. Preserve existing working behavior and visual design unless I ask to change them.
+5. Do not change database schemas, customer or bill records, payment history, or cloud data unless I explicitly request it. Before proposing a data migration or bulk repair, explain what it would change and how to make a backup.
+6. Do not edit unrelated pages or files. In particular, avoid changing `main.js`, customer, billing, reports, or database logic unless the issue requires it and the relevant current code has been inspected.
+7. Avoid duplicate functions, duplicate variables, guessed field names, and broad rewrites.
+8. When giving manual code instructions, use exact “Find this → Replace with this” directions. Provide the complete replacement function when a function must change, and state exactly where it goes.
+9. If you can edit the uploaded project directly, make a focused change and summarize the files changed. Do not run tests or build commands unless I ask you to verify or test.
+10. Never ask me to paste passwords, Supabase service-role keys, tokens, or other secrets. If credentials are relevant, explain how to check configuration without sharing the secret.
+
+## Important business behavior to preserve
+
+- A bill’s sale belongs to its original bill date. Receiving payment later must not move the sale to the payment date.
+- Payment reports should use actual payment history and payment dates when reporting money received.
+- A payment may be allocated to an opening balance or to a selected bill. Preserve the app’s current allocation behavior and payment summary unless I specifically ask to change it.
+- Reports may include sales, bills, customers, products sold, GST, paid bills, outstanding bills, payment methods, bill payments, and opening-balance receipts. Confirm the current data fields and calculations before changing any report.
+- Payment methods currently include or have included Cash, UPI, Bank Transfer, and Credit. Check the current code for exact values and labels. Do not treat bank transfers as cash or change historical payment records unless explicitly requested.
+- Customers may not have a mobile number. Blank mobile numbers should not cause unrelated customers to be merged or prevent customers from being distinguished. Use the app’s actual customer ID and relationships after inspecting the code.
+- Customers created from the Billing page should remain editable from the Customers page if that behavior exists in the current version.
+- The bill book number and bill number should save and display consistently. Do not reset or regenerate existing numbers as part of an unrelated change.
+
+## Local data, cloud, and backup considerations
+
+- Determine whether the issue is in the Electron desktop app, the online website, or both. Do not assume they run identical code.
+- Inspect the current cloud-sync and local-database code before explaining synchronization or changing it.
+- Never claim cloud synchronization is guaranteed. Explain what must be checked, and distinguish local data from cloud data.
+- Before any operation that could replace, delete, merge, or bulk-edit records, recommend making a separate backup of both the project and the actual database/data file.
+- Do not assume copying the project folder also copies Electron’s local database. Find the actual storage path from the current source code.
+
+## Build and troubleshooting notes
+
+- The Windows build uses `npm run build` with electron-builder.
+- A previous build attempt failed with `EBUSY` because `dist\win-unpacked.tmp\resources\default_app.asar` was locked by another process. If this recurs, diagnose which process holds the file. Do not repeatedly run the build or recommend deleting a locked file.
+- An earlier Electron download also encountered a TLS/network error. Diagnose the current error from its exact output; do not assume antivirus or proxy settings are the cause.
+- Do not recommend `npm audit fix --force` without examining the dependency changes and explaining the risk.
+
+## How to handle my issue
+
+When I describe an issue:
+
+1. Restate what you understand in one or two sentences.
+2. Inspect the relevant current files and trace the behavior to its source.
+3. Tell me what is confirmed by the code and what remains uncertain.
+4. Give the smallest safe fix that addresses the issue.
+5. If code is provided, make it complete and identify the exact file and insertion/replacement location.
+6. Explain how I can check the result manually. Do not say the issue is fixed until the result has actually been confirmed.
+
+Here is the issue I need help with:
+[Describe the problem here]
+
+Here are the current project files, screenshots, logs, or error messages:
+[Attach or paste them here]

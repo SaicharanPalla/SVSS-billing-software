@@ -11,6 +11,16 @@ let bills = [];
 let deleteBillIndex = -1;
 let selectedBill = null;
 
+// =================================
+// BILL HISTORY PAGINATION
+// =================================
+
+let currentHistoryPage = 1;
+let currentHistoryBills = [];
+const HISTORY_PAGE_SIZE = 10;
+
+let activeHistoryFilter = "all";
+let selectedBillNumbers = new Set();
 // ==============================
 // Safe Text Setter
 // ==============================
@@ -231,58 +241,227 @@ async function loadBills() {
     }
 
     await refreshDatabase();
-    displayBills(bills);
+    refreshHistoryFilters();
 }
 
 // ==============================
 // PART 2 STARTS HERE
 // ==============================
+// ==========================================
+// HISTORY FILTERS AND BULK SELECTION
+// ==========================================
+
+function getFilteredHistoryBills() {
+    const keyword = (searchBill?.value || "").trim().toLowerCase();
+
+    let result = [...bills];
+
+    if (activeHistoryFilter === "pending") {
+        result = result.filter(b => parseAmount(b.balanceDue) > 0);
+    } else if (activeHistoryFilter === "paid") {
+        result = result.filter(b => parseAmount(b.balanceDue) <= 0);
+    } else if (activeHistoryFilter === "delayed") {
+        result = result.filter(b => b.isDelayed === true);
+    }
+
+    if (keyword) {
+        const normalized = keyword.replace(/^b[\s-]*/i, "").trim();
+
+        const exactBookMatches = result.filter(b =>
+            String(b.billBookNo || "")
+                .toLowerCase()
+                .replace(/^b[\s-]*/i, "")
+                .trim() === normalized
+        );
+
+        if (exactBookMatches.length) {
+            return exactBookMatches;
+        }
+
+        result = result.filter(b =>
+            String(b.billNo || "").toLowerCase().includes(keyword) ||
+            String(b.billBookNo || "").toLowerCase().includes(keyword) ||
+            String(b.customer || "").toLowerCase().includes(keyword) ||
+            String(b.mobile || "").toLowerCase().includes(keyword) ||
+            String(getBillCustomerGST(b) || "").toLowerCase().includes(keyword)
+        );
+    }
+
+    return result;
+}
+
+function refreshHistoryFilters() {
+    currentHistoryPage = 1;
+    displayBills(getFilteredHistoryBills());
+    updateSelectedBillCount();
+}
+
+
+function updateSelectedBillCount() {
+
+    const countElement =
+        document.getElementById("selectedBillCount");
+
+    const toolbarCheckbox =
+        document.getElementById("selectAllBills");
+
+    const tableCheckbox =
+        document.getElementById("selectAllVisibleBills");
+
+    // Total selection across all pages
+    if (countElement) {
+        countElement.textContent =
+            `${selectedBillNumbers.size} bills selected`;
+    }
+
+    // Only bills displayed on the current page
+    const startIndex =
+        (currentHistoryPage - 1) * HISTORY_PAGE_SIZE;
+
+    const pageBills = currentHistoryBills.slice(
+        startIndex,
+        startIndex + HISTORY_PAGE_SIZE
+    );
+
+    const selectedOnPage = pageBills.filter(bill =>
+        selectedBillNumbers.has(String(bill.billNo))
+    ).length;
+
+    const allSelected =
+        pageBills.length > 0 &&
+        selectedOnPage === pageBills.length;
+
+    const partiallySelected =
+        selectedOnPage > 0 &&
+        selectedOnPage < pageBills.length;
+
+    // Synchronize both Select All checkboxes
+    [toolbarCheckbox, tableCheckbox].forEach(checkbox => {
+
+        if (!checkbox) return;
+
+        checkbox.checked = allSelected;
+        checkbox.indeterminate = partiallySelected;
+
+    });
+}
+
+function updateHistorySummary() {
+    const total = bills.length;
+
+    const pending = bills.filter(
+        bill => parseAmount(bill.balanceDue) > 0
+    );
+
+    const paid = bills.filter(
+        bill => parseAmount(bill.balanceDue) <= 0
+    );
+
+    const delayed = bills.filter(
+        bill => bill.isDelayed === true
+    );
+
+    const outstanding = bills.reduce(
+        (sum, bill) => sum + Math.max(0, parseAmount(bill.balanceDue)),
+        0
+    );
+
+    const setSummary = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    };
+
+    setSummary("totalBills", total);
+    setSummary("summaryPendingBills", pending.length);
+    setSummary("summaryDelayedBills", delayed.length);
+    setSummary("summaryPaidBills", paid.length);
+    setSummary("summaryOutstanding", formatCurrency(outstanding));
+}
 // ==============================
-// DISPLAY BILLS
+// DISPLAY BILLS WITH PAGINATION
 // ==============================
+
 
 function displayBills(billList) {
 
+    // Keep the complete filtered list
+    // Sort by Bill Book Number - ascending
+const sortedBillList = [...billList].sort((a, b) => {
+
+    const getNumber = bill =>
+        Number(
+            String(bill.billBookNo || "")
+                .match(/\d+/)?.[0] || Number.MAX_SAFE_INTEGER
+        );
+
+    return getNumber(a) - getNumber(b);
+});
+
+// Keep the complete sorted list
+currentHistoryBills = [...sortedBillList];
+    updateHistorySummary();
+
     historyTableBody.innerHTML = "";
 
-    totalBills.innerText = billList.length;
+    totalBills.innerText = bills.length;
 
-    if (billList.length === 0) {
+    const totalPages = Math.max(
+        1,
+        Math.ceil(sortedBillList.length / HISTORY_PAGE_SIZE)
+    );
+
+    // Keep current page within available pages
+    currentHistoryPage = Math.min(
+        currentHistoryPage,
+        totalPages
+    );
+
+    const startIndex =
+        (currentHistoryPage - 1) * HISTORY_PAGE_SIZE;
+
+    // Display only 10 bills
+    const pageBills = sortedBillList.slice(
+        startIndex,
+        startIndex + HISTORY_PAGE_SIZE
+    );
+
+    if (sortedBillList.length === 0) {
 
         historyTableBody.innerHTML = `
-        <tr>
-            <td colspan="10" class="text-center text-muted">
-                No Bills Found
-            </td>
-        </tr>
+            <tr>
+                <td colspan="12" class="text-center text-muted">
+                    No Bills Found
+                </td>
+            </tr>
         `;
 
+        renderHistoryPagination(0);
         return;
-
     }
 
-    billList.forEach((bill, index) => {
+    pageBills.forEach((bill, index) => {
 
         const gst = parseAmount(bill.gstTotal);
 
         historyTableBody.innerHTML += `
 
 <tr>
-   
-   <td>${index + 1}</td>
+    <td class="text-center">
+        <input
+            type="checkbox"
+            class="bill-select-checkbox"
+            value="${bill.billNo}"
+            ${selectedBillNumbers.has(String(bill.billNo)) ? "checked" : ""}>
+    </td>
+
+    <td>${startIndex + index + 1}</td>
 
     <td>
-
-    <strong>${bill.billNo}</strong>
-
-    <br>
-
-    <small class="text-info fw-semibold">
-
-        Book : ${bill.billBookNo || "-"}
-
-    </small>
-
+        <strong>${bill.billNo}</strong>
+        <br>
+        <small class="text-info fw-semibold">
+            Book : ${bill.billBookNo || "-"}
+        </small>
     </td>
 
     <td>${bill.customer}</td>
@@ -294,38 +473,25 @@ function displayBills(billList) {
     <td>${formatCurrency(bill.gstTotal)}</td>
 
     <td>${formatCurrency(bill.grandTotal)}</td>
-    
+
     <td>${formatCurrency(bill.amountPaid)}</td>
-    
+
     <td>${formatCurrency(bill.balanceDue)}</td>
 
     <td>
-
     ${(() => {
+    const balance = parseAmount(bill.balanceDue);
 
-        const balance = parseAmount(bill.balanceDue);
+    if (bill.isDelayed === true) {
+        return `<span class="badge bg-danger">Delayed</span>`;
+    }
 
-        const status =
-            balance <= 0
-                ? "Paid"
-                : "Pending";
+    if (balance <= 0) {
+        return `<span class="badge bg-success">Paid</span>`;
+    }
 
-        return `
-
-            <span class="badge ${
-                status === "Paid"
-                    ? "bg-success"
-                    : "bg-warning text-dark"
-            }">
-
-                ${status}
-
-            </span>
-
-        `;
-
-    })()}
-
+    return `<span class="badge bg-warning text-dark">Pending</span>`;
+})()}
 </td>
 
     <td>
@@ -333,17 +499,17 @@ function displayBills(billList) {
         <button
             class="btn btn-primary btn-sm me-1"
             onclick="viewBill('${bill.billNo}')">
-        
+
             <i class="bi bi-eye"></i>
-        
+
         </button>
-        
+
         <button
             class="btn btn-danger btn-sm"
             onclick="deleteBill('${bill.billNo}')">
-        
+
             <i class="bi bi-trash"></i>
-        
+
         </button>
 
     </td>
@@ -353,106 +519,172 @@ function displayBills(billList) {
 `;
 
     });
+    renderHistoryPagination(sortedBillList.length);
+    updateSelectedBillCount();
+}
+ 
+// ==========================================
+// BILL HISTORY PAGE NUMBERS
+// ==========================================
 
+function renderHistoryPagination(totalCount) {
+
+    const container = document.getElementById("historyPagination");
+
+    if (!container) {
+        console.error("historyPagination container not found.");
+        return;
+    }
+
+    const totalPages = Math.ceil(
+        totalCount / HISTORY_PAGE_SIZE
+    );
+
+    const start = totalCount === 0
+        ? 0
+        : (currentHistoryPage - 1) * HISTORY_PAGE_SIZE + 1;
+
+    const end = Math.min(
+        currentHistoryPage * HISTORY_PAGE_SIZE,
+        totalCount
+    );
+
+    if (totalPages <= 1) {
+
+        container.innerHTML = `
+            <div class="history-page-info">
+                Showing ${totalCount} bills
+            </div>
+        `;
+
+        return;
+    }
+
+    // GROUP OF 4 PAGES
+    const PAGES_PER_GROUP = 4;
+
+    const groupStart =
+        Math.floor((currentHistoryPage - 1) / PAGES_PER_GROUP)
+        * PAGES_PER_GROUP + 1;
+
+    const groupEnd = Math.min(
+        groupStart + PAGES_PER_GROUP - 1,
+        totalPages
+    );
+
+    let html = `
+        <div class="history-page-info">
+            Showing ${start}–${end} of ${totalCount} bills
+        </div>
+
+        <div class="history-page-buttons">
+
+            <!-- PREVIOUS GROUP -->
+            <button
+                class="btn btn-outline-secondary btn-sm"
+                ${groupStart === 1 ? "disabled" : ""}
+                onclick="changeHistoryPageGroup(-1)">
+
+                <i class="bi bi-chevron-left"></i>
+
+            </button>
+    `;
+
+    // DISPLAY ONLY 4 PAGE NUMBERS
+    for (let page = groupStart; page <= groupEnd; page++) {
+
+        html += `
+            <button
+                class="btn btn-sm ${
+                    page === currentHistoryPage
+                        ? "btn-primary"
+                        : "btn-outline-secondary"
+                }"
+                onclick="changeHistoryPage(${page})">
+
+                ${page}
+
+            </button>
+        `;
+    }
+
+    html += `
+            <!-- NEXT GROUP -->
+            <button
+                class="btn btn-outline-secondary btn-sm"
+                ${groupEnd === totalPages ? "disabled" : ""}
+                onclick="changeHistoryPageGroup(1)">
+
+                <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+        </div>
+    `;
+
+    container.innerHTML = html;
 }
 
+
+// ==========================================
+// CHANGE BILL HISTORY PAGE
+// ==========================================
+
+window.changeHistoryPage = function(page) {
+
+    const totalPages = Math.ceil(
+        currentHistoryBills.length / HISTORY_PAGE_SIZE
+    );
+
+    if (page < 1 || page > totalPages) {
+        return;
+    }
+
+    currentHistoryPage = page;
+
+    displayBills(currentHistoryBills);
+};
+
+
+// ==========================================
+// CHANGE PAGINATION GROUP
+// ==========================================
+
+window.changeHistoryPageGroup = function(direction) {
+
+    const PAGES_PER_GROUP = 4;
+
+    const totalPages = Math.ceil(
+        currentHistoryBills.length / HISTORY_PAGE_SIZE
+    );
+
+    const groupStart =
+        Math.floor((currentHistoryPage - 1) / PAGES_PER_GROUP)
+        * PAGES_PER_GROUP + 1;
+
+    const newPage = direction === 1
+        ? groupStart + PAGES_PER_GROUP
+        : groupStart - 1;
+
+    if (newPage < 1 || newPage > totalPages) {
+        return;
+    }
+
+    currentHistoryPage = newPage;
+
+    displayBills(currentHistoryBills);
+};
+
+
+    
 // ==============================
 // SEARCH BILLS
 // ==============================
 
-searchBill.addEventListener("keyup", function () {
-
-    const keyword = this.value
-        .trim()
-        .toLowerCase();
-
-    // If search box is empty
-    if (!keyword) {
-
-        displayBills(bills);
-
-        return;
-
-    }
-
-    // ==========================================
-    // BOOK NUMBER SEARCH
-    // Example:
-    // 410  → B-410
-    // B-410 → B-410
-    // ==========================================
-
-    const normalizedKeyword = keyword
-        .replace(/^b[\s-]*/i, "")
-        .trim();
-
-    const bookMatches = bills.filter(bill => {
-
-        const bookNo = String(
-            bill.billBookNo || ""
-        )
-        .toLowerCase()
-        .replace(/^b[\s-]*/i, "")
-        .trim();
-
-        return bookNo === normalizedKeyword;
-
-    });
-
-    // ==========================================
-    // PRIORITY:
-    // If exact Bill Book No exists,
-    // SHOW ONLY THAT BILL
-    // ==========================================
-
-    if (bookMatches.length > 0) {
-
-        displayBills(bookMatches);
-
-        return;
-
-    }
-
-    // ==========================================
-    // NORMAL SEARCH
-    // Bill No / Customer / Mobile / Book No
-    // ==========================================
-
-    const filtered = bills.filter(bill =>
-
-        (bill.billNo || "")
-            .toLowerCase()
-            .includes(keyword)
-
-        ||
-
-        (bill.billBookNo || "")
-            .toLowerCase()
-            .includes(keyword)
-
-        ||
-
-        (bill.customer || "")
-            .toLowerCase()
-            .includes(keyword)
-
-        ||
-
-        (bill.mobile || "")
-            .toLowerCase()
-            .includes(keyword)
-        
-        ||
-
-        (bill.gst || "")
-            .toLowerCase()
-            .includes(keyword)    
-
-    );
-
-    displayBills(filtered);
-
+searchBill.addEventListener("input", () => {
+    refreshHistoryFilters();
 });
+
 // ==============================
 // PART 3 STARTS HERE
 // ==============================
@@ -1628,13 +1860,12 @@ document
 // SAME STRUCTURE AS BILLING PAGE
 // ==============================
 
-document
-    .getElementById("reprintBill")
-    .addEventListener(
-        "click",
-        async function () {
+async function generateBillPDF(billToPrint = selectedBill) {
 
-            try {
+    const previousSelectedBill = selectedBill;
+    selectedBill = billToPrint;
+
+    try {
 
                 // ==========================================
                 // CHECK SELECTED BILL
@@ -3668,34 +3899,291 @@ document
                     `${selectedBill.billNo}_${reportDate}(report).pdf`;
 
 
-                doc.save(
-                    pdfFileName
-                );
+                // SAVE PDF
+doc.save(pdfFileName);
 
+return true;
 
-                showToast(
-                    "Bill Reprinted Successfully.",
-                    "success"
-                );
+} catch (error) {
 
+    console.error("Reprint Bill Error:", error);
 
-            } catch (error) {
+    showToast(
+        "Failed to reprint bill.",
+        "error"
+    );
 
-                console.error(
-                    "Reprint Bill Error:",
-                    error
-                );
+    return false;
 
+} finally {
 
-                showToast(
-                    "Failed to reprint bill.",
-                    "error"
-                );
+    selectedBill = previousSelectedBill;
 
+}
+
+}
+// ==========================================
+// SELECTED BILLS - COMBINED STATEMENT PDF
+// ==========================================
+
+async function generateSelectedBillsStatement() {
+
+    if (!selectedBillNumbers || selectedBillNumbers.size === 0) {
+        showToast("Please select bills first.", "error");
+        return;
+    }
+
+    const selectedNumbers = new Set(
+        [...selectedBillNumbers].map(String)
+    );
+
+    const selectedBills = bills
+    .filter(bill =>
+        selectedNumbers.has(String(bill.billNo))
+    )
+    .sort((a, b) => {
+
+        const getBookNumber = bill => {
+            const match = String(bill.billBookNo || "").match(/\d+/);
+
+            return match
+                ? Number(match[0])
+                : Number.MAX_SAFE_INTEGER;
+        };
+
+        return getBookNumber(a) - getBookNumber(b);
+
+    });
+
+    if (selectedBills.length === 0) {
+        showToast("No selected bills found.", "error");
+        return;
+    }
+
+    try {
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF("landscape", "mm", "a4");
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        const statementDate = new Date().toLocaleDateString("en-IN");
+
+        // SHOP HEADING
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(17);
+
+        doc.text(
+            "SRI VENKATA SIVA SAI",
+            pageWidth / 2,
+            15,
+            { align: "center" }
+        );
+
+        doc.setFontSize(11);
+
+        doc.text(
+            "CLOTH & MATCHINGS",
+            pageWidth / 2,
+            21,
+            { align: "center" }
+        );
+
+        doc.setFontSize(14);
+
+        doc.text(
+            "SELECTED BILLS STATEMENT",
+            pageWidth / 2,
+            30,
+            { align: "center" }
+        );
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+
+        doc.text(
+            `Statement Date: ${statementDate}`,
+            pageWidth / 2,
+            37,
+            { align: "center" }
+        );
+
+        // STATEMENT ROWS
+        const rows = [];
+
+        let grandTotal = 0;
+
+        selectedBills.forEach((bill, index) => {
+
+            const itemsText = (bill.items || [])
+                .map(item => {
+
+                    const quantity =
+                        item.unit === "Meter"
+                            ? Number(item.qty || 0).toFixed(2)
+                            : String(parseInt(item.qty || 0) || 0);
+
+                    return `${item.productName || "-"} - ${quantity} ${item.unit || ""}`;
+
+                })
+                .join("\n");
+
+            const billTotal = parseAmount(
+                bill.grandTotal ??
+                bill.totalAmount ??
+                bill.total ??
+                0
+            );
+
+            grandTotal += billTotal;
+
+            rows.push([
+                index + 1,
+                bill.customerName || bill.customer || "-",
+                itemsText || "-",
+                formatCurrency(billTotal)
+            ]);
+
+        });
+
+        // TABLE
+        doc.autoTable({
+
+            startY: 43,
+
+            head: [[
+                "S.No",
+                "Customer Name",
+                "Purchased Items & Quantity",
+                "Bill Total"
+            ]],
+
+            body: rows,
+
+            theme: "grid",
+
+            styles: {
+                font: "helvetica",
+                fontSize: 9,
+                cellPadding: 3,
+                valign: "middle",
+                overflow: "linebreak"
+            },
+
+            headStyles: {
+                fontStyle: "bold",
+                halign: "center"
+            },
+
+            columnStyles: {
+                0: { cellWidth: 15, halign: "center" },
+                1: { cellWidth: 55 },
+                2: { cellWidth: 145 },
+                3: { cellWidth: 40, halign: "right" }
+            },
+
+            margin: {
+                left: 15,
+                right: 15
             }
 
+        });
+
+        // TOTALS
+        let finalY = doc.lastAutoTable.finalY + 10;
+
+        if (finalY > doc.internal.pageSize.getHeight() - 20) {
+            doc.addPage();
+            finalY = 20;
         }
-    );
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+
+        doc.text(
+            `Total Selected Bills: ${selectedBills.length}`,
+            15,
+            finalY
+        );
+
+        doc.text(
+            `Grand Total: ${formatCurrency(grandTotal)}`,
+            pageWidth - 15,
+            finalY,
+            { align: "right" }
+        );
+
+        // SAVE ONE COMBINED PDF
+        doc.save(
+            `Selected_Bills_Statement_${Date.now()}.pdf`
+        );
+
+        showToast(
+            "Selected Bills Statement generated successfully.",
+            "success"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Selected Bills Statement Error:",
+            error
+        );
+
+        showToast(
+            "Failed to generate selected bills statement.",
+            "error"
+        );
+
+    }
+
+}
+
+
+// ======================================
+// EXISTING REPRINT BILL BUTTON
+// ======================================
+
+document.getElementById("reprintBill")
+    ?.addEventListener("click", async function () {
+
+        const success = await generateBillPDF(selectedBill);
+
+        if (success) {
+            showToast(
+                "Bill Reprinted Successfully.",
+                "success"
+            );
+        }
+
+    });
+
+
+// ======================================
+// PRINT SELECTED BILLS
+// ======================================
+
+let printSelectedInProgress = false;
+
+document.getElementById("printSelectedBtn")
+    ?.addEventListener("click", async function () {
+
+        if (this.disabled) return;
+
+        const button = this;
+        const originalHTML = button.innerHTML;
+
+        button.disabled = true;
+        button.textContent = "Preparing Statement...";
+
+        try {
+            await generateSelectedBillsStatement();
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+
+    });
 
 // ==============================
 // PART 5 STARTS HERE
@@ -3827,6 +4315,278 @@ window.addEventListener("beforeunload", () => {
 
     saveDatabase().catch((err) => {
         console.error("Error saving database:", err);
+    });
+});
+
+async function updateSelectedDelayStatus(isDelayed) {
+
+    if (selectedBillNumbers.size === 0) {
+        showToast("Please select bills first.", "error");
+        return;
+    }
+
+    const previousBills = bills.map(bill => ({ ...bill }));
+    const selectedNumbers = new Set(selectedBillNumbers);
+
+    try {
+        bills.forEach(bill => {
+            if (selectedNumbers.has(String(bill.billNo))) {
+                bill.isDelayed = isDelayed;
+            }
+        });
+
+        db.bills = bills;
+
+        await saveDatabase();
+
+        refreshHistoryFilters();
+
+        showToast(
+            isDelayed
+                ? "Selected bills marked as delayed."
+                : "Delay status cleared.",
+            "success"
+        );
+
+    } catch (error) {
+        console.error("Delay update failed:", error);
+
+        bills = previousBills;
+        db.bills = bills;
+
+        refreshHistoryFilters();
+
+        showToast("Unable to save delay status.", "error");
+    }
+}
+
+// ==========================================
+// BULK CHECKBOX SELECTION
+// ==========================================
+
+
+document.addEventListener("change", function (e) {
+
+    // Individual bill checkbox
+    if (e.target.matches(".bill-select-checkbox")) {
+
+        const billNo = String(e.target.value);
+
+        if (e.target.checked) {
+            selectedBillNumbers.add(billNo);
+        } else {
+            selectedBillNumbers.delete(billNo);
+        }
+
+        updateSelectedBillCount();
+        return;
+    }
+
+    // TOP SELECT ALL - ALL BILLS
+    if (e.target.id === "selectAllBills") {
+
+        bills.forEach(bill => {
+            if (e.target.checked) {
+                selectedBillNumbers.add(String(bill.billNo));
+            } else {
+                selectedBillNumbers.delete(String(bill.billNo));
+            }
+        });
+
+        displayBills(currentHistoryBills);
+        updateSelectedBillCount();
+        return;
+    }
+
+    // TABLE HEADER SELECT ALL - CURRENT PAGE ONLY
+    if (e.target.id === "selectAllVisibleBills") {
+
+        const startIndex =
+            (currentHistoryPage - 1) * HISTORY_PAGE_SIZE;
+
+        const visiblePageBills = currentHistoryBills.slice(
+            startIndex,
+            startIndex + HISTORY_PAGE_SIZE
+        );
+
+        visiblePageBills.forEach(bill => {
+            if (e.target.checked) {
+                selectedBillNumbers.add(String(bill.billNo));
+            } else {
+                selectedBillNumbers.delete(String(bill.billNo));
+            }
+        });
+
+        displayBills(currentHistoryBills);
+        updateSelectedBillCount();
+    }
+
+});
+
+
+
+
+document.getElementById("markDelayedBtn")
+    ?.addEventListener("click", () => {
+        updateSelectedDelayStatus(true);
+    });
+
+document.getElementById("clearDelayedBtn")
+    ?.addEventListener("click", () => {
+        updateSelectedDelayStatus(false);
+    });
+
+
+
+// ==========================================
+// BULK DELETE MODAL AND ACTIONS
+// ==========================================
+
+const bulkDeleteModal = document.getElementById("bulkDeleteModal");
+
+// CLOSE MODAL
+function closeBulkDeleteModal() {
+
+    if (!bulkDeleteModal) return;
+
+    bulkDeleteModal.classList.remove("show");
+
+    // Explicitly release the page from the overlay
+    bulkDeleteModal.style.display = "none";
+    bulkDeleteModal.style.pointerEvents = "none";
+
+    document.body.classList.remove("modal-open");
+    document.body.style.removeProperty("overflow");
+
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+        backdrop.remove();
+    });
+}
+// OPEN MODAL - ONLY ONE LISTENER
+document.getElementById("deleteSelectedBtn")
+    ?.addEventListener("click", () => {
+
+        if (selectedBillNumbers.size === 0) {
+            showToast("Please select bills first.", "error");
+            return;
+        }
+
+        const message = document.getElementById("bulkDeleteMessage");
+
+        if (message) {
+            message.textContent =
+                `Are you sure you want to permanently delete ${selectedBillNumbers.size} selected bills?`;
+        }
+
+        if (bulkDeleteModal) {
+    bulkDeleteModal.style.display = "flex";
+    bulkDeleteModal.style.pointerEvents = "auto";
+    bulkDeleteModal.classList.add("show");
+}
+    });
+
+// CANCEL BUTTON
+document.getElementById("cancelBulkDelete")
+    ?.addEventListener("click", closeBulkDeleteModal);
+
+// CLOSE (X) BUTTON
+document.getElementById("closeBulkDelete")
+    ?.addEventListener("click", closeBulkDeleteModal);
+
+// CLICK OUTSIDE POPUP
+bulkDeleteModal?.addEventListener("click", function (event) {
+
+    if (event.target === bulkDeleteModal) {
+        closeBulkDeleteModal();
+    }
+
+});
+
+// ==========================================
+// PERMANENT BULK DELETE
+// ==========================================
+
+
+let bulkDeleteInProgress = false;
+
+document.getElementById("confirmBulkDelete")
+    ?.addEventListener("click", async function () {
+
+        if (bulkDeleteInProgress || selectedBillNumbers.size === 0) {
+            return;
+        }
+
+        bulkDeleteInProgress = true;
+
+        const button = this;
+        const originalHTML = button.innerHTML;
+
+        const originalBills = bills;
+        const selectedNumbers = new Set(selectedBillNumbers);
+        const deleteCount = selectedNumbers.size;
+
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        try {
+
+            bills = bills.filter(bill =>
+                !selectedNumbers.has(String(bill.billNo))
+            );
+
+            db.bills = bills;
+
+            await saveDatabase();
+
+            // Only clear selection and close after successful save
+            selectedBillNumbers.clear();
+
+            closeBulkDeleteModal();
+            refreshHistoryFilters();
+
+            showToast(
+                `${deleteCount} bills permanently deleted.`,
+                "success"
+            );
+
+        } catch (error) {
+
+            console.error("Bulk delete failed:", error);
+
+            bills = originalBills;
+            db.bills = bills;
+
+            refreshHistoryFilters();
+
+            showToast(
+                "Deletion failed. Your original bills have been restored on screen.",
+                "error"
+            );
+
+        } finally {
+
+            bulkDeleteInProgress = false;
+
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+    });
+
+
+// History tabs
+document.querySelectorAll(".history-tab").forEach(tab => {
+
+    tab.addEventListener("click", () => {
+
+        document.querySelectorAll(".history-tab").forEach(t =>
+            t.classList.remove("active")
+        );
+
+        tab.classList.add("active");
+
+        activeHistoryFilter = tab.dataset.filter || "all";
+
+        refreshHistoryFilters();
     });
 });
 // ==============================

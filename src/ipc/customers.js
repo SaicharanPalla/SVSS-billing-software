@@ -2227,8 +2227,18 @@ function loadBillHistory(customer) {
     // BILL ROWS
     // ==========================================
 
-    customer.bills.forEach(
-        bill => {
+    const sortedCustomerBills = [...customer.bills].sort((a, b) => {
+    const getBookNo = bill =>
+        parseInt(
+            String(bill.billBookNo || "").match(/\d+/)?.[0] || "0",
+            10
+        );
+
+    return getBookNo(a) - getBookNo(b);
+});
+
+sortedCustomerBills.forEach(
+    bill => {
 
             const row =
                 document.createElement(
@@ -4635,7 +4645,17 @@ if (openingBalance > 0) {
 // NORMAL BILL ROWS
 // ======================================
 
-statementBills.forEach((bill, index) => {
+const sortedStatementBills = [...statementBills].sort((a, b) => {
+    const getBookNo = bill =>
+        parseInt(
+            String(bill.billBookNo || "").match(/\d+/)?.[0] || "0",
+            10
+        );
+
+    return getBookNo(a) - getBookNo(b);
+});
+
+sortedStatementBills.forEach((bill, index) => {
 
     const total =
         Number(

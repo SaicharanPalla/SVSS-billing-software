@@ -1,0 +1,3 @@
+## Cloud sync recovery rule
+
+If local and cloud records do not match, treat this as a possible data conflict. First inspect the current sync code and collect read-only diagnostics, such as the signed-in account, sync status, timestamps, and record counts. Do not run old browser-console scripts or SQL from memory. Clearly label each proposed command as read-only or data-changing, state which direction it transfers data, and explain the risk. Before any data-changing action, preserve backups of both local and cloud data and compare them. Never assume that local or cloud is automatically the correct copy.
