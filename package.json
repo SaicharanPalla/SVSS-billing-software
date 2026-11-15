@@ -1,6 +1,6 @@
 {
   "name": "billing_software",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "SVSS Billing Software",
   "main": "src/main.js",
   "author": "SVSS",
@@ -32,7 +32,7 @@
   "build": {
     "appId": "com.svss.billing",
     "productName": "SVSS Billing Software",
-    "buildVersion": "1.0.5",
+    "buildVersion": "1.0.6",
     "artifactName": "SVSS-Billing-Software-Setup.${ext}",
     "copyright": "Copyright © 2026 SVSS",
     "directories": {

@@ -2699,8 +2699,6 @@ const calculatedPayments =
 // SHOW NEWEST PAYMENT FIRST
 // ==========================================
 
-calculatedPayments.reverse();
-
     // Display payment history
     calculatedPayments.forEach(
         (payment, index) => {
@@ -4918,6 +4916,7 @@ paymentHistory.forEach(payment => {
             (payment.paymentMode || payment.mode || "Cash") + ")",
         charge: 0,
         payment: statementNumber(payment.amount ?? payment.payment),
+        remarks: String(payment.remarks || "").trim() || "-",
         order: movementOrder++
     });
 });
@@ -4938,6 +4937,7 @@ const movementRows = movementItems.map(item => {
         item.description,
         item.charge > 0 ? formatStatementMoney(item.charge) : "-",
         item.payment > 0 ? formatStatementMoney(item.payment) : "-",
+        item.remarks || "-",
         formatStatementMoney(Math.max(0, runningBalance))
     ];
 });
@@ -4954,33 +4954,41 @@ doc.text("ACCOUNT MOVEMENT", 14, y);
 
 doc.autoTable({
     startY: y + 4,
-    head: [["Date", "Description", "Charge", "Payment", "Balance"]],
-    body: movementRows.length
-        ? movementRows
-        : [["-", "No transactions", "-", "-", "-"]],
-    margin: { left: 14, right: 14 },
-    theme: "grid",
-    styles: {
-        font: "helvetica",
-        fontSize: 8,
-        cellPadding: 2,
-        textColor: [40, 40, 40],
-        valign: "middle"
-    },
-    headStyles: {
-        fillColor: [244, 180, 0],
-        textColor: [31, 41, 55],
-        fontStyle: "bold",
-        halign: "center"
-    },
-    columnStyles: {
-        0: { cellWidth: 25, halign: "center" },
-        1: { cellWidth: 69 },
-        2: { cellWidth: 29, halign: "right" },
-        3: { cellWidth: 29, halign: "right" },
-        4: { cellWidth: 30, halign: "right", fontStyle: "bold" }
-    },
-    didDrawPage: drawPageBorder
+    head: [[
+    "Date",
+    "Description",
+    "Charge",
+    "Payment",
+    "Remarks",
+    "Balance"
+]],
+body: movementRows.length
+    ? movementRows
+    : [["-", "No transactions", "-", "-", "-", "-"]],
+margin: { left: 14, right: 14 },
+theme: "grid",
+styles: {
+    font: "helvetica",
+    fontSize: 8,
+    cellPadding: 2,
+    textColor: [40, 40, 40],
+    valign: "middle"
+},
+headStyles: {
+    fillColor: [244, 180, 0],
+    textColor: [31, 41, 55],
+    fontStyle: "bold",
+    halign: "center"
+},
+columnStyles: {
+    0: { cellWidth: 22, halign: "center" },
+    1: { cellWidth: 54 },
+    2: { cellWidth: 26, halign: "right" },
+    3: { cellWidth: 26, halign: "right" },
+    4: { cellWidth: 24, halign: "center" },
+    5: { cellWidth: 30, halign: "right", fontStyle: "bold" }
+},
+didDrawPage: drawPageBorder
 });
 
 y = doc.lastAutoTable.finalY + 8;
