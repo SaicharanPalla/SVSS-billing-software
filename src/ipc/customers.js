@@ -64,6 +64,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     new bootstrap.Modal(
         document.getElementById("addCustomerModal")
     );
+    // Show Opening Balance when adding a new customer
+const addCustomerButton = document.getElementById("addCustomerBtn");
+const openingBalanceFields = document.getElementById("openingBalanceFields");
+
+if (addCustomerButton && openingBalanceFields) {
+    addCustomerButton.addEventListener("click", function () {
+        openingBalanceFields.style.display = "";
+    });
+}
 function parseAmountInput(value) {
     return Number(String(value || "").replace(/,/g, "")) || 0;
 }
@@ -116,6 +125,244 @@ function formatAmountInput(input) {
     let currentCustomer = null;
 
     let editIndex = -1;
+
+    
+
+// ==========================================
+// EDIT CUSTOMER OPENING BALANCE
+// ==========================================
+
+const openingBalanceModalElement =
+    document.getElementById("editOpeningBalanceModal");
+
+const openingBalanceModal =
+    new bootstrap.Modal(openingBalanceModalElement);
+
+const openingBalanceAmountInput =
+    document.getElementById("editOpeningBalanceAmount");
+
+const openingBalanceDateInput =
+    document.getElementById("editOpeningBalanceDate");
+
+
+// Indian currency formatting
+function formatOpeningBalanceInput() {
+
+    const rawValue = openingBalanceAmountInput.value
+        .replace(/,/g, "")
+        .replace(/[^\d.]/g, "");
+
+    const parts = rawValue.split(".");
+
+    const wholePart = parts[0] || "";
+
+    const decimalPart = parts.length > 1
+        ? "." + parts.slice(1).join("").slice(0, 2)
+        : "";
+
+    const formattedWhole = wholePart.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        ","
+    );
+
+    openingBalanceAmountInput.value =
+        formattedWhole + decimalPart;
+}
+
+
+// Format while typing
+openingBalanceAmountInput.addEventListener(
+    "input",
+    formatOpeningBalanceInput
+);
+
+
+// Open popup
+document.addEventListener("click", function (event) {
+
+    const button = event.target.closest("#editOpeningBalance");
+
+    if (!button) return;
+
+    if (!currentCustomer) {
+        showToast("Please select a customer first.", "warning");
+        return;
+    }
+
+    const amount = Number(currentCustomer.openingBalance || 0);
+
+    openingBalanceAmountInput.value =
+        amount.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    openingBalanceDateInput.value =
+        currentCustomer.openingBalanceDate || "";
+
+    openingBalanceModal.show();
+
+});
+
+
+// Save opening balance and optional date
+document.getElementById("saveOpeningBalance")
+    .addEventListener("click", async function () {
+
+        if (!currentCustomer) return;
+
+        const rawAmount =
+            openingBalanceAmountInput.value
+                .replace(/,/g, "")
+                .trim();
+
+        const newAmount = Number(rawAmount);
+
+        const newDate =
+            openingBalanceDateInput.value || "";
+
+        if (
+            rawAmount === "" ||
+            !Number.isFinite(newAmount) ||
+            newAmount < 0
+        ) {
+            showToast("Enter a valid opening balance.", "warning");
+            return;
+        }
+
+        const saveButton =
+            document.getElementById("saveOpeningBalance");
+
+        saveButton.disabled = true;
+
+        try {
+
+            await refreshDatabase();
+
+            const customerId =
+                String(currentCustomer.customerId || "").trim();
+
+            const customerIndex = (db.customers || []).findIndex(
+                customer =>
+                    String(customer.customerId || "").trim() === customerId
+            );
+
+            if (customerIndex === -1) {
+                showToast("Customer record not found.", "error");
+                return;
+            }
+
+            const amount = Number(newAmount.toFixed(2));
+
+            // Update database
+            db.customers[customerIndex].openingBalance = amount;
+
+            db.customers[customerIndex].openingBalanceDate = newDate;
+
+            await window.api.saveDatabase(db);
+
+            // Cloud synchronization
+            try {
+                await window.api.saveCustomers(db.customers);
+            } catch (cloudError) {
+                console.warn(
+                    "Opening balance cloud sync failed:",
+                    cloudError
+                );
+            }
+
+            // Update selected customer
+            currentCustomer.openingBalance = amount;
+            currentCustomer.openingBalanceDate = newDate;
+
+            // Update main customer list data
+            const listCustomer = customerData.find(
+                customer =>
+                    String(customer.customerId || "").trim() === customerId
+            );
+
+            if (listCustomer) {
+
+                listCustomer.openingBalance = amount;
+                listCustomer.openingBalanceDate = newDate;
+
+                const customerBills = Array.isArray(listCustomer.bills)
+                    ? listCustomer.bills
+                    : [];
+
+                const billBalance = customerBills.reduce(
+                    (total, bill) =>
+                        total + (Number(bill.balanceDue) || 0),
+                    0
+                );
+
+                const totalBillPaid = customerBills.reduce(
+                    (total, bill) =>
+                        total + (Number(bill.amountPaid) || 0),
+                    0
+                );
+
+                const paymentHistoryTotal =
+                    Array.isArray(listCustomer.paymentHistory)
+                        ? listCustomer.paymentHistory.reduce(
+                            (total, payment) =>
+                                total + (Number(payment.amount) || 0),
+                            0
+                        )
+                        : 0;
+
+                const openingBalancePaid = Math.max(
+                    paymentHistoryTotal - totalBillPaid,
+                    0
+                );
+
+                const remainingOpeningBalance = Math.max(
+                    amount - openingBalancePaid,
+                    0
+                );
+
+                listCustomer.totalBalance = Number(
+                    (
+                        billBalance + remainingOpeningBalance
+                    ).toFixed(2)
+                );
+
+                listCustomer.totalPaid = Number(
+                    Math.max(
+                        totalBillPaid,
+                        paymentHistoryTotal
+                    ).toFixed(2)
+                );
+            }
+
+            // Refresh displayed information
+            openingBalanceModal.hide();
+
+            showCustomer(currentCustomer);
+
+            displayCustomers(customerData);
+
+            showToast(
+                "Opening Balance Updated Successfully.",
+                "success"
+            );
+
+        } catch (error) {
+
+            console.error("Opening Balance Save Error:", error);
+
+            showToast(
+                "Failed to save opening balance.",
+                "error"
+            );
+
+        } finally {
+
+            saveButton.disabled = false;
+
+        }
+
+    });
 
     // ==============================
     // Database
@@ -991,7 +1238,14 @@ saveCustomerBtn.addEventListener("click", async function () {
 
     if (editIndex >= 0) {
         const oldCustomer = customerData[editIndex];
-        let dbIndex = oldCustomer.dbIndex;
+let dbIndex = oldCustomer.dbIndex;
+
+// Preserve opening balance while editing customer details.
+const preservedOpeningBalance =
+    Number(oldCustomer.openingBalance) || 0;
+
+const preservedOpeningBalanceDate =
+    oldCustomer.openingBalanceDate || "";
         const isBillHistoryOnly = dbIndex === -1;
 
         const billIdentityKey = bill =>
@@ -1027,15 +1281,48 @@ saveCustomerBtn.addEventListener("click", async function () {
             }
         }
 
-        const editingCustomerId =
+     const editingCustomerId =
     String(oldCustomer.customerId || "").trim();
 
+// Always resolve the current database position using customerId.
+if (editingCustomerId && !isBillHistoryOnly) {
+    const currentDbIndex = db.customers.findIndex(customer =>
+        String(customer.customerId || "").trim() === editingCustomerId
+    );
+
+    if (currentDbIndex >= 0) {
+        dbIndex = currentDbIndex;
+    }
+}
+
+// Fallback for older records without a customerId.
+if (!editingCustomerId && !isBillHistoryOnly) {
+    const oldName = String(oldCustomer.name || "").trim().toLowerCase();
+    const oldMobile = normalizeContact(oldCustomer.mobile);
+    const oldGST = normalizeContact(oldCustomer.gst);
+
+    const matchingIndexes = db.customers
+        .map((customer, index) => ({ customer, index }))
+        .filter(({ customer }) =>
+            String(customer.name || "").trim().toLowerCase() === oldName &&
+            normalizeContact(customer.mobile) === oldMobile &&
+            normalizeContact(customer.gst) === oldGST
+        )
+        .map(item => item.index);
+
+    if (matchingIndexes.length === 1) {
+        dbIndex = matchingIndexes[0];
+    }
+}
+
+// Check for another customer with the same contact details.
 const duplicateIndex = db.customers.findIndex((customer, index) => {
+
     const sameCustomerId =
         editingCustomerId &&
         String(customer.customerId || "").trim() === editingCustomerId;
 
-    // Ignore the record being edited.
+    // Never compare the customer against their own record.
     if (index === dbIndex || sameCustomerId) {
         return false;
     }
@@ -1045,21 +1332,18 @@ const duplicateIndex = db.customers.findIndex((customer, index) => {
         normalizeContact(customer.gst)
     ].filter(value => value && value !== "-");
 
-    // A blank phone number is not a shared contact.
-    // Only treat another record as a duplicate when a real,
-    // nonblank phone number or GST number matches.
     return enteredContacts.some(value =>
         existingContacts.includes(value)
     );
 });
 
-        if (duplicateIndex >= 0) {
-            showToast(
-                "Another saved customer has this mobile number or GST number.",
-                "error"
-            );
-            return;
-        }
+if (duplicateIndex >= 0) {
+    showToast(
+        "Another saved customer has this mobile number or GST number.",
+        "error"
+    );
+    return;
+}
 
         // Promote a customer that exists only in Bill History into the
         // customer list, then link their existing bills to this record.
@@ -1078,8 +1362,8 @@ const duplicateIndex = db.customers.findIndex((customer, index) => {
                 gst,
                 email,
                 notes,
-                openingBalance,
-                openingBalanceDate,
+                openingBalance: preservedOpeningBalance,
+                openingBalanceDate: preservedOpeningBalanceDate,
                 paymentHistory: Array.isArray(oldCustomer.paymentHistory)
                     ? oldCustomer.paymentHistory
                     : [],
@@ -1093,16 +1377,16 @@ const duplicateIndex = db.customers.findIndex((customer, index) => {
         const oldMobile = oldCustomer.mobile;
 
         db.customers[dbIndex] = {
-            ...db.customers[dbIndex],
-            name,
-            mobile,
-            address,
-            gst,
-            email,
-            notes,
-            openingBalance,
-            openingBalanceDate
-        };
+    ...db.customers[dbIndex],
+    name,
+    mobile,
+    address,
+    gst,
+    email,
+    notes,
+    openingBalance: preservedOpeningBalance,
+    openingBalanceDate: preservedOpeningBalanceDate
+};
 
         const billMobile = /^\d{10}$/.test(mobile.trim())
             ? mobile.trim()
@@ -1913,7 +2197,7 @@ const customer = customerData.find(c =>
         <i class="bi bi-check-circle-fill"></i>
         Update Customer
     `;
-
+    document.getElementById("openingBalanceFields").style.display = "none";
     addCustomerModal.show();
 
 });
@@ -2112,40 +2396,66 @@ function loadBillHistory(customer) {
     tbody.innerHTML = "";
 
 
+
     // ==========================================
     // OPENING BALANCE
     // ==========================================
 
     const openingBalance =
-        Number(
-            customer.openingBalance
-        ) || 0;
-
-
-    // Show opening balance only when it exists
+        Number(customer.openingBalance) || 0;
 
     if (openingBalance > 0) {
+
+        const customerBills =
+            Array.isArray(customer.bills)
+                ? customer.bills
+                : [];
+
+        // Total amount already paid against bills
+        const totalBillPaid =
+            customerBills.reduce(
+                (total, bill) =>
+                    total + (Number(bill.amountPaid) || 0),
+                0
+            );
+
+        // Total payments received from payment history
+        const paymentHistoryTotal =
+            Array.isArray(customer.paymentHistory)
+                ? customer.paymentHistory.reduce(
+                    (total, payment) =>
+                        total + (Number(payment.amount) || 0),
+                    0
+                )
+                : 0;
+
+        // Amount paid towards opening balance
+        const openingBalancePaid =
+            Math.max(
+                paymentHistoryTotal - totalBillPaid,
+                0
+            );
+
+        // Remaining opening balance
+        const remainingOpeningBalance =
+            Math.max(
+                openingBalance - openingBalancePaid,
+                0
+            );
 
         const openingRow =
             document.createElement("tr");
 
-
         openingRow.className =
             "customer-opening-row";
-
 
         openingRow.innerHTML = `
 
             <td>
-
-                <strong>
-                    OPENING BALANCE
-                </strong>
-
+                <strong>OPENING BALANCE</strong>
             </td>
 
-
-           <td>
+            <td>
                 ${
                     customer.openingBalanceDate
                         ? formatDate(customer.openingBalanceDate)
@@ -2153,40 +2463,29 @@ function loadBillHistory(customer) {
                 }
             </td>
 
-
             <td>
                 Rs.${openingBalance.toFixed(2)}
             </td>
 
-
             <td>
-                Rs.0.00
+                Rs.${openingBalancePaid.toFixed(2)}
             </td>
 
-
             <td>
-                Rs.${openingBalance.toFixed(2)}
+                Rs.${remainingOpeningBalance.toFixed(2)}
             </td>
 
-
             <td>
-
                 <span class="badge bg-warning text-dark">
-
                     Opening
-
                 </span>
-
             </td>
 
         `;
 
-
-        tbody.appendChild(
-            openingRow
-        );
-
+        tbody.appendChild(openingRow);
     }
+
 
 
     // ==========================================
@@ -2844,10 +3143,25 @@ function recalculateBillsForPaymentHistory(
 
             const amount = paymentHistoryAmount(payment.amount);
 
-            if (payment.allocationType === "bill") {
-                reverseFromBill(findAllocatedBill(payment), amount);
-                return;
-            }
+            if (Array.isArray(payment.allocations)) {
+    payment.allocations.forEach(allocation => {
+        const bill = customerBills.find(item =>
+            String(item.billNo || "") === String(allocation.billNo || "") &&
+            String(item.date || "") === String(allocation.date || "")
+        );
+
+        reverseFromBill(
+            bill,
+            paymentHistoryAmount(allocation.amount)
+        );
+    });
+    return;
+}
+
+if (payment.allocationType === "bill") {
+    reverseFromBill(findAllocatedBill(payment), amount);
+    return;
+}
 
             // Older payment records have no allocation fields.
             // Preserve their previous oldest-bill-first behavior.
@@ -2884,10 +3198,25 @@ function recalculateBillsForPaymentHistory(
 
             const amount = paymentHistoryAmount(payment.amount);
 
-            if (payment.allocationType === "bill") {
-                applyToBill(findAllocatedBill(payment), amount);
-                return;
-            }
+            if (Array.isArray(payment.allocations)) {
+    payment.allocations.forEach(allocation => {
+        const bill = customerBills.find(item =>
+            String(item.billNo || "") === String(allocation.billNo || "") &&
+            String(item.date || "") === String(allocation.date || "")
+        );
+
+        applyToBill(
+            bill,
+            paymentHistoryAmount(allocation.amount)
+        );
+    });
+    return;
+}
+
+if (payment.allocationType === "bill") {
+    applyToBill(findAllocatedBill(payment), amount);
+    return;
+}
 
             // Legacy records continue using the original allocation rule.
             let remaining = amount;
@@ -3628,9 +3957,14 @@ if (requestedAmount > currentBalance + 0.009) {
     return;
 }
 
-if (requestedAmount > targetBalance + 0.009) {
+const availableForAllocation =
+    allocationType === "bill"
+        ? billBalance
+        : openingRemaining;
+
+if (requestedAmount > availableForAllocation + 0.009) {
     showToast(
-        `Payment cannot be greater than the selected balance. ${formatCurrency(targetBalance)}`,
+        `Payment cannot be greater than the available balance. ${formatCurrency(availableForAllocation)}`,
         "error"
     );
     return;
@@ -3639,17 +3973,59 @@ if (requestedAmount > targetBalance + 0.009) {
 // Apply this payment only to the selected bill.
 // Opening balance payments are recorded in paymentHistory and do not
 // change any bill's amountPaid or balanceDue.
+// ==========================================
+// ALLOCATE PAYMENT ACROSS UNPAID BILLS
+// ==========================================
+
+let paymentAllocations = [];
+
 if (allocationType === "bill") {
-    selectedBill.amountPaid = Number(
-        ((Number(selectedBill.amountPaid) || 0) + requestedAmount).toFixed(2)
-    );
 
-    selectedBill.balanceDue = Number(
-        (targetBalance - requestedAmount).toFixed(2)
-    );
+    let remaining = Number(requestedAmount.toFixed(2));
 
-    selectedBill.paymentStatus =
-        selectedBill.balanceDue <= 0 ? "Paid" : "Pending";
+    // Selected bill gets priority.
+    const allocationOrder = [
+        selectedBill,
+        ...customerBills.filter(bill => bill !== selectedBill)
+    ];
+
+    for (const bill of allocationOrder) {
+
+        if (remaining <= 0.009) break;
+
+        const due = Number(bill.balanceDue) || 0;
+
+        if (due <= 0) continue;
+
+        const applied = Math.min(due, remaining);
+
+        bill.amountPaid = Number(
+            ((Number(bill.amountPaid) || 0) + applied).toFixed(2)
+        );
+
+        bill.balanceDue = Number(
+            (due - applied).toFixed(2)
+        );
+
+        bill.paymentStatus =
+            bill.balanceDue <= 0.009 ? "Paid" : "Pending";
+
+        paymentAllocations.push({
+            billNo: bill.billNo,
+            date: bill.date,
+            amount: Number(applied.toFixed(2))
+        });
+
+        remaining = Number(
+            (remaining - applied).toFixed(2)
+        );
+    }
+
+    if (remaining > 0.009) {
+        throw new Error(
+            "Payment could not be fully allocated to unpaid bills."
+        );
+    }
 }
 // The payment is applied only to the selected target.
 // Opening-balance payments are calculated from paymentHistory.
@@ -3872,7 +4248,8 @@ const paymentRecord = {
         paymentMode || "Cash",
 
     allocationType,
-
+    allocations:
+    allocationType === "bill" ? paymentAllocations : [],
     allocationBillNo:
         allocationType === "bill" ? selectedBill.billNo : "",
 
