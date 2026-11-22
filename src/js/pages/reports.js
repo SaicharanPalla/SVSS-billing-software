@@ -759,15 +759,11 @@ function loadPaymentSummary(
         // FULLY PAID / CREDIT
         // ==========================================
 
-        if (balance <= 0) {
-
-            fullyPaid += grandTotal;
-
-        } else {
-
-            credit += balance;
-
-        }
+        if (balance <= 0 && grandTotal > 0 && paid >= grandTotal - 0.01) {
+    fullyPaid += paid;
+} else {
+    credit += balance;
+}
 
 
         // ==========================================
@@ -824,11 +820,11 @@ activityBills.forEach(bill => {
 
     pendingAmount += balance;
 
-    if (balance <= 0) {
-        fullyPaid += grandTotal;
-    } else {
-        credit += balance;
-    }
+    if (balance <= 0 && grandTotal > 0 && paid >= grandTotal - 0.01) {
+    fullyPaid += paid;
+} else {
+    credit += balance;
+}
 
     // CGST and SGST are split evenly in the existing bill data.
     cgst += gst / 2;
@@ -1285,14 +1281,16 @@ activityBills.forEach(bill => {
     });
 
 
-    // ==========================================
-    // TOTAL AMOUNT RECEIVED
-    // ==========================================
+ // ==========================================
+// TOTAL AMOUNT RECEIVED
+// CASH + UPI + BANK TRANSFER
+// ==========================================
 
-    amountReceived =
-        billPayments +
-        openingBalanceReceived;
-
+amountReceived =
+    cash +
+    upi +
+    card;
+    
 
     // ==========================================
     // TOTAL GST
@@ -1373,16 +1371,12 @@ activityBills.forEach(bill => {
         );
 
 
-    if (
-        totalAmountReceivedEl
-    ) {
+    
+if (totalAmountReceivedEl) {
+    totalAmountReceivedEl.textContent =
+        formatCurrency(amountReceived);
+}
 
-        totalAmountReceivedEl.textContent =
-            formatCurrency(
-                amountReceived
-            );
-
-    }
 
 
     // ==========================================
@@ -1435,10 +1429,8 @@ activityBills.forEach(bill => {
 
     if (amountReceivedEl) {
 
-        amountReceivedEl.textContent =
-            formatCurrency(
-                amountReceived
-            );
+        document.getElementById("amountReceived").textContent =
+    formatCurrency(cash + upi + card);
 
     }
 
@@ -2509,6 +2501,7 @@ function updatePaidStatementTotals(bills, amount) {
     // ===========================================
     // PART 6 - MASTER LOADER
     // ===========================================
+    let openingBalanceExportRows = [];
     function loadOpeningBalanceReceiptDetails(receipts = []) {
     const tbody = document.getElementById("openingBalanceReceiptsBody");
     const totalElement = document.getElementById("openingBalanceReceiptsTotal");
@@ -2519,6 +2512,7 @@ function updatePaidStatementTotals(bills, amount) {
     const receiptRows = Array.isArray(receipts)
         ? receipts.filter(receipt => parseAmount(receipt.amount) > 0)
         : [];
+        openingBalanceExportRows = receiptRows.map(receipt => ({ ...receipt }));
 
     tbody.replaceChildren();
 
@@ -2640,13 +2634,13 @@ function updatePaidStatementTotals(bills, amount) {
 
             // Bank Transfer receipts applied to opening balance are not
             // included by the existing payment-mode switch.
-            if (payment.allocationType === "openingBalance") {
-                if (getMethodKey(paymentMode) === "bank" &&
-                    paymentMode.replace(/[\s_-]/g, "") === "banktransfer") {
-                    totals.bank += amount;
-                }
-                return;
-            }
+            
+             if (payment.allocationType === "openingBalance") {
+                 // Already included by loadPaymentSummary().
+                 // Do not add this receipt to Bank Transfer again.
+                 return;
+             }
+
 
             if (payment.allocationType !== "bill") return;
 
@@ -2818,16 +2812,60 @@ function updatePaidStatementTotals(bills, amount) {
         openingBalanceReceiptRows
     );
 
-    loadOpeningBalanceDueCard();
+    
+loadOpeningBalanceDueCard();
 
-    applyReportReceivedPaymentMethodCorrections(reportBills);
+applyReportReceivedPaymentMethodCorrections(reportBills);
 
-    loadOpeningBalanceReceiptDetails(openingBalanceReceiptRows);
+// Update Amount Received using the final displayed payment totals
+const cashReceived = parseAmount(cashTotalEl.textContent);
+const upiReceived = parseAmount(upiTotalEl.textContent);
+const bankTransferReceived = parseAmount(cardTotalEl.textContent);
+
+const amountReceivedCard = document.getElementById("amountReceived");
+
+if (amountReceivedCard) {
+    amountReceivedCard.textContent = formatCurrency(
+        cashReceived + upiReceived + bankTransferReceived
+    );
+}
+
+loadOpeningBalanceReceiptDetails(openingBalanceReceiptRows);
+
 
     loadSalesChart(reportBills);
     loadPaymentChart(reportBills, activityBills);
     loadTables(reportBills, activityBills);
+
+    // Display the existing Credit Statement Paid total
+    // in the new summary card.
+    const creditPaidCard = document.getElementById(
+        "creditBillsPaidAmount"
+    );
+
+    const creditPaidTotal = document.getElementById(
+        "creditTotalPaid"
+    );
+
+    if (creditPaidCard && creditPaidTotal) {
+        creditPaidCard.textContent = creditPaidTotal.textContent;
+    }
+
     loadCreditStatement(activityBills);
+
+const creditBillsPaidCard = document.getElementById(
+    "creditBillsPaidAmount"
+);
+
+const creditStatementPaidTotal = document.getElementById(
+    "creditTotalPaid"
+);
+
+if (creditBillsPaidCard && creditStatementPaidTotal) {
+    creditBillsPaidCard.textContent =
+        creditStatementPaidTotal.textContent;
+}
+
     loadPaidStatement(activityBills);
 }
        
@@ -3808,6 +3846,404 @@ document.addEventListener("svss:escape", () => {
     document.activeElement.blur();
 
 });
+
+ // ==========================================
+ // OPENING BALANCE RECEIPT DOWNLOADS
+ // ==========================================
+
+function getOpeningExportData() {
+    const rows = openingBalanceExportRows.map(receipt => ({
+        customer: receipt.customer || "Unknown Customer",
+        date: receipt.date
+            ? formatDisplayDate(receipt.date)
+            : "-",
+        paymentMode: receipt.paymentMode || "Cash",
+        amount: parseAmount(receipt.amount)
+    }));
+
+    const total = rows.reduce(
+        (sum, row) => sum + row.amount, 0
+    );
+
+    return { rows, total };
+}
+
+function getOpeningExportFilename() {
+    const date = new Date().toLocaleDateString("en-GB")
+        .replace(/\//g, "-");
+
+    return `SVSS_Opening_Balance_Receipts_${date}`;
+}
+
+// ==========================================
+// DOWNLOAD PDF
+// ==========================================
+
+document.getElementById("downloadOpeningPDF")
+    ?.addEventListener("click", () => {
+
+        const { rows, total } = getOpeningExportData();
+
+        if (!rows.length) {
+            alert("No opening balance receipts to download.");
+            return;
+        }
+
+        if (!window.jspdf?.jsPDF) {
+            alert("PDF library is unavailable.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        if (typeof doc.autoTable !== "function") {
+            alert("PDF table library is unavailable.");
+            return;
+        }
+
+        const shopName =
+            db.settings?.shopName || "SVSS Billing System";
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(15);
+        doc.text(shopName, 105, 17, {
+            align: "center",
+            maxWidth: 180
+        });
+
+        doc.setFontSize(13);
+        doc.text("OPENING BALANCE RECEIPTS", 105, 28, {
+            align: "center"
+        });
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+
+        doc.text(
+            `Total Receipts: ${rows.length}`,
+            14, 39
+        );
+
+        doc.text(
+            `Total Received: ${formatCurrency(total)}`,
+            14, 45
+        );
+
+        doc.autoTable({
+            startY: 53,
+            head: [[
+                "S.No",
+                "Customer",
+                "Payment Date",
+                "Payment Mode",
+                "Amount"
+            ]],
+            body: rows.map((row, index) => [
+                index + 1,
+                row.customer,
+                row.date,
+                row.paymentMode,
+                formatCurrency(row.amount)
+            ]),
+            foot: [[
+                "",
+                "",
+                "",
+                "TOTAL",
+                formatCurrency(total)
+            ]],
+            showFoot: "lastPage",
+            theme: "grid",
+            headStyles: {
+                fillColor: [255, 102, 0]
+            },
+            footStyles: {
+                fillColor: [235, 242, 249],
+                textColor: [20, 40, 60]
+            },
+            styles: {
+                fontSize: 8,
+                cellPadding: 2
+            }
+        });
+
+        doc.save(`${getOpeningExportFilename()}.pdf`);
+    });
+
+// ==========================================
+// DOWNLOAD EXCEL-COMPATIBLE CSV
+// ==========================================
+
+
+document.getElementById("downloadOpeningExcel")
+    ?.addEventListener("click", () => {
+
+        const { rows, total } = getOpeningExportData();
+
+        if (!rows.length) {
+            alert("No opening balance receipts to download.");
+            return;
+        }
+
+        if (typeof XLSX === "undefined") {
+            alert("Excel export library is unavailable.");
+            return;
+        }
+
+        const data = [
+            [
+                "S.No",
+                "Customer",
+                "Payment Date",
+                "Payment Mode",
+                "Amount (Rs.)"
+            ],
+            ...rows.map((row, index) => [
+                index + 1,
+                row.customer,
+                row.date,
+                row.paymentMode,
+                row.amount
+            ]),
+            [
+                "",
+                "",
+                "",
+                "TOTAL",
+                total
+            ]
+        ];
+
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+
+        // Set appropriate column widths.
+        worksheet["!cols"] = [
+            { wch: 8 },
+            { wch: 35 },
+            { wch: 18 },
+            { wch: 20 },
+            { wch: 22 }
+        ];
+
+        // Indian-style number formatting.
+        for (let row = 2; row <= data.length; row++) {
+            const cell = worksheet[`E${row}`];
+
+            if (cell && typeof cell.v === "number") {
+                cell.z = '#,##,##0.00';
+            }
+        }
+
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Opening Balance Receipts"
+        );
+
+        XLSX.writeFile(
+            workbook,
+            `${getOpeningExportFilename()}.xlsx`
+        );
+    });
+
+
+ // ==========================================
+ // SVSS - CREDIT & PAID STATEMENT EXCEL
+ // Read-only exports
+ // ==========================================
+
+function exportSVSSStatementExcel(type) {
+
+    if (typeof XLSX === "undefined") {
+        alert("Excel export library is unavailable.");
+        return;
+    }
+
+    const isCredit = type === "credit";
+
+    const tableId = isCredit
+        ? "creditStatementTable"
+        : "paidStatementTable";
+
+    const table = document.getElementById(tableId);
+
+    if (!table) {
+        alert("Statement table not found.");
+        return;
+    }
+
+    const bodyRows = Array.from(
+        table.querySelectorAll("tbody tr")
+    ).filter(row => row.cells.length === 6);
+
+    if (!bodyRows.length) {
+        alert("No statement records to export.");
+        return;
+    }
+
+    const readCell = (row, index) =>
+        row.cells[index]?.textContent.trim() || "";
+
+    const readNumber = value => {
+        const number = Number(
+            String(value ?? "")
+                .replace(/Rs\.?/gi, "")
+                .replace(/₹/g, "")
+                .replace(/,/g, "")
+                .replace(/[^\d.-]/g, "")
+        );
+
+        return Number.isFinite(number) ? number : 0;
+    };
+
+    const headers = isCredit
+        ? [
+            "S.No",
+            "Customer",
+            "Bills",
+            "Total Purchase",
+            "Paid",
+            "Balance Due"
+        ]
+        : [
+            "S.No",
+            "Bill No",
+            "Date",
+            "Customer",
+            "Payment Mode",
+            "Amount"
+        ];
+
+    const data = bodyRows.map(row => {
+
+        if (isCredit) {
+            return [
+                readNumber(readCell(row, 0)),
+                readCell(row, 1),
+                readNumber(readCell(row, 2)),
+                readNumber(readCell(row, 3)),
+                readNumber(readCell(row, 4)),
+                readNumber(readCell(row, 5))
+            ];
+        }
+
+        return [
+            readNumber(readCell(row, 0)),
+            readCell(row, 1),
+            readCell(row, 2),
+            readCell(row, 3),
+            readCell(row, 4),
+            readNumber(readCell(row, 5))
+        ];
+    });
+
+    // Use the totals already displayed by Reports.
+    const getTotal = id => readNumber(
+        document.getElementById(id)?.textContent
+    );
+
+    const totalRow = isCredit
+        ? [
+            "",
+            "TOTAL",
+            getTotal("creditTotalBills"),
+            getTotal("creditTotalPurchase"),
+            getTotal("creditTotalPaid"),
+            getTotal("creditTotalBalance")
+        ]
+        : [
+            "",
+            "",
+            "",
+            "TOTAL",
+            getTotal("paidTotalBills"),
+            getTotal("paidTotalAmount")
+        ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet([
+        headers,
+        ...data,
+        totalRow
+    ]);
+
+    worksheet["!cols"] = isCredit
+        ? [
+            { wch: 9 },
+            { wch: 38 },
+            { wch: 12 },
+            { wch: 22 },
+            { wch: 20 },
+            { wch: 22 }
+        ]
+        : [
+            { wch: 9 },
+            { wch: 24 },
+            { wch: 18 },
+            { wch: 38 },
+            { wch: 22 },
+            { wch: 22 }
+        ];
+
+    // Indian currency formatting.
+    const amountColumns = isCredit
+        ? [3, 4, 5]
+        : [5];
+
+    const totalExcelRows = data.length + 2;
+
+    for (let row = 2; row <= totalExcelRows; row++) {
+
+        amountColumns.forEach(column => {
+
+            const address = XLSX.utils.encode_cell({
+                r: row - 1,
+                c: column
+            });
+
+            const cell = worksheet[address];
+
+            if (cell && typeof cell.v === "number") {
+                cell.z = '#,##,##0.00';
+            }
+
+        });
+    }
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        isCredit ? "Credit Statement" : "Paid Bills"
+    );
+
+    const date = new Date()
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-");
+
+    const filename = isCredit
+        ? `SVSS_Credit_Statement_${date}.xlsx`
+        : `SVSS_Paid_Bills_${date}.xlsx`;
+
+    XLSX.writeFile(workbook, filename);
+}
+
+// ==========================================
+// DOWNLOAD BUTTON EVENTS
+// ==========================================
+
+document.getElementById("downloadCreditExcel")
+    ?.addEventListener("click", () => {
+        exportSVSSStatementExcel("credit");
+    });
+
+document.getElementById("downloadPaidExcel")
+    ?.addEventListener("click", () => {
+        exportSVSSStatementExcel("paid");
+    });
 
 // =============================
 // REPORTS.JS COMPLETED

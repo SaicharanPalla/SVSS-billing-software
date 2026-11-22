@@ -3605,8 +3605,10 @@ document
             option.dataset.billDate = String(bill.date || "");
             option.dataset.balance = balance.toFixed(2);
             option.textContent =
-                `${bill.billNo || "Bill"} · ${formatDate(bill.date)} · ` +
-                `${formatCurrency(balance)} remaining`;
+               `Book No: ${bill.billBookNo || "-"} · ` +
+               `${formatDate(bill.date)} · ` +
+               `${formatCurrency(balance)} remaining` +
+               ` · ${bill.billNo || "Bill"}`;
 
             billSelect.appendChild(option);
         });

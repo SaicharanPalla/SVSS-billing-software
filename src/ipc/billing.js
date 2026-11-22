@@ -145,48 +145,61 @@ const billDatePicker = flatpickr("#billDate", {
     // BILL NUMBER
     // ==============================
 
-    async function generateBillNumber() {
+    
+async function generateBillNumber() {
 
     await refreshDatabase();
 
-        const prefix =
-            settings.invoicePrefix || "SVSS";
+    const prefix = settings.invoicePrefix || "SVSS";
 
-       const now = new Date();
+    const now = new Date();
 
-       const day =String(now.getDate()).padStart(2, "0");
-       
-       const month =String(now.getMonth() + 1).padStart(2, "0");
-       
-       const year =String(now.getFullYear()).slice(-2);
-       
-       let nextBillNo = 1;
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = String(now.getFullYear()).slice(-2);
 
-if (bills.length > 0) {
+    const datePart = `${day}${month}${year}`;
 
-    const lastBill = bills[bills.length - 1];
+    // Use the most recently saved bill's serial.
+    // Ignore malformed bill numbers.
+    let lastSerial = 0;
 
-    if (lastBill.billNo) {
+    for (let i = bills.length - 1; i >= 0; i--) {
 
-        const parts = lastBill.billNo.split("-");
+        const savedNo = String(bills[i].billNo || "").trim();
 
-        const lastSerial = parseInt(parts[2], 10);
+        const match = savedNo.match(/^(.+)-(\d{6})-(\d+)$/);
 
-        if (!isNaN(lastSerial)) {
+        if (match) {
+            lastSerial = Number.parseInt(match[3], 10);
+            break;
+        }
+    }
 
-            nextBillNo = lastSerial + 1;
+    // Continue sequence after the last saved bill.
+    let nextSerial = lastSerial + 1;
 
+    // Avoid an existing full bill-number duplicate.
+    let generatedNo;
+
+    do {
+        generatedNo =
+            `${prefix}-${datePart}-${String(nextSerial).padStart(4, "0")}`;
+
+        if (!bills.some(b =>
+            String(b.billNo || "").trim().toUpperCase() ===
+            generatedNo.toUpperCase()
+        )) {
+            break;
         }
 
-    }
+        nextSerial++;
 
+    } while (true);
+
+    billNo.value = generatedNo;
 }
 
-const serial = String(nextBillNo).padStart(4, "0");
-
-        billNo.value =`${prefix}-${day}${month}${year}-${serial}`;
-
-    }
 
    await generateBillNumber();
 
@@ -1429,26 +1442,31 @@ discount.addEventListener("input", () => {
 // GENERATE BILL BOOK NUMBER
 // ==============================
 
+
 async function generateBillBookNumber() {
+
     await refreshDatabase();
 
     const highestSavedBookNo = bills.reduce((highest, bill) => {
+
         const match = String(bill.billBookNo || "")
             .trim()
             .match(/^B-(\d+)$/i);
 
-        if (!match) {
-            return highest;
-        }
+        if (!match) return highest;
 
         const number = Number.parseInt(match[1], 10);
 
         return Number.isFinite(number)
             ? Math.max(highest, number)
             : highest;
+
     }, 0);
 
-    const savedNext = Number.parseInt(settings.nextBillBookNo, 10);
+    const savedNext = Number.parseInt(
+        settings.nextBillBookNo, 10
+    );
+
     const validSavedNext =
         Number.isFinite(savedNext) && savedNext > 0
             ? savedNext
@@ -1459,14 +1477,10 @@ async function generateBillBookNumber() {
         highestSavedBookNo + 1
     );
 
-    if (settings.nextBillBookNo !== nextBillBookNo) {
-        settings.nextBillBookNo = nextBillBookNo;
-        await saveDatabase();
-    }
-
     billBookNo.value =
         "B-" + String(nextBillBookNo).padStart(3, "0");
 }
+
 // ==============================
 // RESET BILL FORM
 // ==============================
@@ -1888,76 +1902,63 @@ async function saveCurrentBill() {
         grandTotal: grandTotal.innerText
 
     };
-
+    
+  
 // ==========================================
 // SAVE NEW BILL ONLY — NEVER OVERWRITE
 // ==========================================
 
 bills.push(bill);
-    
-    // ==========================================
-    // UPDATE NEXT BILL BOOK NO
-    // BASED ON ACTUAL SAVED BILL BOOK NUMBERS
-    // ==========================================
-    
-    let highestBillBookNo = 0;
-    
-    bills.forEach(savedBill => {
-    
-        const bookNo = String(
-            savedBill.billBookNo || ""
-        ).trim();
-    
-            const match = bookNo.match(/^B-(\d+)$/i);
-        
-            if (match) {
-        
-                const number =
-                    parseInt(match[1], 10);
-        
-                if (
-                    !isNaN(number) &&
-                    number > highestBillBookNo
-                ) {
-        
-                    highestBillBookNo = number;
-        
-                }
-        
-            }
-        
-        });
-        
-        if (highestBillBookNo > 0) {
-        
-            settings.nextBillBookNo =
-                highestBillBookNo + 1;
-        
-        }
-        console.log(
-        "Entered Book No:",
-        enteredBookNo
-    );
-    
-    console.log(
-        "Next Bill Book No:",
-        settings.nextBillBookNo
-    );
+
+// ==========================================
+// UPDATE NEXT BILL BOOK NUMBER
+// NEVER REUSE DELETED BILL BOOK NUMBERS
+// ==========================================
+
+const savedNextBookNo =
+    Number.parseInt(settings.nextBillBookNo, 10) || 1;
+
+// Read manually entered Bill Book No.
+const enteredBookMatch =
+    enteredBookNo.match(/^B-(\d+)$/i);
+
+const enteredSerial = enteredBookMatch
+    ? Number.parseInt(enteredBookMatch[1], 10)
+    : 0;
+
+// Find highest Bill Book No. in saved bills
+const highestBillBookNo = bills.reduce((highest, savedBill) => {
+
+    const match = String(savedBill.billBookNo || "")
+        .trim()
+        .match(/^B-(\d+)$/i);
+
+    if (!match) return highest;
+
+    const number = Number.parseInt(match[1], 10);
+
+    return Number.isFinite(number)
+        ? Math.max(highest, number)
+        : highest;
+
+}, 0);
+
+// Keep the counter moving forward.
+// Never decrease it after deleting a bill.
+settings.nextBillBookNo = Math.max(
+    savedNextBookNo,
+    enteredSerial + 1,
+    highestBillBookNo + 1
+);
+
+console.log("Entered Book No:", enteredBookNo);
+console.log("Next Bill Book No:", settings.nextBillBookNo);
     
     // ==========================================
     // SAVE TO LOCAL DATABASE
     // ==========================================
     
     await saveDatabase();
-
-console.log("Entered Book No:", enteredBookNo);
-console.log("Next Bill Book No:", settings.nextBillBookNo);
-
-// ==========================================
-// SAVE TO LOCAL DATABASE
-// ==========================================
-
-await saveDatabase();
 
 // ==========================================
 // CLOUD SYNC — BILLS

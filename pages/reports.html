@@ -32,9 +32,28 @@
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/theme-colors.css">
     <link rel="stylesheet" href="../assets/css/theme-overrides.css">
-    <style>
-  
+    
+<style>
+/* Payment summary layout - desktop */
+@media (min-width: 1200px) {
+    .payment-credit-summary > .col-xl-4 {
+        flex: 0 0 auto !important;
+        width: 33.333333% !important;
+    }
+
+    .payment-credit-summary > .col-xl-6 {
+        flex: 0 0 auto !important;
+        width: 50% !important;
+    }
+}
+
+.payment-credit-summary .summary-card {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
 </style>
+
 
 </head>
 
@@ -393,7 +412,7 @@
 <div class="row g-3 mb-4 payment-credit-summary">
 
     <!-- Fully Paid -->
-    <div class="col-xl-3 col-lg-6 col-md-6">
+    <div class="col-xl-4 col-lg-4 col-md-6">
 
         <div class="summary-card green">
 
@@ -415,9 +434,22 @@
 
     </div>
 
+    
+<!-- Credit Bills - Amount Paid -->
+<div class="col-xl-4 col-lg-4 col-md-6">
+    <div class="summary-card blue">
+        <div class="icon">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="summary-content">
+            <small>Credit Bills - Amount Paid</small>
+            <h3 id="creditBillsPaidAmount">Rs. 0.00</h3>
+        </div>
+    </div>
+</div>
 
     <!-- Credit / Due -->
-    <div class="col-xl-3 col-lg-6 col-md-6">
+    <div class="col-xl-4 col-lg-4 col-md-6">
 
         <div class="summary-card red">
 
@@ -439,9 +471,9 @@
 
     </div>
 
-
+<div class="w-100"></div>
     <!-- Amount Received -->
-    <div class="col-xl-3 col-lg-6 col-md-6">
+    <div class="col-xl-6 col-lg-6 col-md-6">
 
         <div class="summary-card blue">
 
@@ -465,7 +497,7 @@
 
 
     <!-- Pending -->
-    <div class="col-xl-3 col-lg-6 col-md-6">
+    <div class="col-xl-6 col-lg-6 col-md-6">
 
         <div class="summary-card orange">
 
@@ -650,18 +682,42 @@
             <!-- Opening Balance Receipt Details -->
             <div class="col-12">
                 <div class="dashboard-card opening-balance-receipts-card">
-                    <div class="opening-balance-receipts-heading">
-                        <div class="card-title">
-                            <i class="bi bi-receipt"></i>
-                            Opening Balance Receipt Details
-                        </div>
+                    
+<div class="opening-balance-receipts-heading">
 
-                        <span
-                            id="openingBalanceReceiptCount"
-                            class="badge bg-warning text-dark">
-                            0 receipts
-                        </span>
-                    </div>
+    <div class="card-title">
+        <i class="bi bi-receipt"></i>
+        Opening Balance Receipt Details
+    </div>
+
+    <div class="receipt-download-actions">
+
+        <button
+            type="button"
+            id="downloadOpeningPDF"
+            class="btn btn-danger btn-sm">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+            Download PDF
+        </button>
+
+        <button
+            type="button"
+            id="downloadOpeningExcel"
+            class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            Download Excel
+        </button>
+
+    </div>
+
+    <span
+        id="openingBalanceReceiptCount"
+        class="badge bg-warning text-dark">
+        0 receipts
+    </span>
+
+</div>
+
 
                     <div class="opening-balance-receipts-scroll">
                         <table class="table table-hover align-middle mb-0">
@@ -775,23 +831,38 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <div class="card-title mb-0">
+       
 
-            <i class="bi bi-journal-text"></i>
+<div class="d-flex justify-content-between align-items-center mb-3 credit-statement-heading">
 
-            Credit / Outstanding Statement
+    <div class="card-title mb-0">
+        <i class="bi bi-journal-text"></i>
+        Credit / Outstanding Statement
+    </div>
 
-        </div>
+    <div class="credit-statement-actions">
 
         <button
+            type="button"
             class="btn btn-danger"
             id="printCreditStatement">
-
             <i class="bi bi-printer-fill"></i>
-
-            Print Credit Statement
-
+            Print Statement
         </button>
+
+        <button
+            type="button"
+            class="btn btn-success"
+            id="downloadCreditExcel">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            Download Excel
+        </button>
+
+    </div>
+
+</div>
+
+
 
     </div>
 
@@ -886,23 +957,36 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <div class="card-title mb-0">
+<div class="d-flex justify-content-between align-items-center mb-3 paid-statement-heading">
 
-            <i class="bi bi-check-circle-fill"></i>
+    <div class="card-title mb-0">
+        <i class="bi bi-check-circle-fill"></i>
+        Paid Bills Statement
+    </div>
 
-            Paid Bills Statement
-
-        </div>
+    <div class="paid-statement-actions">
 
         <button
+            type="button"
             class="btn btn-success"
             id="printPaidStatement">
-
             <i class="bi bi-printer-fill"></i>
-
             Print Paid Statement
-
         </button>
+
+        <button
+            type="button"
+            class="btn btn-success"
+            id="downloadPaidExcel">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            Download Excel
+        </button>
+
+    </div>
+
+</div>
+
+
 
     </div>
 
@@ -1187,7 +1271,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <!-- ==========================================
      APPLICATION SCRIPTS
 ========================================== -->

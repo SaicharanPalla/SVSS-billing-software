@@ -1,6 +1,6 @@
 {
   "name": "billing_software",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "SVSS Billing Software",
   "main": "src/main.js",
   "author": "SVSS",
@@ -32,7 +32,7 @@
   "build": {
     "appId": "com.svss.billing",
     "productName": "SVSS Billing Software",
-    "buildVersion": "1.0.6",
+    "buildVersion": "1.0.7",
     "artifactName": "SVSS-Billing-Software-Setup.${ext}",
     "copyright": "Copyright © 2026 SVSS",
     "directories": {
@@ -46,7 +46,15 @@
       "!docs/**/*",
       "!build-log.txt",
       "!test.txt",
-      "!package-lock.json"
+      "!package-lock.json",
+      "!Prompts/**/*",
+      "!web-conversion-working-backup/**/*",
+      "!project_structure.txt",
+      "!test-*.js",
+      "!**/*.before-*",
+      "!src/main_before_*.js",
+      "!database/**/*",
+      "!.gitignore"
     ],
     "extraMetadata": {
       "main": "src/main.js"

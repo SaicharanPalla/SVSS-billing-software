@@ -590,8 +590,20 @@ async function syncToCloud(db) {
             
             if (collection === "businessSettings") {
             
-                localData =
-                    db.data.settings || {};
+                // Login fields stay on this computer only.
+                // Never upload passwords to the cloud.
+                const {
+                    loggedIn,
+                    loggedUser,
+                    username,
+                    password,
+                    rememberMe,
+                    savedUsername,
+                    savedPassword,
+                    ...shareableSettings
+                } = db.data.settings || {};
+
+                localData = shareableSettings;
             
                 const recordId =
                     "SVSS_BUSINESS_SETTINGS";

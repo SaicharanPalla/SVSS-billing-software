@@ -114,13 +114,9 @@ function getDashboardBillAmount(bill) {
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-
     await loadDashboard();
-
     startClock();
-
     setGreeting();
-
 });
 
 
@@ -179,6 +175,119 @@ async function loadLoggedUser() {
 }
 
 
+ // ==========================================
+ // DASHBOARD CUSTOMER COUNT
+ // Match Customers Page grouping
+ // Read-only: no database modifications
+ // ==========================================
+
+async function getDashboardCustomerCount() {
+
+    const db = await window.api.getDatabase();
+
+    const manualCustomers = db.customers || [];
+    const bills = db.bills || [];
+
+    const customers = {};
+
+    // Manual customers
+    manualCustomers.forEach(customer => {
+
+        const mobile = (customer.mobile || "").trim();
+
+        const key =
+            customer.name.trim().toLowerCase() + "_" + mobile;
+
+        customers[key] = {
+            customerId: customer.customerId,
+            name: customer.name,
+            mobile: customer.mobile
+        };
+
+    });
+
+    // Customers appearing in bills
+    bills.forEach(bill => {
+
+        const name =
+            (bill.customer || "Walk-in Customer").trim();
+
+        const mobile =
+            bill.mobile === "-"
+                ? ""
+                : (bill.mobile || "").trim();
+
+        let key = name + "_" + mobile;
+
+        const existingKey = Object.keys(customers).find(k => {
+
+            const existingCustomer = customers[k];
+
+            const sameCustomerId =
+                existingCustomer.customerId &&
+                bill.customerId &&
+                String(existingCustomer.customerId).trim() ===
+                String(bill.customerId).trim();
+
+            const sameName =
+                String(existingCustomer.name || "")
+                    .trim()
+                    .toLowerCase() ===
+                String(name || "")
+                    .trim()
+                    .toLowerCase();
+
+            const existingMobile =
+                String(existingCustomer.mobile || "").trim();
+
+            const billMobile =
+                String(mobile || "").trim();
+
+            const sameMobile =
+                existingMobile !== "" &&
+                billMobile !== "" &&
+                existingMobile === billMobile;
+
+            return (
+                sameCustomerId ||
+                (sameName && sameMobile) ||
+                (
+                    sameName &&
+                    (
+                        !existingCustomer.customerId ||
+                        !bill.customerId ||
+                        existingMobile === "" ||
+                        billMobile === ""
+                    )
+                )
+            );
+
+        });
+
+        if (existingKey) {
+
+            key = existingKey;
+
+            if (!customers[key].mobile && mobile) {
+                customers[key].mobile = mobile;
+            }
+
+        } else {
+
+            customers[key] = {
+                customerId: "AUTO",
+                name,
+                mobile
+            };
+
+        }
+
+    });
+
+    return Object.values(customers).length;
+
+}
+
 // ==========================================
 // DASHBOARD CARDS
 // ==========================================
@@ -212,7 +321,7 @@ async function loadCards() {
     }
 
     const totalCustomers =
-        await getCustomerCount();
+    await getDashboardCustomerCount();
 
     const totalCustomersElement =
         document.getElementById("totalCustomers");

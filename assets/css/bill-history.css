@@ -691,3 +691,34 @@ input[placeholder*="Search by Bill"] {
 input[placeholder*="Search by Bill"]::placeholder {
     color: #cbd5e1;
 }
+
+/* ==========================================
+   BILL HISTORY - MOBILE OUTSTANDING CARD
+   ========================================== */
+
+@media (max-width: 768px) {
+
+    /* Make Outstanding Credit occupy both columns */
+    .outstanding-credit-card {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* If the cards use Bootstrap columns,
+       expand the parent column instead. */
+    .row > [class*="col"]:has(> .outstanding-credit-card) {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Prevent long amounts from overflowing */
+    .outstanding-credit-card h2,
+    .outstanding-credit-card h3,
+    .outstanding-credit-card strong {
+        overflow-wrap: anywhere;
+    }
+
+}
