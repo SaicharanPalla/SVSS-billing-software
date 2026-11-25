@@ -802,7 +802,7 @@ function viewBill(billNo) {
 
     <td>${item.code}</td>
 
-    <td>${item.productName}</td>
+    <td>${escapeEditValue(item.productName)}</td>
 
     <td>${item.unit}</td>
 

@@ -1017,3 +1017,26 @@ body{
     }
 
 }
+
+@media screen and (max-width: 992px) {
+    .invoice .table-section {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .invoice .table-section .product-table {
+        min-width: 620px;
+    }
+
+    .invoice :is(.header-left, .header-right, .info-section > *, .bottom-wrapper > *) {
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .invoice :is(.summary-box, .footer-right) {
+        min-width: 0;
+        max-width: 100%;
+    }
+}

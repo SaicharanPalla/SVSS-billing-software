@@ -45,6 +45,62 @@ function formatCurrency(value) {
     });
 
 }
+function getCustomerPaymentTotals(customer) {
+
+    const money = value =>
+        Number(
+            String(value ?? 0).replace(/[^0-9.-]/g, "")
+        ) || 0;
+
+    const bills = Array.isArray(customer.bills)
+        ? customer.bills
+        : [];
+
+    const history = Array.isArray(customer.paymentHistory)
+        ? customer.paymentHistory
+        : [];
+
+    const billPaid = bills.reduce(
+        (sum, bill) => sum + money(bill.amountPaid),
+        0
+    );
+
+    const billDue = bills.reduce(
+        (sum, bill) => sum + Math.max(0, money(bill.balanceDue)),
+        0
+    );
+
+    const openingBalance = Math.max(
+        0,
+        money(customer.openingBalance)
+    );
+
+    const openingPaid = Math.min(
+        openingBalance,
+        history
+            .filter(payment =>
+                payment.allocationType === "openingBalance"
+            )
+            .reduce(
+                (sum, payment) => sum + money(payment.amount),
+                0
+            )
+    );
+
+    const openingDue = Math.max(
+        0,
+        openingBalance - openingPaid
+    );
+
+    return {
+        billPaid,
+        billDue,
+        openingPaid,
+        openingDue,
+        totalPaid: billPaid + openingPaid,
+        totalDue: billDue + openingDue
+    };
+}
 document.addEventListener("DOMContentLoaded", async () => {
 
     // ==============================
@@ -290,48 +346,14 @@ document.getElementById("saveOpeningBalance")
                     ? listCustomer.bills
                     : [];
 
-                const billBalance = customerBills.reduce(
-                    (total, bill) =>
-                        total + (Number(bill.balanceDue) || 0),
-                    0
-                );
-
-                const totalBillPaid = customerBills.reduce(
-                    (total, bill) =>
-                        total + (Number(bill.amountPaid) || 0),
-                    0
-                );
-
-                const paymentHistoryTotal =
-                    Array.isArray(listCustomer.paymentHistory)
-                        ? listCustomer.paymentHistory.reduce(
-                            (total, payment) =>
-                                total + (Number(payment.amount) || 0),
-                            0
-                        )
-                        : 0;
-
-                const openingBalancePaid = Math.max(
-                    paymentHistoryTotal - totalBillPaid,
-                    0
-                );
-
-                const remainingOpeningBalance = Math.max(
-                    amount - openingBalancePaid,
-                    0
-                );
+                const totals = getCustomerPaymentTotals(listCustomer);
 
                 listCustomer.totalBalance = Number(
-                    (
-                        billBalance + remainingOpeningBalance
-                    ).toFixed(2)
+                    totals.totalDue.toFixed(2)
                 );
-
+                
                 listCustomer.totalPaid = Number(
-                    Math.max(
-                        totalBillPaid,
-                        paymentHistoryTotal
-                    ).toFixed(2)
+                    totals.totalPaid.toFixed(2)
                 );
             }
 
@@ -396,8 +418,8 @@ document.getElementById("saveOpeningBalance")
 
     await refreshDatabase();
 
-    // Repair old/inconsistent bill balances
-    await repairLegacyBillTotals();
+    // Keep existing saved bill amounts unchanged.
+// Do not automatically repair or reallocate payments.
 
     const customers = {};
     // ==========================================
@@ -650,6 +672,7 @@ db.customers.forEach((customer, dbIndex) => {
         openingBalanceDate:
             customer.openingBalanceDate || "",
         
+        advanceReceipts: getAdvanceReceipts(customer),
         paymentHistory:
             Array.isArray(customer.paymentHistory)
                 ? customer.paymentHistory
@@ -872,86 +895,10 @@ customers[key].totalBalance += balance;
 
 Object.values(customers).forEach(customer => {
 
-    // ------------------------------------------
-    // TOTAL BILL BALANCE
-    // ------------------------------------------
+    const totals = getCustomerPaymentTotals(customer);
 
-    const billBalance =
-        (customer.bills || []).reduce(
-            (total, bill) =>
-                total +
-                (Number(bill.balanceDue) || 0),
-            0
-        );
-
-
-    // ------------------------------------------
-    // TOTAL PAID AGAINST BILLS
-    // ------------------------------------------
-
-    const totalBillPaid =
-        (customer.bills || []).reduce(
-            (total, bill) =>
-                total +
-                (Number(bill.amountPaid) || 0),
-            0
-        );
-
-
-    // ------------------------------------------
-    // TOTAL PAYMENTS RECEIVED
-    // ------------------------------------------
-
-    const paymentHistoryTotal =
-        Array.isArray(customer.paymentHistory)
-            ? customer.paymentHistory.reduce(
-                (total, payment) =>
-                    total +
-                    (Number(payment.amount) || 0),
-                0
-            )
-            : 0;
-
-
-    // ------------------------------------------
-    // PAYMENT USED FOR OPENING BALANCE
-    // ------------------------------------------
-
-    const openingPaid =
-        Math.max(
-            paymentHistoryTotal -
-            totalBillPaid,
-            0
-        );
-
-
-    // ------------------------------------------
-    // REMAINING OPENING BALANCE
-    // ------------------------------------------
-
-    const remainingOpeningBalance =
-        Math.max(
-            (Number(customer.openingBalance) || 0) -
-            openingPaid,
-            0
-        );
-
-
-    // ------------------------------------------
-    // FINAL CUSTOMER TOTALS
-    // ------------------------------------------
-
-    customer.totalPaid =
-    Number(Math.max(totalBillPaid, paymentHistoryTotal).toFixed(2));
-
-
-    customer.totalBalance =
-        Number(
-            (
-                billBalance +
-                remainingOpeningBalance
-            ).toFixed(2)
-        );
+    customer.totalPaid = totals.totalPaid;
+    customer.totalBalance = totals.totalDue;
 
 });
  
@@ -1364,6 +1311,7 @@ if (duplicateIndex >= 0) {
                 notes,
                 openingBalance: preservedOpeningBalance,
                 openingBalanceDate: preservedOpeningBalanceDate,
+                advanceReceipts: getAdvanceReceipts(oldCustomer),
                 paymentHistory: Array.isArray(oldCustomer.paymentHistory)
                     ? oldCustomer.paymentHistory
                     : [],
@@ -1576,6 +1524,191 @@ showCustomer(customer);
 // SHOW CUSTOMER DETAILS
 // MODERN CUSTOMER DETAILS DESIGN
 // ==========================================
+
+function getBillAndAdvanceSplit(received, balance) {
+    const receivedPaise = Math.round(received * 100);
+    const billPaise = Math.round(balance * 100);
+    if (!Number.isSafeInteger(receivedPaise) || !Number.isSafeInteger(billPaise) ||
+        billPaise <= 0 || receivedPaise <= billPaise) return null;
+    return { billAmount: billPaise / 100, advancePaise: receivedPaise - billPaise };
+}
+
+function getLocalPaymentDate() {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString().slice(0, 10);
+}
+
+function getAdvanceReceipts(customer) {
+    return Array.isArray(customer.advanceReceipts) ? customer.advanceReceipts : [];
+}
+
+function getAdvanceApplications(customer) {
+    const history = Array.isArray(customer.paymentHistory) ? customer.paymentHistory : [];
+    return history.filter(payment => payment.paymentSource === "advance");
+}
+
+function getAvailableAdvancePaise(customer, throughDate = null) {
+    const included = record => !throughDate || record.date <= throughDate;
+    const received = getAdvanceReceipts(customer).filter(included)
+        .reduce((total, receipt) => total + receipt.amountPaise, 0);
+    const used = getAdvanceApplications(customer).filter(included)
+        .reduce((total, payment) => total + Math.round(payment.amount * 100), 0);
+    return received - used;
+}
+
+function planAdvanceEdit(customer, customerBills, target, changes) {
+    const history = [...(customer.paymentHistory || [])];
+    const receipts = [...getAdvanceReceipts(customer)];
+    const paymentIndex = target.kind === "payment"
+        ? history.findIndex(payment => payment.paymentId === target.id &&
+            (payment.paymentSource === "advance" || payment.advanceReceiptId))
+        : -1;
+    const payment = history[paymentIndex];
+    const receiptId = target.kind === "receipt" ? target.id : payment?.advanceReceiptId;
+    const receiptIndex = receiptId ? receipts.findIndex(receipt => receipt.receiptId === receiptId) : -1;
+    const receipt = receipts[receiptIndex];
+
+    if ((target.kind === "payment" && !payment) ||
+        (receiptId && !receipt) || (!payment && (!receipt || receipt.paymentId)) ||
+        (payment?.advanceReceiptId && receipt?.paymentId !== payment.paymentId)) {
+        throw new Error("The linked advance record could not be found. Reopen Customer Details and try again.");
+    }
+
+    const originalAmount = payment ? Math.round(paymentHistoryAmount(payment.amount) * 100) : 0;
+    const amountPaise = changes ? Math.round(changes.amount * 100) : 0;
+    const date = changes && normalizePaymentHistoryDate(changes.date);
+    if (changes && (!date || date > getLocalPaymentDate() ||
+        !Number.isSafeInteger(amountPaise) || amountPaise <= 0)) {
+        throw new Error("Enter a valid date and an amount greater than zero.");
+    }
+
+    let updatedBill = null;
+    let bill = null;
+
+    if (payment) {
+        const allocations = payment.allocations;
+        if (!Array.isArray(allocations) || allocations.length !== 1 ||
+            Math.round(paymentHistoryAmount(allocations[0].amount) * 100) !== originalAmount) {
+            throw new Error("This entry does not have a single verified bill allocation.");
+        }
+        const allocation = allocations[0];
+        const matches = customerBills.filter(item =>
+            String(item.billNo) === String(allocation.billNo) &&
+            String(item.date) === String(allocation.date)
+        );
+        if (matches.length !== 1) throw new Error("The linked bill could not be identified.");
+        bill = matches[0];
+        if (changes && (!normalizePaymentHistoryDate(bill.date) ||
+            date < normalizePaymentHistoryDate(bill.date))) {
+            throw new Error("The date cannot be earlier than the bill date.");
+        }
+
+        const newBillAmount = changes ? (receipt ? originalAmount : amountPaise) : 0;
+        const delta = newBillAmount - originalAmount;
+        const paid = Math.round(paymentHistoryAmount(bill.amountPaid) * 100) + delta;
+        const due = Math.round(paymentHistoryAmount(bill.balanceDue) * 100) - delta;
+        if (paid < 0 || due < 0) throw new Error("The new amount exceeds what can be applied to the linked bill.");
+        if (delta) {
+            updatedBill = { ...bill, amountPaid: paid / 100, balanceDue: due / 100,
+                paymentStatus: due === 0 ? "Paid" : "Pending" };
+        }
+
+        if (changes) {
+            history[paymentIndex] = {
+                ...payment, date, amount: newBillAmount / 100,
+                paymentMode: receipt ? changes.mode : "Advance",
+                remarks: changes.remarks,
+                allocations: [{ ...allocation, amount: newBillAmount / 100 }]
+            };
+        } else {
+            history.splice(paymentIndex, 1);
+        }
+    }
+
+    if (receipt) {
+        if (changes) {
+            const newAdvance = amountPaise - originalAmount;
+            if (newAdvance <= 0) throw new Error("The full receipt must exceed the linked bill portion.");
+            receipts[receiptIndex] = {
+                ...receipt, date, amountPaise: newAdvance,
+                paymentMode: changes.mode, remarks: changes.remarks
+            };
+        } else {
+            receipts.splice(receiptIndex, 1);
+        }
+    }
+
+    const nextCustomer = { ...customer, paymentHistory: history, advanceReceipts: receipts };
+    const dates = new Set([...receipts, ...getAdvanceApplications(nextCustomer)].map(entry => entry.date));
+    for (const date of dates) {
+        const available = getAvailableAdvancePaise(nextCustomer, date);
+        if (!Number.isSafeInteger(available) || available < 0) {
+            throw new Error("This change would leave an advance application without enough funds. Edit or delete that application first.");
+        }
+    }
+    return { customer: nextCustomer, bill, updatedBill };
+}
+
+function renderAdvanceHistory(customer) {
+    const entries = [
+        ...getAdvanceReceipts(customer).map(receipt => ({
+            ...receipt,
+            activity: receipt.paymentId ? "Advance received with bill payment" : "Advance received"
+        })),
+        ...getAdvanceApplications(customer).map(payment => ({
+            ...payment,
+            activity: "Applied to " + getPaymentAppliedTo(payment, customer.bills || []),
+            amountPaise: -Math.round(payment.amount * 100)
+        }))
+    ].sort((a, b) => String(b.date).localeCompare(String(a.date)) ||
+        String(b.createdAt).localeCompare(String(a.createdAt)));
+
+    document.getElementById("customerAvailableAdvance").textContent =
+        formatCurrency(getAvailableAdvancePaise(customer) / 100);
+
+    const body = document.getElementById("advanceHistoryBody");
+    body.replaceChildren();
+
+    if (!entries.length) {
+        const cell = body.insertRow().insertCell();
+        cell.colSpan = 6;
+        cell.className = "text-center";
+        cell.textContent = "No advance receipts recorded";
+        return;
+    }
+
+    for (const receipt of entries) {
+        const row = body.insertRow();
+        for (const value of [
+            formatDate(receipt.date),
+            receipt.activity,
+            formatCurrency(receipt.amountPaise / 100),
+            receipt.paymentMode,
+            receipt.remarks || "—"
+        ]) {
+            row.insertCell().textContent = value;
+        }
+
+        const actions = row.insertCell();
+        const isReceipt = Boolean(receipt.receiptId);
+        const id = isReceipt && !receipt.paymentId ? receipt.receiptId : receipt.paymentId;
+        if (!id) continue;
+        const target = { kind: isReceipt && !receipt.paymentId ? "receipt" : "payment", id };
+
+        for (const [label, color, handler] of [
+            ["Edit", "primary", () => openAdvanceEdit(target)],
+            ["Delete", "danger", () => deleteAdvanceEntry(target)]
+        ]) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn btn-sm btn-outline-" + color + " me-1";
+            button.textContent = label;
+            button.addEventListener("click", handler);
+            actions.append(button);
+        }
+    }
+}
 
 function showCustomer(customer) {
 
@@ -1870,64 +2003,19 @@ function showCustomer(customer) {
     // ==========================================
 // CALCULATE FINAL BALANCE DUE
 // ==========================================
+const paymentTotals = getCustomerPaymentTotals(customer);
 
-// Total payments received from payment history
-const paymentHistoryTotal =
-    Array.isArray(customer.paymentHistory)
-        ? customer.paymentHistory.reduce(
-            (total, payment) =>
-                total +
-                (Number(payment.amount) || 0),
-            0
-        )
-        : 0;
+totalPaid = Number(
+    paymentTotals.totalPaid.toFixed(2)
+);
 
+totalBalance = Number(
+    paymentTotals.totalDue.toFixed(2)
+);
 
-// Total amount already paid against bills
-const totalBillPaid =
-    customerBills.reduce(
-        (total, bill) =>
-            total +
-            (Number(bill.amountPaid) || 0),
-        0
-    );
-
-
-// Payment remaining after clearing bills
-const openingBalancePaid =
-    Math.max(
-        paymentHistoryTotal -
-        totalBillPaid,
-        0
-    );
-
-
-// Remaining original opening balance
-const remainingOpeningBalance =
-    Math.max(
-        openingBalance -
-        openingBalancePaid,
-        0
-    );
-
-
-// Final customer balance
-totalBalance =
-    Number(
-        (
-            totalBalance +
-            remainingOpeningBalance
-        ).toFixed(2)
-    );
-
-
-    totalPurchase =
-        Number(
-            totalPurchase.toFixed(2)
-        );
-    
-     totalPaid =
-    Number(Math.max(totalBillPaid, paymentHistoryTotal).toFixed(2));
+totalPurchase = Number(
+    totalPurchase.toFixed(2)
+);
 
 
     // ==========================================
@@ -2048,10 +2136,58 @@ totalBalance =
 
         if (summaryRow) {
 
-            summaryRow.insertAdjacentElement(
-                "afterend",
-                openingCard
-            );
+            const balanceSummaryRow =
+    document.createElement("div");
+
+balanceSummaryRow.id =
+    "customerBalanceSummaryRow";
+
+balanceSummaryRow.style.display = "grid";
+
+balanceSummaryRow.style.gridTemplateColumns =
+    "minmax(0, 3fr) minmax(0, 1fr)";
+
+balanceSummaryRow.style.gap = "16px";
+
+balanceSummaryRow.style.alignItems = "stretch";
+
+summaryRow.insertAdjacentElement(
+    "afterend",
+    balanceSummaryRow
+);
+
+balanceSummaryRow.appendChild(openingCard);
+
+openingCard.style.margin = "0";
+openingCard.style.gridColumn = "auto";
+
+const advanceCard = document.createElement("div");
+
+advanceCard.id = "customerAdvanceSummary";
+
+advanceCard.className =
+    "customer-summary-card customer-summary-advance";
+
+advanceCard.innerHTML = `
+    <div class="customer-summary-icon">
+        <i class="bi bi-wallet2"></i>
+    </div>
+
+    <div>
+        <div class="customer-summary-title">
+            Available Advance
+        </div>
+
+        <div
+            id="customerAvailableAdvance"
+            class="customer-summary-value"
+        >
+            —
+        </div>
+    </div>
+`;
+
+balanceSummaryRow.appendChild(advanceCard);
 
         }
 
@@ -2100,6 +2236,7 @@ totalBalance =
     // SHOW MODAL
     // ==========================================
 
+    renderAdvanceHistory(customer);
     customerModal.show();
 
 }
@@ -2412,36 +2549,11 @@ function loadBillHistory(customer) {
                 : [];
 
         // Total amount already paid against bills
-        const totalBillPaid =
-            customerBills.reduce(
-                (total, bill) =>
-                    total + (Number(bill.amountPaid) || 0),
-                0
-            );
+        const paymentTotals = getCustomerPaymentTotals(customer);
 
-        // Total payments received from payment history
-        const paymentHistoryTotal =
-            Array.isArray(customer.paymentHistory)
-                ? customer.paymentHistory.reduce(
-                    (total, payment) =>
-                        total + (Number(payment.amount) || 0),
-                    0
-                )
-                : 0;
+const openingBalancePaid = paymentTotals.openingPaid;
 
-        // Amount paid towards opening balance
-        const openingBalancePaid =
-            Math.max(
-                paymentHistoryTotal - totalBillPaid,
-                0
-            );
-
-        // Remaining opening balance
-        const remainingOpeningBalance =
-            Math.max(
-                openingBalance - openingBalancePaid,
-                0
-            );
+const remainingOpeningBalance = paymentTotals.openingDue;
 
         const openingRow =
             document.createElement("tr");
@@ -2746,6 +2858,166 @@ function addPaymentHistoryHeader() {
 // ==========================================
 // PAYMENT HISTORY
 // ==========================================
+// ==========================================
+// AUTOMATIC PAYMENT ALLOCATION LABEL
+// ==========================================
+
+function getPaymentAllocationRows(payment, customerBills) {
+    if (payment.allocationType === "openingBalance") {
+        return [{ label: "Opening Balance", amount: payment.amount }];
+    }
+
+    function billLabel(billNo, date) {
+        const number = String(billNo ?? "").trim();
+        if (!number) return "";
+
+        const matches = customerBills.filter(bill =>
+            String(bill.billNo ?? "").trim() === number &&
+            (!date || String(bill.date ?? "") === String(date))
+        );
+
+        if (matches.length === 1) {
+            const bookNo = String(matches[0].billBookNo ?? "").trim();
+            if (bookNo && bookNo !== "-") return bookNo;
+        }
+
+        return `Bill ${number}`;
+    }
+
+    if (payment.allocations == null && payment.allocationType === "bill") {
+        const label = billLabel(
+            payment.allocationBillNo,
+            payment.allocationBillDate
+        );
+        return [{ label: label || "Not recorded" }];
+    }
+
+    if (!Array.isArray(payment.allocations) || !payment.allocations.length) {
+        return [{ label: "Not recorded" }];
+    }
+
+    const rows = [];
+    let allocatedPaise = 0;
+
+    for (const allocation of payment.allocations) {
+        const label = billLabel(allocation?.billNo, allocation?.date);
+        const paise = Math.round(Number(allocation?.amount) * 100);
+
+        if (!label || !Number.isSafeInteger(paise) || paise <= 0) continue;
+
+        rows.push({ label, amount: paise / 100 });
+        allocatedPaise += paise;
+    }
+
+    if (!rows.length) return [{ label: "Not recorded" }];
+
+    if (
+        rows.length !== payment.allocations.length ||
+        allocatedPaise !== Math.round(payment.amount * 100)
+    ) {
+        rows.push({ label: "Allocation incomplete" });
+    }
+
+    return rows;
+}
+
+function getPaymentAppliedTo(payment, customerBills) {
+    const rows = getPaymentAllocationRows(payment, customerBills);
+    if (rows.length === 1) return rows[0].label;
+
+    return rows.map(({ label, amount }) =>
+        amount == null
+            ? label
+            : `${label}: ₹${amount.toLocaleString("en-IN")}`
+    ).join(" + ");
+}
+function togglePaymentDetails(button, payment, customerBills, paymentHistoryBody) {
+    const row = button.closest("tr");
+    const index = button.dataset.paymentIndex;
+    const wasExpanded = button.getAttribute("aria-expanded") === "true";
+    const openButton = paymentHistoryBody.querySelector(
+        '.viewPaymentHistoryBtn[aria-expanded="true"]'
+    );
+
+    if (openButton) {
+        openButton.setAttribute("aria-expanded", "false");
+        openButton.removeAttribute("aria-controls");
+        openButton.textContent = "View";
+        openButton.closest("tr").classList.remove("payment-row-expanded");
+    }
+
+    paymentHistoryBody.querySelector(".payment-detail-row")?.remove();
+    if (wasExpanded) return;
+
+    const detailRow = document.createElement("tr");
+    detailRow.className = "payment-detail-row";
+    detailRow.id = `payment-detail-${index}`;
+
+    const cell = detailRow.insertCell();
+    cell.colSpan = row.cells.length;
+    cell.innerHTML = `
+        <section class="payment-inline-panel" aria-label="Payment Details">
+            <h6>Payment Details</h6>
+            <div class="payment-inline-grid">
+                <div>
+                    <div class="payment-inline-amount"></div>
+                    <div class="payment-inline-date"></div>
+                    <span class="badge bg-secondary payment-inline-mode"></span>
+                </div>
+                <div>
+                    <strong>Applied To</strong>
+                    <ul class="payment-inline-allocations"></ul>
+                </div>
+                <div>
+                    <strong>Remarks</strong>
+                    <div class="payment-inline-remarks"></div>
+                </div>
+            </div>
+        </section>
+    `;
+
+    const money = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR"
+    });
+    const amount = paymentHistoryAmount(payment.amount);
+    const date = payment.date || payment.createdAt?.split("T")[0];
+
+    cell.querySelector(".payment-inline-amount").textContent =
+        money.format(amount);
+    cell.querySelector(".payment-inline-date").textContent =
+        date ? formatDate(date) : "—";
+    cell.querySelector(".payment-inline-mode").textContent =
+        payment.paymentMode || "Cash";
+    cell.querySelector(".payment-inline-remarks").textContent =
+        payment.remarks || "—";
+
+    const list = cell.querySelector(".payment-inline-allocations");
+    for (const { label, amount: allocatedAmount } of getPaymentAllocationRows(
+        { ...payment, amount },
+        customerBills
+    )) {
+        const item = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = label;
+        item.append(name);
+
+        if (allocatedAmount != null) {
+            const value = document.createElement("strong");
+            value.textContent = money.format(allocatedAmount);
+            item.append(value);
+        }
+
+        list.append(item);
+    }
+
+    row.after(detailRow);
+    row.classList.add("payment-row-expanded");
+    button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-controls", detailRow.id);
+    button.textContent = "Hide";
+    detailRow.scrollIntoView({ block: "nearest" });
+}
 
 function loadPaymentHistory(customer) {
 
@@ -2908,90 +3180,65 @@ const totalBillPaid =
 // ==========================================
 // CALCULATE PAYMENT HISTORY
 // ==========================================
+// ==========================================
+// PAYMENT HISTORY - RUNNING BALANCE
+// ==========================================
 
-let runningPaid = 0;
+const money = value =>
+    Number(
+        String(value ?? 0).replace(/[^0-9.-]/g, "")
+    ) || 0;
 
-const calculatedPayments =
-    chronologicalPayments.map(
-        payment => {
+// Original purchases and opening balance
+const totalStartingAmount =
+    totalBillPurchase + openingBalance;
 
-            const amount =
-                Number(
-                    payment.amount
-                ) || 0;
+// Bill payments already recorded in amountPaid
+const savedBillPaid = totalBillPaid;
 
-
-            runningPaid =
-                Number(
-                    (
-                        runningPaid +
-                        amount
-                    ).toFixed(2)
-                );
-
-
-            // ==========================================
-            // PAYMENT USED AGAINST OPENING BALANCE
-            // ==========================================
-
-            const openingPaid =
-                Math.max(
-                    runningPaid -
-                    totalBillPaid,
-                    0
-                );
-
-
-            // ==========================================
-            // REMAINING OPENING BALANCE
-            // ==========================================
-
-            const remainingOpeningBalance =
-                Math.max(
-                    openingBalance -
-                    openingPaid,
-                    0
-                );
-
-
-            // ==========================================
-            // REMAINING BILL BALANCE
-            // ==========================================
-
-            const remainingBillBalance =
-                Math.max(
-                    totalBillPurchase -
-                    Math.min(
-                        runningPaid,
-                        totalBillPaid
-                    ),
-                    0
-                );
-
-
-            // ==========================================
-            // FINAL BALANCE AFTER THIS PAYMENT
-            // ==========================================
-
-            const balanceDue =
-                Number(
-                    (
-                        remainingBillBalance +
-                        remainingOpeningBalance
-                    ).toFixed(2)
-                );
-
-
-            return {
-                ...payment,
-                amount,
-                totalPaid: runningPaid,
-                balanceDue,
-                historyIndex: customer.paymentHistory.indexOf(payment)
-            };
-
-        }
+// Explicit later bill payments are already included
+// in amountPaid, so exclude them from starting paid.
+const allocatedBillPayments = chronologicalPayments
+    .filter(payment => payment.allocationType === "bill")
+    .reduce(
+        (sum, payment) => sum + money(payment.amount),
+        0
     );
+
+const paidAtPurchase = Math.max(
+    0,
+    savedBillPaid - allocatedBillPayments
+);
+
+// Starting balance before the listed payments
+let runningBalance = Math.max(
+    0,
+    totalStartingAmount - paidAtPurchase
+);
+
+let runningPaid = paidAtPurchase;
+
+const calculatedPayments = chronologicalPayments.map(payment => {
+
+    const amount = money(payment.amount);
+
+    runningPaid = Number(
+        (runningPaid + amount).toFixed(2)
+    );
+
+    runningBalance = Number(
+        Math.max(0, runningBalance - amount).toFixed(2)
+    );
+
+    return {
+        ...payment,
+        amount,
+        totalPaid: runningPaid,
+        balanceDue: runningBalance,
+        historyIndex: customer.paymentHistory.indexOf(payment)
+    };
+
+});
 
 
 // ==========================================
@@ -3014,7 +3261,7 @@ const calculatedPayments =
             const balanceDue =
                 Number(payment.balanceDue) || 0;
 
-            row.innerHTML = `
+                        row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${formatDate(payment.date || payment.createdAt?.split("T")[0])}</td>
                 <td class="payment-amount">Rs.${amount.toFixed(2)}</td>
@@ -3025,12 +3272,31 @@ const calculatedPayments =
                         ${payment.paymentMode || "Cash"}
                     </span>
                 </td>
+                <td class="payment-applied-to"></td>
                 <td>${payment.remarks || "-"}</td>
                 <td class="payment-history-actions">
-                    <button type="button" class="btn btn-sm btn-outline-primary editPaymentHistoryBtn" data-payment-index="${payment.historyIndex}">Edit</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger deletePaymentHistoryBtn" data-payment-index="${payment.historyIndex}">Delete</button>
+                    <div class="d-inline-flex flex-nowrap align-items-center gap-1">
+                                               <button type="button"
+                                class="btn btn-sm btn-outline-info viewPaymentHistoryBtn"
+                                data-payment-index="${payment.historyIndex}"
+                                aria-expanded="false">View</button>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary editPaymentHistoryBtn"
+                                data-payment-index="${payment.historyIndex}">Edit</button>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger deletePaymentHistoryBtn"
+                                data-payment-index="${payment.historyIndex}">Delete</button>
+                    </div>
                 </td>
             `;
+
+            row.querySelector(".payment-applied-to").textContent =
+                getPaymentAppliedTo(payment, customerBills);
+
+            const viewButton = row.querySelector(".viewPaymentHistoryBtn");
+            viewButton.addEventListener("click", () => {
+                togglePaymentDetails(viewButton, payment, customerBills, tbody);
+            });
 
             tbody.appendChild(row);
         }
@@ -3319,6 +3585,7 @@ async function savePaymentHistoryChanges(nextHistory) {
 }
 
 let editingPaymentIndex = -1;
+let editingAdvanceTarget = null;
 
 const paymentHistoryBody =
     document.getElementById("paymentHistoryBody");
@@ -3338,6 +3605,77 @@ const paymentEditMode =
 const paymentEditRemarks =
     document.getElementById("paymentEditRemarks");
 
+function openAdvanceEdit(target) {
+    const history = currentCustomer?.paymentHistory || [];
+    const payment = target.kind === "payment" && history.find(item => item.paymentId === target.id);
+    const receipt = getAdvanceReceipts(currentCustomer || {}).find(item =>
+        item.receiptId === (target.kind === "receipt" ? target.id : payment?.advanceReceiptId)
+    );
+    const entry = payment || receipt;
+    if (!entry) return;
+
+    editingPaymentIndex = -1;
+    editingAdvanceTarget = target;
+    paymentEditDate.value = normalizePaymentHistoryDate(entry.date) || "";
+    paymentEditAmount.value = (
+        (payment ? paymentHistoryAmount(payment.amount) : 0) +
+        (receipt ? receipt.amountPaise / 100 : 0)
+    ).toFixed(2);
+    paymentEditMode.disabled = Boolean(payment?.paymentSource === "advance");
+    paymentEditMode.value = receipt?.paymentMode || payment?.paymentMode || "Cash";
+    paymentEditRemarks.value = entry.remarks || "";
+    document.getElementById("advanceEditHint").textContent = payment && receipt
+        ? "Enter the full receipt. The amount paid to the bill stays the same."
+        : payment ? "Changes update this bill and available advance." : "Changes update the cash receipt and available advance.";
+    paymentHistoryEditForm.style.display = "block";
+    paymentHistoryEditForm.scrollIntoView({ block: "nearest" });
+    paymentEditAmount.focus();
+}
+
+async function saveAdvanceChange(target, changes) {
+    if (!currentCustomer || paymentSaveInProgress) return;
+    paymentSaveInProgress = true;
+    const identity = currentCustomer;
+    try {
+        if (!paymentCloudSyncPending) {
+            await refreshDatabase();
+            const customer = db.customers.find(item => identity.customerId
+                ? String(item.customerId) === String(identity.customerId)
+                : item.name === identity.name && item.mobile === identity.mobile);
+            if (!customer) throw new Error("Customer record was not found.");
+            const plan = planAdvanceEdit(customer, getCustomerBillsForPaymentHistory(customer), target, changes);
+            const next = {
+                ...db,
+                customers: db.customers.map(item => item === customer ? plan.customer : item),
+                bills: plan.updatedBill ? bills.map(bill => bill === plan.bill ? plan.updatedBill : bill) : bills
+            };
+            await window.api.saveDatabase(next);
+            db = next;
+            bills = next.bills;
+            paymentCloudSyncPending = true;
+            pendingPaymentConfirmation = changes ? "Advance entry updated." : "Advance entry deleted.";
+        }
+
+        await syncPaymentCollections();
+        paymentCloudSyncPending = false;
+        sessionStorage.setItem("svssPendingPaymentNotice", pendingPaymentConfirmation);
+        window.location.reload();
+    } catch (error) {
+        showToast(paymentCloudSyncPending
+            ? "Saved locally. Repeat the action to retry cloud sync without saving it twice."
+            : error.message, "error");
+    } finally {
+        paymentSaveInProgress = false;
+    }
+}
+
+async function deleteAdvanceEntry(target) {
+    if (!paymentCloudSyncPending && !window.confirm(
+        "Delete this advance entry and update any linked bill balance?"
+    )) return;
+    await saveAdvanceChange(target, null);
+}
+
 paymentHistoryBody?.addEventListener("click", async event => {
     const button = event.target.closest(
         ".editPaymentHistoryBtn, .deletePaymentHistoryBtn"
@@ -3352,8 +3690,20 @@ paymentHistoryBody?.addEventListener("click", async event => {
     const payment = history[index];
 
     if (!payment) return;
+    if (payment.paymentSource === "advance" || payment.advanceReceiptId) {
+        const target = { kind: "payment", id: payment.paymentId };
+        if (button.classList.contains("editPaymentHistoryBtn")) {
+            openAdvanceEdit(target);
+        } else {
+            await deleteAdvanceEntry(target);
+        }
+        return;
+    }
 
     if (button.classList.contains("editPaymentHistoryBtn")) {
+        editingAdvanceTarget = null;
+        document.getElementById("advanceEditHint").textContent = "";
+        paymentEditMode.disabled = false;
         editingPaymentIndex = index;
 
         paymentEditDate.value =
@@ -3403,12 +3753,23 @@ document
     .getElementById("cancelPaymentEdit")
     ?.addEventListener("click", () => {
         editingPaymentIndex = -1;
+        editingAdvanceTarget = null;
         paymentHistoryEditForm.style.display = "none";
     });
 
 document
     .getElementById("savePaymentEdit")
     ?.addEventListener("click", async () => {
+        if (editingAdvanceTarget) {
+            await saveAdvanceChange(editingAdvanceTarget, {
+                date: paymentEditDate.value,
+                amount: parseAmountInput(paymentEditAmount.value),
+                mode: paymentEditMode.value || "Cash",
+                remarks: paymentEditRemarks.value.trim()
+            });
+            return;
+        }
+
         if (!currentCustomer || editingPaymentIndex < 0) return;
 
         const history = Array.isArray(currentCustomer.paymentHistory)
@@ -3467,29 +3828,13 @@ document
         }
     });
 function getOpeningBalanceRemaining(customer, customerBills) {
-    const history = Array.isArray(customer?.paymentHistory)
-        ? customer.paymentHistory
-        : [];
 
-    const paymentHistoryTotal = history.reduce(
-        (total, payment) => total + (Number(payment.amount) || 0),
-        0
-    );
+    const paymentTotals = getCustomerPaymentTotals({
+        ...customer,
+        bills: customerBills
+    });
 
-    const totalBillPaid = customerBills.reduce(
-        (total, bill) => total + (Number(bill.amountPaid) || 0),
-        0
-    );
-
-    const openingBalancePaid = Math.max(
-        paymentHistoryTotal - totalBillPaid,
-        0
-    );
-
-    return Math.max(
-        (Number(customer?.openingBalance) || 0) - openingBalancePaid,
-        0
-    );
+    return paymentTotals.openingDue;
 }
 
 function updatePaymentAllocationLimit() {
@@ -3515,13 +3860,28 @@ function updatePaymentAllocationLimit() {
         selectedBalance = billAmount;
     }
 
-    amountInput.max = selectedBalance.toFixed(2);
+    const splitsToAdvance = selectedRadio?.value === "billAndAdvance";
+    if (selectedRadio?.value === "advance" || splitsToAdvance) {
+        amountInput.removeAttribute("max");
+    } else {
+        amountInput.max = selectedRadio?.value === "useAdvance"
+            ? (Math.min(billAmount, Math.max(0, getAvailableAdvancePaise(currentCustomer) / 100))).toFixed(2)
+            : selectedBalance.toFixed(2);
+    }
+
+    document.getElementById("payAdvanceCard")
+        .classList.toggle("is-selected", selectedRadio?.value === "advance");
+
 
     document.getElementById("payOpeningCard")
         ?.classList.toggle("is-selected", openingRadio.checked);
 
     document.getElementById("payBillCard")
-        ?.classList.toggle("is-selected", billRadio.checked);
+        ?.classList.toggle("is-selected", billRadio.checked || splitsToAdvance);
+    document.getElementById("payBillAndAdvanceCard")
+        .classList.toggle("is-selected", splitsToAdvance);
+
+    document.getElementById("payMode").disabled = selectedRadio?.value === "useAdvance";
 
     const billRemaining = document.getElementById("payBillRemaining");
 
@@ -3542,7 +3902,10 @@ document
 document
     .getElementById("payBillSelect")
     .addEventListener("change", () => {
-        document.getElementById("payToBill").checked = true;
+        if (!document.getElementById("payFromAdvance").checked &&
+            !document.getElementById("payBillAndAdvance").checked) {
+            document.getElementById("payToBill").checked = true;
+        }
         updatePaymentAllocationLimit();
     });
 // RECEIVE PAYMENT BUTTON
@@ -3629,6 +3992,14 @@ document
         const billRadio =
             document.getElementById("payToBill");
 
+        document.getElementById("payToAdvance").checked = false;
+        const splitRadio = document.getElementById("payBillAndAdvance");
+        splitRadio.checked = false;
+        splitRadio.disabled = unpaidBills.length === 0;
+        const useAdvance = document.getElementById("payFromAdvance");
+        useAdvance.checked = false;
+        useAdvance.disabled = unpaidBills.length === 0 ||
+            getAvailableAdvancePaise(currentCustomer) <= 0;
         openingRadio.disabled = openingRemaining <= 0;
         billRadio.disabled = unpaidBills.length === 0;
         billSelect.disabled = unpaidBills.length === 0;
@@ -3647,9 +4018,9 @@ document
         updatePaymentAllocationLimit();
 
         document.getElementById("payDate").value =
-            new Date().toISOString().split("T")[0];
+            getLocalPaymentDate();
 
-        document.getElementById("payMode").value = "Cash";
+        document.getElementById("payMode").selectedIndex = 0;
         document.getElementById("payRemarks").value = "";
 
         const customerModalElement =
@@ -3763,19 +4134,46 @@ async function syncPaymentCollections() {
     if (failedSave) throw failedSave.reason;
 }
 
+async function completeReceivedPayment(confirmation, button) {
+    const result = await window.api.saveDatabase(db);
+    if (result?.success === false || result?.localSaved === false) {
+        throw new Error(result.error || "The payment could not be saved locally.");
+    }
+
+    if (window.api.isBrowser) {
+        paymentCloudSyncPending = true;
+        pendingPaymentConfirmation = confirmation;
+        button.textContent = "Saved locally. Syncing…";
+        await syncPaymentCollections();
+        paymentCloudSyncPending = false;
+    } else if (result?.cloudPending) {
+        confirmation += " Cloud sync continues in the background.";
+    }
+
+    sessionStorage.setItem("svssPendingPaymentNotice", confirmation);
+    window.location.reload();
+}
+
 document
     .getElementById("savePayment")
     .addEventListener("click", async function () {
 
         if (!currentCustomer || paymentSaveInProgress) return;
 
+        const originalLabel = this.innerHTML;
+        let completed = false;
+        paymentSaveInProgress = true;
+        this.disabled = true;
+        this.setAttribute("aria-busy", "true");
+        this.textContent = paymentCloudSyncPending ? "Retrying cloud sync…" : "Saving payment…";
+
         // Retry only the existing saved records, never add the receipt twice.
         if (paymentCloudSyncPending) {
-            paymentSaveInProgress = true;
             try {
                 await syncPaymentCollections();
                 paymentCloudSyncPending = false;
                 sessionStorage.setItem("svssPendingPaymentNotice", pendingPaymentConfirmation);
+                completed = true;
                 window.location.reload();
             } catch (syncError) {
                 console.error("Payment cloud sync retry failed.", syncError);
@@ -3784,12 +4182,15 @@ document
                     "error"
                 );
             } finally {
-                paymentSaveInProgress = false;
+                if (!completed) {
+                    paymentSaveInProgress = false;
+                    this.disabled = false;
+                    this.removeAttribute("aria-busy");
+                    this.textContent = "Retry Cloud Sync";
+                }
             }
             return;
         }
-
-        paymentSaveInProgress = true;
 
         try {
 
@@ -3889,6 +4290,7 @@ if (!paymentCustomer) {
         notes: currentCustomer.notes || "",
         openingBalance: Number(currentCustomer.openingBalance) || 0,
         openingBalanceDate: currentCustomer.openingBalanceDate || "",
+        advanceReceipts: getAdvanceReceipts(currentCustomer),
         paymentHistory: Array.isArray(currentCustomer.paymentHistory)
             ? [...currentCustomer.paymentHistory]
             : []
@@ -3912,11 +4314,47 @@ const currentBalance = Number(
     (openingRemaining + billBalance).toFixed(2)
 );
 
-const allocationType =
+const paymentTarget =
     document.querySelector('input[name="paymentAllocation"]:checked')?.value;
+const usesAdvance = paymentTarget === "useAdvance";
+const splitsToAdvance = paymentTarget === "billAndAdvance";
+const allocationType = usesAdvance || splitsToAdvance ? "bill" : paymentTarget;
+
+if (allocationType === "advance") {
+    const amountPaise = Math.round(requestedAmount * 100);
+    if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0) {
+        showToast("Enter a valid advance amount.", "error");
+        return;
+    }
+
+    const receipts = getAdvanceReceipts(paymentCustomer);
+    const balancePaise = receipts.reduce((total, receipt) =>
+        total + receipt.amountPaise, 0
+    );
+    if (!Number.isSafeInteger(balancePaise + amountPaise)) {
+        showToast("The advance balance exceeds the supported amount.", "error");
+        return;
+    }
+
+    paymentCustomer.advanceReceipts = [...receipts, {
+        receiptId: "ADV-" + globalThis.crypto.randomUUID(),
+        date: paymentDate,
+        createdAt: new Date().toISOString(),
+        amountPaise,
+        paymentMode,
+        remarks
+    }];
+
+    await completeReceivedPayment(
+        "Advance received: " + formatCurrency(amountPaise / 100),
+        this
+    );
+    completed = true;
+    return;
+}
 
 if (!allocationType) {
-    showToast("Select Opening Balance or a bill for this payment.", "error");
+    showToast("Select a target for this payment.", "error");
     return;
 }
 
@@ -3951,7 +4389,49 @@ if (allocationType === "openingBalance") {
     return;
 }
 
-if (requestedAmount > currentBalance + 0.009) {
+const split = splitsToAdvance
+    ? getBillAndAdvanceSplit(requestedAmount, targetBalance)
+    : null;
+if (splitsToAdvance) {
+    if (!split) {
+        showToast("Enter more than the selected bill balance for a bill and advance split.", "error");
+        return;
+    }
+    const billDate = normalizePaymentHistoryDate(selectedBill.date);
+    if (!billDate || paymentDate < billDate || paymentDate > getLocalPaymentDate()) {
+        showToast("Choose a payment date from the bill date through today.", "error");
+        return;
+    }
+    if (!Number.isSafeInteger(getAvailableAdvancePaise(paymentCustomer) + split.advancePaise)) {
+        showToast("The resulting advance exceeds the supported amount.", "error");
+        return;
+    }
+}
+const appliedPaymentAmount = split?.billAmount ?? requestedAmount;
+
+if (usesAdvance) {
+    const amountPaise = Math.round(requestedAmount * 100);
+    const billPaise = Math.round(targetBalance * 100);
+    const advancePaise = Math.min(
+        getAvailableAdvancePaise(paymentCustomer),
+        getAvailableAdvancePaise(paymentCustomer, paymentDate)
+    );
+
+    const billDate = normalizePaymentHistoryDate(selectedBill.date);
+    const localDate = getLocalPaymentDate();
+
+    if (paymentDate !== localDate || !billDate || paymentDate < billDate) {
+        showToast("Use today's date on a bill dated today or earlier.", "error");
+        return;
+    }
+    if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0 ||
+        amountPaise > billPaise || amountPaise > advancePaise) {
+        showToast("Advance applied cannot exceed the bill balance or available advance.", "error");
+        return;
+    }
+}
+
+if (appliedPaymentAmount > currentBalance + 0.009) {
     showToast(
         `Payment cannot be greater than the total balance due. ${formatCurrency(currentBalance)}`,
         "error"
@@ -3964,7 +4444,7 @@ const availableForAllocation =
         ? billBalance
         : openingRemaining;
 
-if (requestedAmount > availableForAllocation + 0.009) {
+if (appliedPaymentAmount > availableForAllocation + 0.009) {
     showToast(
         `Payment cannot be greater than the available balance. ${formatCurrency(availableForAllocation)}`,
         "error"
@@ -3983,13 +4463,12 @@ let paymentAllocations = [];
 
 if (allocationType === "bill") {
 
-    let remaining = Number(requestedAmount.toFixed(2));
+    let remaining = Number(appliedPaymentAmount.toFixed(2));
 
     // Selected bill gets priority.
-    const allocationOrder = [
-        selectedBill,
-        ...customerBills.filter(bill => bill !== selectedBill)
-    ];
+    const allocationOrder = usesAdvance || splitsToAdvance
+        ? [selectedBill]
+        : [selectedBill, ...customerBills.filter(bill => bill !== selectedBill)];
 
     for (const bill of allocationOrder) {
 
@@ -4178,6 +4657,8 @@ if (!dbCustomer) {
 // ENSURE PAYMENT HISTORY ARRAY
 // ==========================================
 
+if (split) dbCustomer = paymentCustomer;
+
 if (!Array.isArray(dbCustomer.paymentHistory)) {
 
     dbCustomer.paymentHistory = [];
@@ -4200,7 +4681,7 @@ const newTotalPaid =
     Number(
         (
             previousPaid +
-            Number(requestedAmount)
+            appliedPaymentAmount
         ).toFixed(2)
     );
 
@@ -4213,7 +4694,7 @@ const currentBalanceAfterPayment =
     Number(
         (
             Number(currentBalance || 0) -
-            Number(requestedAmount)
+            appliedPaymentAmount
         ).toFixed(2)
     );
 
@@ -4221,6 +4702,7 @@ const currentBalanceAfterPayment =
 // CREATE PAYMENT RECORD
 // ==========================================
 
+const splitReceiptId = split ? "ADV-" + globalThis.crypto.randomUUID() : null;
 const paymentRecord = {
 
     paymentId:
@@ -4234,7 +4716,7 @@ const paymentRecord = {
 
     amount:
         Number(
-            Number(requestedAmount).toFixed(2)
+            appliedPaymentAmount.toFixed(2)
         ),
 
     totalPaid:
@@ -4247,7 +4729,9 @@ const paymentRecord = {
         ),
 
     paymentMode:
-        paymentMode || "Cash",
+        usesAdvance ? "Advance" : (paymentMode || "Cash"),
+    ...(usesAdvance ? { paymentSource: "advance" } : {}),
+    ...(split ? { advanceReceiptId: splitReceiptId } : {}),
 
     allocationType,
     allocations:
@@ -4268,45 +4752,31 @@ const paymentRecord = {
 // SAVE PAYMENT HISTORY
 // ==========================================
 
-dbCustomer.paymentHistory.push(
-    paymentRecord
-);
+if (split) {
+    dbCustomer.advanceReceipts = [...getAdvanceReceipts(dbCustomer), {
+        receiptId: splitReceiptId,
+        paymentId: paymentRecord.paymentId,
+        date: paymentDate,
+        createdAt: paymentRecord.createdAt,
+        amountPaise: split.advancePaise,
+        paymentMode,
+        remarks
+    }];
+}
+dbCustomer.paymentHistory.push(paymentRecord);
         // ==========================================
         // SAVE DATABASE + CLOUD SYNC
         // ==========================================
         
         db.bills = bills;
         
-        // Save to local storage / Electron database
-        // Save locally first
-         try {
-             await window.api.saveDatabase(db);
-         } catch (saveError) {
-             console.error("Could not save received payment.", saveError);
-             showToast("Payment could not be saved. Please try again.", "error");
-             return;
-         }
-         
-         paymentCloudSyncPending = true;
-         const receivedAmount = Number(requestedAmount).toLocaleString("en-IN", {
-             minimumFractionDigits: 2,
-             maximumFractionDigits: 2
-         });
-         pendingPaymentConfirmation = `Amount credited: Rs. ${receivedAmount}`;
+        const receivedAmount = formatCurrency(requestedAmount);
+        const confirmation = split
+            ? "Bill paid: " + formatCurrency(split.billAmount) + " · Advance received: " + formatCurrency(split.advancePaise / 100)
+            : usesAdvance ? "Advance applied: " + receivedAmount : "Amount credited: " + receivedAmount;
 
-         // Wait until both records have finished syncing before reloading.
-         await syncPaymentCollections();
-         paymentCloudSyncPending = false;
-
-        // Preserve a confirmation across the page reload.
-        sessionStorage.setItem(
-            "svssPendingPaymentNotice",
-            pendingPaymentConfirmation
-        );
-
-        // Reload from the saved database so the Paid and Balance columns
-        // show the latest figures and the payment dialog closes.
-        window.location.reload();
+        await completeReceivedPayment(confirmation, this);
+        completed = true;
         return;
 
         } catch (paymentError) {
@@ -4325,7 +4795,12 @@ dbCustomer.paymentHistory.push(
                 );
             }
         } finally {
-            paymentSaveInProgress = false;
+            if (!completed) {
+                paymentSaveInProgress = false;
+                this.disabled = false;
+                this.removeAttribute("aria-busy");
+                if (!paymentCloudSyncPending) this.innerHTML = originalLabel;
+            }
         }
 
     });
@@ -4335,6 +4810,126 @@ dbCustomer.paymentHistory.push(
     // ==========================================
     // Print Customer Statement
     // ==========================================
+
+function getStatementAdvanceEntries(customer, customerBills) {
+    const history = Array.isArray(customer.paymentHistory) ? customer.paymentHistory : [];
+    const linkedPayments = new Map(history.filter(payment => payment.advanceReceiptId)
+        .map(payment => [payment.advanceReceiptId, payment]));
+    const entries = getAdvanceReceipts(customer).map(receipt => {
+        const billPayment = linkedPayments.get(receipt.receiptId);
+        return {
+            date: receipt.date,
+            createdAt: receipt.createdAt,
+            description: billPayment
+                ? "Advance portion of split receipt"
+                : "Advance received (" + (receipt.paymentMode || "Cash") + ")",
+            receivedPaise: receipt.amountPaise,
+            appliedPaise: 0,
+            receiptTotalPaise: billPayment
+                ? receipt.amountPaise + Math.round(paymentHistoryAmount(billPayment.amount) * 100)
+                : receipt.amountPaise
+        };
+    });
+
+    for (const payment of getAdvanceApplications(customer)) {
+        entries.push({
+            date: payment.date,
+            createdAt: payment.createdAt,
+            description: "Applied to " + getPaymentAppliedTo(payment, customerBills),
+            receivedPaise: 0,
+            appliedPaise: Math.round(paymentHistoryAmount(payment.amount) * 100),
+            receiptTotalPaise: 0
+        });
+    }
+
+    let balancePaise = 0;
+    return entries.sort((a, b) =>
+        getPaymentHistoryTimestamp(a) - getPaymentHistoryTimestamp(b) ||
+        String(a.createdAt || "").localeCompare(String(b.createdAt || ""))
+    ).map(entry => {
+        balancePaise += entry.receivedPaise - entry.appliedPaise;
+        return { ...entry, balancePaise };
+    });
+}
+
+function getStatementPaymentDescription(payment, customerBills, formatMoney) {
+    const mode = payment.paymentMode || payment.mode || "Cash";
+    const heading = payment.paymentSource === "advance"
+        ? "Advance applied"
+        : payment.advanceReceiptId
+            ? "Bill portion of split receipt (" + mode + ")"
+            : "Payment received (" + mode + ")";
+
+    if (payment.allocationType === "openingBalance") {
+        return heading + "\nApplied to Opening Balance";
+    }
+    if (payment.allocationType !== "bill" && !Array.isArray(payment.allocations)) {
+        return heading;
+    }
+
+    const allocations = getPaymentAllocationRows(payment, customerBills);
+    const details = allocations.map(({ label, amount }) => amount == null
+        ? label
+        : label + ": " + formatMoney(amount));
+    return [heading, ...details].join("\n");
+}
+
+function getStatementDeferredAllocations(payments, customerBills) {
+    const byPayment = new Map();
+    const byBill = new Map();
+
+    for (const payment of payments) {
+        if (payment.allocationType !== "bill" || !Array.isArray(payment.allocations)) continue;
+        const paidDate = normalizePaymentHistoryDate(
+            payment.date || payment.paymentDate || payment.createdAt?.split("T")[0]
+        );
+        if (!paidDate) continue;
+
+        const amounts = new Map();
+        let allocatedPaise = 0;
+        for (const allocation of payment.allocations) {
+            const paise = Math.round(paymentHistoryAmount(allocation?.amount) * 100);
+            allocatedPaise += paise;
+            if (paise <= 0 || !allocation?.billNo || !allocation.date) continue;
+
+            const matches = customerBills.filter(bill =>
+                String(bill.billNo) === String(allocation.billNo) &&
+                String(bill.date) === String(allocation.date)
+            );
+            if (matches.length !== 1) continue;
+            const bill = matches[0];
+            const billDate = normalizePaymentHistoryDate(bill.date);
+            if (billDate && billDate > paidDate) {
+                amounts.set(bill, (amounts.get(bill) || 0) + paise);
+            }
+        }
+        const receiptPaise = Math.round(paymentHistoryAmount(payment.amount) * 100);
+        if (!amounts.size || !Number.isSafeInteger(receiptPaise) ||
+            allocatedPaise !== receiptPaise) continue;
+
+        let deferredPaise = 0;
+        for (const [bill, amountPaise] of amounts) {
+            byBill.set(bill, (byBill.get(bill) || 0) + amountPaise);
+            deferredPaise += amountPaise;
+        }
+        byPayment.set(payment, deferredPaise);
+    }
+    return { byPayment, byBill };
+}
+
+function getStatementBillAllocation(payment, bill) {
+    if (payment.allocationType !== "bill") return 0;
+    const sameBill = (number, date) =>
+        String(number ?? "") === String(bill.billNo ?? "") &&
+        (!date || String(date) === String(bill.date ?? ""));
+    if (Array.isArray(payment.allocations)) {
+        return payment.allocations.reduce((sum, allocation) =>
+            sum + (sameBill(allocation.billNo, allocation.date)
+                ? paymentHistoryAmount(allocation.amount) : 0), 0);
+    }
+    return sameBill(payment.allocationBillNo, payment.allocationBillDate)
+        ? paymentHistoryAmount(payment.amount) : 0;
+}
 
     async function printCustomerStatement(customer) {
 
@@ -4452,46 +5047,27 @@ statementBills.forEach(
 // ======================================
 // TOTAL PAYMENTS FROM PAYMENT HISTORY
 // ======================================
-
-if (statementPayments.length > 0) {
-
-    statementTotalPaid =
-        statementPayments.reduce(
+// Payments already stored in bills must not be counted twice.
+const statementOpeningPaid = Math.min(
+    openingBalance,
+    statementPayments
+        .filter(payment =>
+            payment.allocationType === "openingBalance"
+        )
+        .reduce(
             (total, payment) =>
-                total +
-                (
-                    Number(
-                        payment.amount
-                    ) || 0
-                ),
+                total + (Number(payment.amount) || 0),
             0
-        );
-
-}
-
-statementTotalPaid = Math.max(
-    statementBillPaid,
-    statementTotalPaid
+        )
 );
-// ======================================
-// PAYMENT USED AGAINST OPENING BALANCE
-// ======================================
-
-const statementOpeningPaid = openingBalance > 0
-    ? Math.min(
-        openingBalance,
-        Math.max(statementTotalPaid - statementBillPaid, 0)
-    )
-    : 0;
-
-
-// ======================================
-// REMAINING OPENING BALANCE
-// ==========================================
 
 const statementRemainingOpening = Math.max(
     openingBalance - statementOpeningPaid,
     0
+);
+
+statementTotalPaid = Number(
+    (statementBillPaid + statementOpeningPaid).toFixed(2)
 );
 
 
@@ -5247,6 +5823,7 @@ if (paymentHistory.length > 0) {
 
 const movementItems = [];
 let movementOrder = 0;
+const deferredAllocations = getStatementDeferredAllocations(paymentHistory, statementBills);
 
 function statementDateTimestamp(value) {
     const displayDate = formatDate(String(value || "").split("T")[0]);
@@ -5278,26 +5855,50 @@ statementBills.forEach(bill => {
     const total = statementNumber(bill.grandTotal) ||
         statementNumber(bill.amountPaid) + statementNumber(bill.balanceDue);
 
-    movementItems.push({
-        date: bill.date || "",
-        description: "Bill " + (bill.billNo || "-") +
-            (bill.billBookNo ? " (Book " + bill.billBookNo + ")" : ""),
-        charge: total,
-        payment: 0,
-        order: movementOrder++
-    });
+    const laterBillPayments = paymentHistory.reduce(
+        (sum, payment) => sum + getStatementBillAllocation(payment, bill), 0
+    );
+
+const paidAtPurchase = Math.max(
+    0,
+    statementNumber(bill.amountPaid) - laterBillPayments
+);
+
+const fromEarlierReceipts = (deferredAllocations.byBill.get(bill) || 0) / 100;
+movementItems.push({
+    date: bill.date || "",
+    description: "Bill " + (bill.billNo || "-") +
+        (bill.billBookNo ? " (Book " + bill.billBookNo + ")" : "") +
+        (fromEarlierReceipts
+            ? "\nFrom earlier receipt: " + formatStatementMoney(fromEarlierReceipts)
+            : ""),
+    charge: total,
+    payment: paidAtPurchase + fromEarlierReceipts,
+    order: movementOrder++
+});
 });
 
 paymentHistory.forEach(payment => {
+
+    const allocatedPayment =
+        payment.allocationType === "openingBalance" ||
+        payment.allocationType === "bill";
+
+    const receivedAmount = statementNumber(payment.amount ?? payment.payment);
+    const deferredAmount = (deferredAllocations.byPayment.get(payment) || 0) / 100;
+    const description = getStatementPaymentDescription(payment, statementBills, formatStatementMoney);
     movementItems.push({
         date: payment.date || payment.paymentDate || payment.createdAt || "",
-        description: "Payment received (" +
-            (payment.paymentMode || payment.mode || "Cash") + ")",
+        description: deferredAmount
+            ? description + "\nFull receipt: " + formatStatementMoney(receivedAmount) +
+                "\nLater allocation shown on bill row."
+            : description,
         charge: 0,
-        payment: statementNumber(payment.amount ?? payment.payment),
+        payment: allocatedPayment ? receivedAmount - deferredAmount : 0,
         remarks: String(payment.remarks || "").trim() || "-",
         order: movementOrder++
     });
+
 });
 
 movementItems.sort((a, b) =>
@@ -5462,13 +6063,57 @@ y = totalBalanceY + 18;
 }
 
 
+const advanceEntries = getStatementAdvanceEntries(latestCustomer, statementBills);
+if (advanceEntries.length) {
+    if (y + 40 > pageHeight - 18) {
+        doc.addPage();
+        drawPageBorder();
+        y = 20;
+    }
+
+    doc.setTextColor(40, 40, 40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("ADVANCE ACTIVITY", 14, y);
+
+    const advanceMoney = paise => paise
+        ? formatStatementMoney(paise / 100)
+        : "-";
+
+    doc.autoTable({
+        startY: y + 4,
+        head: [["Date", "Activity", "Full Receipt", "Added to Advance", "Applied to Bills", "Available Advance"]],
+        body: advanceEntries.map(entry => [
+            formatDate(entry.date),
+            entry.description,
+            advanceMoney(entry.receiptTotalPaise),
+            advanceMoney(entry.receivedPaise),
+            advanceMoney(entry.appliedPaise),
+            formatStatementMoney(entry.balancePaise / 100)
+        ]),
+        margin: { left: 14, right: 14, bottom: 18 },
+        theme: "grid",
+        styles: { font: "helvetica", fontSize: 8, cellPadding: 2, valign: "middle" },
+        headStyles: { fillColor: [244, 180, 0], textColor: [31, 41, 55] },
+        columnStyles: {
+            0: { cellWidth: 22 }, 1: { cellWidth: 43 },
+            2: { cellWidth: 27, halign: "right" },
+            3: { cellWidth: 30, halign: "right" },
+            4: { cellWidth: 28, halign: "right" },
+            5: { cellWidth: 32, halign: "right", fontStyle: "bold" }
+        },
+        didDrawPage: drawPageBorder
+    });
+    y = doc.lastAutoTable.finalY + 10;
+}
+
 // ======================================
 // ACCOUNT SUMMARY
 // ======================================
 
 // Check page space
 
-const requiredHeight = 65;
+const requiredHeight = 81;
 
 if (
     y + requiredHeight >
@@ -5640,6 +6285,11 @@ summaryRow(
     formatStatementMoney(
         statementTotalPaid
     )
+);
+
+summaryRow(
+    "Available Advance",
+    formatStatementMoney(getAvailableAdvancePaise(latestCustomer) / 100)
 );
 
 

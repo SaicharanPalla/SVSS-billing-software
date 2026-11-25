@@ -1635,3 +1635,163 @@ body {
     }
 
 }
+
+/* Keep compact navigation clear of page content across resize breakpoints. */
+@media screen and (max-width: 1200px) {
+    body:has(.mobile-header) .main,
+    body:has(.mobile-header) .main:has(#salesReportBody) {
+        --svss-header-clearance: 92px;
+        box-sizing: border-box;
+        padding-top: var(--svss-header-clearance) !important;
+        min-width: 0;
+    }
+
+    body:has(.mobile-header) .main > :first-child {
+        margin-top: 0 !important;
+    }
+
+    body:has(.mobile-header) .main > .container-fluid:has(#addCustomerBtn) {
+        margin-top: 0 !important;
+        padding-top: 8px !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body:has(.mobile-header) .main {
+        --svss-header-clearance: 84px;
+    }
+
+    body:has(.mobile-header) .main > .container-fluid:has(#addCustomerBtn) {
+        margin-top: 0 !important;
+        padding: 4px 8px 16px !important;
+    }
+
+    body .main > .welcome-card,
+    body:has(.mobile-header) main.main > .welcome-card:first-child {
+        margin-top: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        padding: 20px 18px !important;
+    }
+
+    .main .opening-balance-receipts-scroll {
+        max-width: 100%;
+        overflow-x: auto !important;
+    }
+
+    .main .payment-summary-card :is(.payment-item, .payment-item-content) {
+        min-width: 0;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    body:has(.mobile-header) .main {
+        --svss-header-clearance: 76px;
+    }
+
+    .main .product-header,
+    .main .product-heading,
+    .main .product-heading > div:last-child {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow-wrap: anywhere;
+    }
+
+    .main .product-heading h2 {
+        white-space: normal !important;
+    }
+
+    .main :is(#openProductModal, #printBill, #addItem) {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .main .header:has(#printBill) {
+        flex-wrap: wrap;
+    }
+
+}
+
+/* Let sign-in scroll from the top on short or narrow screens. */
+@media screen and (max-width: 768px), screen and (max-height: 720px) {
+    body:has(.login-container) {
+        overflow: auto;
+    }
+
+    body .login-container {
+        height: auto;
+        min-height: 100vh;
+        align-items: start;
+    }
+
+    body .login-container .right-panel {
+        min-width: 0;
+        align-items: flex-start;
+    }
+
+    body .login-container .login-card {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    body:has(.login-container) .toast {
+        min-width: 0;
+        max-width: calc(100vw - 32px);
+        right: 16px;
+    }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+    #customerModal .modal-dialog {
+        left: auto !important;
+        width: calc(100% - 24px) !important;
+        margin-inline: auto !important;
+        transform: none !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .reports-header .filter-area > .row {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 8px !important;
+        margin: 0;
+    }
+
+    .reports-header .filter-area > .row > .col-auto {
+        width: 100% !important;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .reports-header .filter-area :is(#fromDate, #toDate) {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .reports-header .filter-area .col-auto:has(#applyFilter) {
+        grid-column: 1;
+    }
+
+    .reports-header .filter-area .col-auto:has(#resetFilter) {
+        grid-column: 3;
+    }
+}
+
+.main .container-fluid .d-flex:has(> #addCustomerBtn) {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: stretch !important;
+    max-width: 100%;
+}
+
+.main .container-fluid .d-flex:has(> #addCustomerBtn) > .btn {
+    flex: 0 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    white-space: normal;
+}

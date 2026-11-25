@@ -126,7 +126,10 @@ const billDatePicker = flatpickr("#billDate", {
 
         db.settings = settings;
 
-        await window.api.saveDatabase(db);
+        const result = await window.api.saveDatabase(db);
+        if (result?.success === false || result?.localSaved === false) {
+            throw new Error(result.error || "The bill could not be saved on this device.");
+        }
 
     }
 
@@ -146,9 +149,7 @@ const billDatePicker = flatpickr("#billDate", {
     // ==============================
 
     
-async function generateBillNumber() {
-
-    await refreshDatabase();
+function generateBillNumber() {
 
     const prefix = settings.invoicePrefix || "SVSS";
 
@@ -201,7 +202,7 @@ async function generateBillNumber() {
 }
 
 
-   await generateBillNumber();
+   generateBillNumber();
 
     // ==============================
     // FULL PAID BUTTON
@@ -273,11 +274,27 @@ let productSelectedIndex = -1;
 // Select Product
 // --------------------------------
 
+const customBillItem = document.getElementById("customBillItem");
+const customBillItemName = document.getElementById("customBillItemName");
+
+function isOtherBillItem(product) {
+    return /^other\s+items?(?:\s*\d+)?\s*\**$/i.test(String(product?.productName || "").trim());
+}
+
+customBillItemName.addEventListener("keydown", event => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    rate.focus();
+    rate.select();
+});
+
 function selectProduct(product) {
 
     selectedProduct = product;
 
     searchProduct.value = product.productName;
+    customBillItem.hidden = !isOtherBillItem(product);
+    customBillItemName.value = "";
 
     unit.value = product.unit;
     rate.value = product.Rate;
@@ -318,8 +335,7 @@ function selectProduct(product) {
     productSelectedIndex = -1;
 
 
-    // Move to Rate
-    rate.focus();
+    (customBillItem.hidden ? rate : customBillItemName).focus();
 }
 
 
@@ -371,9 +387,10 @@ function highlightProduct(index) {
 // Search Product
 // --------------------------------
 
-searchProduct.addEventListener("input", async function () {
-
-    await refreshDatabase();
+searchProduct.addEventListener("input", function () {
+    selectedProduct = null;
+    customBillItem.hidden = true;
+    customBillItemName.value = "";
 
 
     const keyword =
@@ -576,13 +593,11 @@ searchProduct.addEventListener("keydown", function (e) {
 // SAVE CUSTOMER
 // ==============================
 
-async function saveCustomer() {
+function prepareBillCustomer() {
 
     const name = customerName.value.trim();
 
     if (name === "") return;
-
-    customerDatabase = (await window.api.getCustomers()) || [];
 
     const mobileNo = mobile.value.trim();
     const customer = customerName.value.trim().toLowerCase();
@@ -668,11 +683,6 @@ customerName.dataset.customerId = newCustomer.customerId;
 
     }
 
-    await saveDatabase();
-
-    // Refresh local data immediately after saving
-    
-    
     return true;
     
     }
@@ -810,9 +820,7 @@ function highlightCustomer(index) {
 // CUSTOMER SEARCH
 // ==============================
 
-customerName.addEventListener("input", async function () {
-
-    await refreshDatabase();
+customerName.addEventListener("input", function () {
 
     const text =
         this.value.toLowerCase().trim();
@@ -1086,6 +1094,15 @@ addItem.addEventListener("click", function () {
 
     }
 
+    const productName = isOtherBillItem(selectedProduct)
+        ? customBillItemName.value.trim()
+        : selectedProduct.productName;
+    if (!productName) {
+        showToast("Enter the item name to print on this bill.", "warning");
+        customBillItemName.focus();
+        return;
+    }
+
     const qty = parseFloat(quantity.value);
 
     if (isNaN(qty) || qty <= 0) {
@@ -1120,7 +1137,7 @@ addItem.addEventListener("click", function () {
 
         code: selectedProduct.code,
 
-        productName: selectedProduct.productName,
+        productName,
 
         hsnCode: selectedProduct.hsnCode || "",
 
@@ -1180,7 +1197,7 @@ function renderBillTable() {
         
             <td>${item.code}</td>
         
-            <td>${item.productName}</td>
+            <td></td>
 
             <td>${item.unit}</td>
 
@@ -1220,6 +1237,7 @@ function renderBillTable() {
 
         `;
 
+        row.cells[2].textContent = item.productName;
         billTableBody.appendChild(row);
 
     });
@@ -1301,6 +1319,8 @@ billTableBody.addEventListener("click", function (e) {
 function clearProductSelection() {
 
     selectedProduct = null;
+    customBillItem.hidden = true;
+    customBillItemName.value = "";
 
     searchProduct.value = "";
 
@@ -1443,42 +1463,28 @@ discount.addEventListener("input", () => {
 // ==============================
 
 
-async function generateBillBookNumber() {
+function billBookSerial(value) {
+    const match = String(value ?? "").trim().match(/^B-(\d+)$/i);
+    const serial = match ? Number(match[1]) : 0;
+    return Number.isSafeInteger(serial) && serial > 0 ? serial : 0;
+}
 
-    await refreshDatabase();
+function formatBillBookNumber(serial) {
+    return "B-" + String(serial).padStart(3, "0");
+}
 
-    const highestSavedBookNo = bills.reduce((highest, bill) => {
+function normalizeBillBookNumber(value) {
+    const text = String(value ?? "").trim();
+    const serial = billBookSerial(/^\d+$/.test(text) ? "B-" + text : text);
+    return serial ? formatBillBookNumber(serial) : text;
+}
 
-        const match = String(bill.billBookNo || "")
-            .trim()
-            .match(/^B-(\d+)$/i);
-
-        if (!match) return highest;
-
-        const number = Number.parseInt(match[1], 10);
-
-        return Number.isFinite(number)
-            ? Math.max(highest, number)
-            : highest;
-
-    }, 0);
-
-    const savedNext = Number.parseInt(
-        settings.nextBillBookNo, 10
+function generateBillBookNumber() {
+    const highestSavedBookNo = bills.reduce(
+        (highest, bill) => Math.max(highest, billBookSerial(bill.billBookNo)),
+        0
     );
-
-    const validSavedNext =
-        Number.isFinite(savedNext) && savedNext > 0
-            ? savedNext
-            : 1;
-
-    const nextBillBookNo = Math.max(
-        validSavedNext,
-        highestSavedBookNo + 1
-    );
-
-    billBookNo.value =
-        "B-" + String(nextBillBookNo).padStart(3, "0");
+    billBookNo.value = formatBillBookNumber(highestSavedBookNo + 1);
 }
 
 // ==============================
@@ -1540,10 +1546,10 @@ async function resetBillForm() {
     customerName.focus();
 
     // At the very end of resetBillForm()
-await generateBillNumber();
+generateBillNumber();
 
 if (typeof generateBillBookNumber === "function") {
-    await generateBillBookNumber();
+    generateBillBookNumber();
 }
 
 }
@@ -1552,12 +1558,29 @@ if (typeof generateBillBookNumber === "function") {
 // NEW BILL
 // ==============================
 
-newBill.addEventListener("click", async function () {
+const newBillDialog = document.createElement("dialog");
+newBillDialog.className = "border rounded shadow p-3";
+newBillDialog.style.cssText = "position:fixed;inset:0;margin:auto;width:min(400px,calc(100% - 24px));height:fit-content";
+newBillDialog.setAttribute("aria-labelledby", "newBillDialogTitle");
+newBillDialog.innerHTML = '<form method="dialog">' +
+    '<h2 class="h5" id="newBillDialogTitle">Start a new bill?</h2>' +
+    '<p>The current bill form will be cleared.</p>' +
+    '<div class="d-flex justify-content-end gap-2">' +
+    '<button class="btn btn-secondary" value="cancel" autofocus>Cancel</button>' +
+    '<button class="btn btn-primary" value="start">New Bill</button>' +
+    '</div></form>';
+document.body.append(newBillDialog);
 
-    if (!confirm("Start a new bill?")) return;
+newBill.addEventListener("click", () => {
+    if (billActionInProgress || newBillDialog.open) return;
+    newBillDialog.returnValue = "";
+    newBillDialog.showModal();
+});
 
-    await resetBillForm();
-
+newBillDialog.addEventListener("close", () => {
+    if (newBillDialog.returnValue === "start") {
+        runBillAction(newBill, "Opening new bill…", resetBillForm);
+    }
 });
 // ==============================
 // TOAST MESSAGE
@@ -1775,7 +1798,12 @@ async function saveCurrentBill() {
     await refreshDatabase();
 
      const enteredBillNo = billNo.value.trim();
-     const enteredBookNo = billBookNo.value.trim();
+     const enteredBookNo = normalizeBillBookNumber(billBookNo.value);
+     if (!enteredBookNo) {
+         showToast("Enter a Bill Book No.", "warning");
+         billBookNo.focus();
+         return false;
+     }
      
      // ==========================================
      // CHECK DUPLICATE BILL NUMBER
@@ -1791,7 +1819,7 @@ async function saveCurrentBill() {
      // ==========================================
      
      const duplicateBook = bills.some(bill =>
-         String(bill.billBookNo || "").trim().toUpperCase() ===
+         normalizeBillBookNumber(bill.billBookNo).toUpperCase() ===
          enteredBookNo.toUpperCase()
      );
      
@@ -1810,15 +1838,15 @@ async function saveCurrentBill() {
              "warning"
          );
      
-         await generateBillNumber();
-         await generateBillBookNumber();
-     
+         if (duplicateBill) generateBillNumber();
+         if (duplicateBook) generateBillBookNumber();
+
          return false;
      }
      
      
      
-         await saveCustomer();
+         prepareBillCustomer();
          const contactValue = mobile.value.trim();
          
          const billMobile =
@@ -1859,9 +1887,27 @@ async function saveCurrentBill() {
         billBookNo: enteredBookNo,
 
         amountPaid:
-            parseFloat(amountPaid.value) || 0,
+    parseFloat(amountPaid.value) || 0,
 
-        balanceDue:
+    // ==========================================
+    // ORIGINAL BILLING PAYMENT RECORD
+    // ==========================================
+    
+    paymentTrackingVersion: 1,
+    
+    initialPaymentAmount:
+        parseFloat(amountPaid.value) || 0,
+    
+    initialPaymentDate:
+        billDate.value,
+    
+    initialPaymentMode:
+        paymentMode.value,
+    
+    initialPaymentRecordedAt:
+        new Date().toISOString(),
+    
+    balanceDue:
             parseFloat(
                 balanceDue.value.replace(/[^\d.]/g, "")
             ) || 0,
@@ -1910,50 +1956,6 @@ async function saveCurrentBill() {
 
 bills.push(bill);
 
-// ==========================================
-// UPDATE NEXT BILL BOOK NUMBER
-// NEVER REUSE DELETED BILL BOOK NUMBERS
-// ==========================================
-
-const savedNextBookNo =
-    Number.parseInt(settings.nextBillBookNo, 10) || 1;
-
-// Read manually entered Bill Book No.
-const enteredBookMatch =
-    enteredBookNo.match(/^B-(\d+)$/i);
-
-const enteredSerial = enteredBookMatch
-    ? Number.parseInt(enteredBookMatch[1], 10)
-    : 0;
-
-// Find highest Bill Book No. in saved bills
-const highestBillBookNo = bills.reduce((highest, savedBill) => {
-
-    const match = String(savedBill.billBookNo || "")
-        .trim()
-        .match(/^B-(\d+)$/i);
-
-    if (!match) return highest;
-
-    const number = Number.parseInt(match[1], 10);
-
-    return Number.isFinite(number)
-        ? Math.max(highest, number)
-        : highest;
-
-}, 0);
-
-// Keep the counter moving forward.
-// Never decrease it after deleting a bill.
-settings.nextBillBookNo = Math.max(
-    savedNextBookNo,
-    enteredSerial + 1,
-    highestBillBookNo + 1
-);
-
-console.log("Entered Book No:", enteredBookNo);
-console.log("Next Bill Book No:", settings.nextBillBookNo);
-    
     // ==========================================
     // SAVE TO LOCAL DATABASE
     // ==========================================
@@ -1961,34 +1963,14 @@ console.log("Next Bill Book No:", settings.nextBillBookNo);
     await saveDatabase();
 
 // ==========================================
-// CLOUD SYNC — BILLS
-// ==========================================
-
-try {
-
-    await window.api.saveBills(bills);
-
-    console.log(
-        "SVSS Cloud: Bills synchronized successfully."
-    );
-
-} catch (cloudError) {
-
-    console.warn(
-        "SVSS Cloud: Bill synchronization failed."
-    );
-
-    console.warn(cloudError);
-
+// The desktop database marks changed collections for its background sync.
+if (window.api.isBrowser) {
+    try {
+        await window.api.saveBills(bills);
+    } catch (error) {
+        console.warn("Bill saved locally. Cloud sync failed.", error);
+    }
 }
-
-// ==========================================
-// REFRESH LOCAL DATABASE
-// ==========================================
-
-await refreshDatabase();
-
-console.log("After Save:", settings.nextBillBookNo);
 
 return true;
     
@@ -1998,23 +1980,38 @@ return true;
 // SAVE BUTTON
 // ==============================
 
-saveBill.addEventListener("click", async function () {
+let billActionInProgress = false;
 
-    const ok = await saveCurrentBill();
-    
-    if (!ok) return;
-    
-    // Wait for database write to finish
-    await refreshDatabase();
-    
-    // Reset immediately
-    await resetBillForm();
-    
-    showToast(
-        "Bill Saved Successfully.",
-        "success"
-    );
+async function runBillAction(button, progressLabel, action) {
+    if (billActionInProgress || newBillDialog.open) return;
+    billActionInProgress = true;
+    const actionButtons = [saveBill, newBill, printBill, printBillBottom].filter(Boolean);
+    const disabledStates = actionButtons.map(item => item.disabled);
+    const originalLabel = button.innerHTML;
 
+    actionButtons.forEach(item => { item.disabled = true; });
+    button.textContent = progressLabel;
+    button.setAttribute("aria-busy", "true");
+
+    try {
+        await action();
+    } catch (error) {
+        console.error("Billing action failed:", error);
+        showToast(error.message || "The billing action could not be completed.", "error");
+    } finally {
+        button.innerHTML = originalLabel;
+        button.removeAttribute("aria-busy");
+        actionButtons.forEach((item, index) => { item.disabled = disabledStates[index]; });
+        billActionInProgress = false;
+    }
+}
+
+saveBill.addEventListener("click", () => {
+    runBillAction(saveBill, "Saving bill…", async () => {
+        if (!await saveCurrentBill()) return;
+        await resetBillForm();
+        showToast("Bill Saved Successfully.", "success");
+    });
 });
 
 // ==============================
@@ -2025,6 +2022,9 @@ saveBill.addEventListener("click", async function () {
 // ==============================
 
 async function printInvoice() {
+    if (!window.jspdf?.jsPDF) {
+        throw new Error("The PDF library is unavailable. Reopen Billing and try again.");
+    }
 
     // ==========================================
     // SAVE CURRENT BILL FIRST
@@ -2035,10 +2035,6 @@ async function printInvoice() {
     if (!saved) {
         return;
     }
-
-    // Reload latest database
-    await refreshDatabase();
-
 
     // ==========================================
     // CREATE PDF
@@ -3790,10 +3786,7 @@ doc.text(
     // REFRESH + RESET
     // ==========================================
 
-    await refreshDatabase();
-
     await resetBillForm();
-
 
     showToast(
         "Bill Saved & Printed Successfully.",
@@ -3808,24 +3801,10 @@ doc.text(
 // PRINT BUTTONS
 // ==============================
 
-if (printBill) {
-
-    printBill.addEventListener("click", async function () {
-
-        await printInvoice();
-
+for (const button of [printBill, printBillBottom].filter(Boolean)) {
+    button.addEventListener("click", () => {
+        runBillAction(button, "Preparing PDF…", printInvoice);
     });
-
-}
-
-if (printBillBottom) {
-
-    printBillBottom.addEventListener("click", async function () {
-
-        await printInvoice();
-
-    });
-
 }
 
 // ==============================
@@ -3840,7 +3819,7 @@ if (printBillBottom) {
 
     generateBillNumber();
     
-    await generateBillBookNumber();
+    generateBillBookNumber();
 
     calculateTotals();
 
@@ -3930,16 +3909,6 @@ quantity.addEventListener("keydown", function (e) {
         addItem.click();
 
     }
-
-});
-
-// ==============================
-// WINDOW BEFORE UNLOAD
-// ==============================
-
-window.addEventListener("beforeunload", async () => {
-
-    await saveDatabase();
 
 });
 

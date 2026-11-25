@@ -206,3 +206,114 @@ body[data-theme="orange"] .mobile-header {
 .mobile-header * {
     color: #ffffff !important;
 }
+
+/* Dashboard, Products, Billing, and Bill History in a split-screen window */
+@media (min-width: 769px) and (max-width: 1200px) {
+    body:has(.main :is(.dashboard-grid, .product-table-card, #billNo, .history-summary-grid)) .main {
+        padding-top: 92px !important;
+        min-width: 0;
+    }
+
+    .main .welcome-card {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        padding: 24px !important;
+    }
+
+    body .main .quick-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    .main .quick-actions .action-btn {
+        min-height: 48px !important;
+        min-width: 0 !important;
+    }
+
+    .main .product-stat-card {
+        min-height: 0 !important;
+        padding: 18px !important;
+    }
+
+    .main .product-table-card .product-table-wrapper,
+    .main .table-responsive:has(#historyTableBody) {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .main .product-table-card .product-table {
+        width: 100% !important;
+        min-width: 700px !important;
+        table-layout: fixed;
+    }
+
+    .main .product-table-card .product-table :is(th, td) {
+        min-width: 0 !important;
+        padding: 7px 5px !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+
+    .main .product-table-card .product-table :is(th, td):nth-child(2) {
+        width: 16% !important;
+    }
+
+    .main .product-table-card .product-table :is(th, td):nth-child(3) {
+        width: 13% !important;
+    }
+
+    .main .product-table-card .product-table :is(th, td):last-child {
+        width: 105px !important;
+    }
+
+    .main .billing-card:has(#billNo) .row:has(#billNo) > [class*="col-md-"],
+    .main .billing-card:has(#billNo) .row:has(#noOfBales) > [class*="col-md-"] {
+        flex: 0 0 auto;
+        width: 25%;
+    }
+
+    .main .billing-card:has(#billNo) .row:has(#paymentMode) > .col-md-8 {
+        width: 50%;
+    }
+
+    .main .billing-card:has(#billNo) .row:has(#paymentMode) > .col-md-2 {
+        width: 25%;
+    }
+
+    .main .billing-card:has(#searchProduct) .row:has(#searchProduct) > [class*="col-md-"] {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 68px;
+    }
+
+    .main .billing-card:has(#searchProduct) .row:has(#searchProduct) > :first-child {
+        flex: 2.4 1 0;
+        min-width: 150px;
+    }
+
+    .main .billing-card:has(#searchProduct) .row:has(#searchProduct) label {
+        font-size: 13px;
+        min-height: 20px;
+    }
+
+    .main .bulk-actions {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px !important;
+        margin: 0 !important;
+    }
+
+    .main .bulk-actions .btn {
+        width: 100% !important;
+        min-width: 0 !important;
+        white-space: normal !important;
+        font-size: 13px !important;
+    }
+
+    .main .bulk-actions .select-all-label,
+    .main .bulk-actions #selectedBillCount {
+        grid-column: span 2;
+    }
+}

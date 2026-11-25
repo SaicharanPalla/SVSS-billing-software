@@ -25,7 +25,6 @@
     <link rel="stylesheet" href="../assets/css/customers.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/theme-colors.css">
-    <link rel="stylesheet" href="../assets/css/theme-overrides.css">
     
 </head>
 
@@ -44,7 +43,7 @@
 
     <div class="mobile-title">
 
-        🏪 <span>SVSS</span>
+        <img src="../assets/images/logo.png" width="36" height="36" alt="" style="border-radius: 50%; object-fit: contain; flex: 0 0 auto;"> <span>SVSS</span>
 
     </div>
 
@@ -224,9 +223,7 @@
 
                             <th style="width:15%">Mobile/GST_No</th>
 
-                            <th style="width:220px; min-width:220px; max-width:220px;">
-                                Address
-                            </th>>
+                            <th style="width:18%">Address</th>
 
                             <th style="width:10%">Bills</th>
 
@@ -369,9 +366,9 @@
 
                     <div class="col-md-6 mb-3" id="openingBalanceFields">
 
-                        <label class="form-label">
-                            <i class="bi bi-cash-stack me-1"></i>
-                            Opening Balance
+    <label class="form-label">
+        <i class="bi bi-cash-stack me-1"></i>
+        Opening Balance
                         </label>
 
                         <input
@@ -589,6 +586,7 @@
     style="display: none;">
 
     <h6 class="mb-3">Edit Payment</h6>
+    <p id="advanceEditHint" class="mb-2"></p>
 
     <div class="row g-3">
         <div class="col-md-3">
@@ -643,6 +641,24 @@
     </div>
 </div>
 
+                    <details class="mb-3">
+                        <summary class="d-inline-block btn btn-outline-primary btn-sm fw-semibold">Advance History</summary>
+                        <div class="table-responsive mt-2">
+                            <table class="table table-sm table-bordered mb-0" aria-label="Advance History">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Activity</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Payment Mode</th>
+                                        <th scope="col">Remarks</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="advanceHistoryBody"></tbody>
+                            </table>
+                        </div>
+                    </details>
                     <div class="payment-history-box">
 
                         <div class="table-responsive">
@@ -676,7 +692,11 @@
                                         <th>
                                             Payment Mode
                                         </th>
-
+                                        
+                                        <th>
+                                            Applied To
+                                        </th>
+                                        
                                         <th>
                                             Remarks
                                         </th>
@@ -694,7 +714,7 @@
                                     <tr>
 
                                         <td
-                                           colspan="8"
+                                           colspan="9"
                                            class="text-center text-muted">
 
                                             No Payments Found
@@ -727,15 +747,6 @@
                     Print Statement
 
                 </button>
-                <button
-    type="button"
-    class="btn btn-warning"
-    id="editOpeningBalance">
-
-    <i class="bi bi-pencil-square"></i>
-    Edit Opening Balance
-
-</button>
 
                 <button
                     class="btn btn-success"
@@ -854,10 +865,10 @@
                             <i class="bi bi-credit-card"></i>
 
                             <select id="payMode" class="form-select">
+                                <option>Bank Transfer</option>
                                 <option>Cash</option>
                                 <option>UPI</option>
                                 <option>Card</option>
-                                <option>Bank Transfer</option>
                             </select>
 
                             <i class="bi bi-chevron-down select-arrow"></i>
@@ -923,11 +934,35 @@
 
                             <small id="payBillRemaining">Select an unpaid bill</small>
                         </div>
+                    <label class="payment-allocation-card" id="payAdvanceCard">
+                        <input type="radio" id="payToAdvance" name="paymentAllocation" value="advance">
+                        <span class="payment-allocation-content">
+                            <strong>Receive as Advance</strong>
+                            <small>Save this amount for a future payment.</small>
+                        </span>
+                    </label>
+
+                    <label class="payment-allocation-card">
+                        <input type="radio" id="payFromAdvance" name="paymentAllocation" value="useAdvance">
+                        <span class="payment-allocation-content">
+                            <strong>Apply Available Advance</strong>
+                            <small>Choose the bill above, then apply part of the saved advance.</small>
+                        </span>
+                    </label>
+
+                    <label class="payment-allocation-card" id="payBillAndAdvanceCard" style="grid-column: 1 / -1;">
+                        <input type="radio" id="payBillAndAdvance" name="paymentAllocation" value="billAndAdvance">
+                        <span class="payment-allocation-content">
+                            <strong>Pay Selected Bill and Keep Rest as Advance</strong>
+                            <small>Choose a bill above and enter the full amount received.</small>
+                        </span>
+                    </label>
+
                     </div>
 
                     <div class="payment-allocation-note">
                         <i class="bi bi-info-circle-fill"></i>
-                        Payment will reduce the selected balance only.
+                        Opening Balance and bill payments reduce what the customer owes. Advance receipts add to Available Advance.
                     </div>
                 </div>
             </div>
@@ -954,78 +989,6 @@
     </div>
 </div>
 
-
-<!-- EDIT OPENING BALANCE MODAL -->
-<div class="modal fade" id="editOpeningBalanceModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title">
-                    <i class="bi bi-pencil-square"></i>
-                    Edit Opening Balance
-                </h5>
-
-                <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                <!-- Opening Balance -->
-                <div class="mb-3">
-                    <label class="form-label">
-                        Opening Balance (Rs.)
-                    </label>
-
-                    <input type="text"
-                        id="editOpeningBalanceAmount"
-                        class="form-control"
-                        inputmode="decimal"
-                        placeholder="Enter opening balance">
-                </div>
-
-                <!-- Optional Date -->
-                <div class="mb-3">
-                    <label class="form-label">
-                        Opening Balance Date
-                        <span class="text-muted">(Optional)</span>
-                    </label>
-
-                    <input type="date"
-                        id="editOpeningBalanceDate"
-                        class="form-control">
-                </div>
-
-                <div class="form-text">
-                    You can leave the date empty if you don't want to enter it.
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-                    Cancel
-                </button>
-
-                <button type="button"
-                    class="btn btn-success"
-                    id="saveOpeningBalance">
-                    Save Opening Balance
-                </button>
-
-            </div>
-
-        </div>
-    </div>
-</div>
-
-
 <!-- Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -1041,7 +1004,83 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<!-- EDIT OPENING BALANCE MODAL -->
 
+<div class="modal fade"
+     id="editOpeningBalanceModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+
+                <h5 class="modal-title">
+                    Edit Opening Balance
+                </h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Opening Balance
+                    </label>
+
+                    <input type="text"
+                           id="editOpeningBalanceAmount"
+                           class="form-control"
+                           inputmode="decimal">
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Opening Balance Date
+                    </label>
+
+                    <input type="date"
+                           id="editOpeningBalanceDate"
+                           class="form-control">
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="saveOpeningBalance">
+
+                    Save Changes
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 <!-- JS -->
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="../src/js/browser-api.js"></script>

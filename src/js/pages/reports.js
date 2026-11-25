@@ -169,9 +169,23 @@ function getReportEndDate() {
     );
 }
 
+function getAdvanceRelatedBillSettlements(bill, dateMatches) {
+    return (db.customers || []).reduce((total, customer) =>
+        total + (customer.paymentHistory || []).reduce((sum, payment) => {
+            if ((payment.paymentSource !== "advance" && !payment.advanceReceiptId) ||
+                String(payment.allocationBillNo) !== String(bill.billNo) ||
+                String(payment.allocationBillDate) !== String(bill.date)) return sum;
+            const date = getBillDate({ date: payment.date });
+            return !Number.isNaN(date.getTime()) && dateMatches(date)
+                ? sum + parseAmount(payment.amount)
+                : sum;
+        }, 0), 0);
+}
+
 function getBillPaidAsOfReportDate(bill) {
-    const currentPaid = getBillPaid(bill);
     const reportEnd = getReportEndDate();
+    const futureAdvance = getAdvanceRelatedBillSettlements(bill, date => date > reportEnd);
+    const currentPaid = Math.max(0, getBillPaid(bill) - futureAdvance);
 
     const customer = (db.customers || []).find(c => {
         const sameId =
@@ -238,12 +252,13 @@ function getBillPaidAsOfReportDate(bill) {
         0
     );
 
-    if (Math.abs(historyTotal - currentPaid) > 0.01) {
+    if (Math.abs(historyTotal - getBillPaid(bill)) > 0.01) {
         return currentPaid;
     }
 
     const paymentsAfterReportDate =
         customer.paymentHistory.reduce((total, payment) => {
+            if (payment.paymentSource === "advance" || payment.advanceReceiptId) return total;
             const paymentDate = getBillDate({
                 date:
                     payment.date ||
@@ -732,6 +747,9 @@ function loadPaymentSummary(
 
         const paid =
     getBillPaidAsOfReportDate(bill);
+        const cashSettlement = Math.max(0, paid - getAdvanceRelatedBillSettlements(
+            bill, date => date <= getReportEndDate()
+        ));
 
 
         const balance =
@@ -780,17 +798,17 @@ function loadPaymentSummary(
 
                 switch (mode) {
             case "cash":
-                cash += paid;
+                cash += cashSettlement;
                 break;
 
             case "upi":
-                upi += paid;
+                upi += cashSettlement;
                 break;
 
             case "card":
             case "bank transfer":
             case "banktransfer":
-                card += paid; // This total is displayed as Bank Transfer
+                card += cashSettlement; // This total is displayed as Bank Transfer
                 break;
         }
 
@@ -1188,6 +1206,15 @@ activityBills.forEach(bill => {
          return;
      }
      
+     if (payment.advanceReceiptId || payment.paymentSource === "advance") {
+         const bill = customerBills.find(item =>
+             String(item.billNo) === String(payment.allocationBillNo) &&
+             String(item.date) === String(payment.allocationBillDate)
+         );
+         if (bill && !reportBills.includes(bill)) billPayments += paymentAmount;
+         return;
+     }
+
      let billPaymentOutsideBillDateFilter = 0;
      
      const hasDateFilter =
@@ -1286,10 +1313,27 @@ activityBills.forEach(bill => {
 // CASH + UPI + BANK TRANSFER
 // ==========================================
 
-amountReceived =
-    cash +
-    upi +
-    card;
+for (const customer of db.customers || []) {
+    const receipts = [
+        ...(customer.advanceReceipts || []).map(receipt => ({
+            ...receipt,
+            amount: receipt.amountPaise / 100
+        })),
+        ...(customer.paymentHistory || []).filter(payment => payment.advanceReceiptId)
+    ];
+    for (const receipt of receipts) {
+        if (!isDateInReportRange(getBillDate({date: receipt.date}))) continue;
+        const amount = parseAmount(receipt.amount);
+        switch (String(receipt.paymentMode || "").trim().toLowerCase()) {
+            case "cash": cash += amount; break;
+            case "upi": upi += amount; break;
+            case "bank transfer":
+            case "card": card += amount; break;
+        }
+    }
+}
+
+amountReceived = cash + upi + card;
     
 
     // ==========================================
@@ -1778,7 +1822,7 @@ function loadTables(reportBills, activityBills = reportBills) {
     topCustomersBody.innerHTML = "";
 
     const salesMap = {};
-    const productMap = {};
+    const productMap = Object.create(null);
     const customerMap = {};
 
     // ----------------------------
@@ -2000,7 +2044,7 @@ if (totalAmountElement) {
 
                 <td>${index + 1}</td>
 
-                <td>${name}</td>
+                <td></td>
 
                 <td>${data.qty}</td>
 
@@ -2010,6 +2054,7 @@ if (totalAmountElement) {
 
             `;
 
+            row.cells[1].textContent = name;
             topProductsBody.appendChild(row);
 
         });
@@ -2642,7 +2687,7 @@ function updatePaidStatementTotals(bills, amount) {
              }
 
 
-            if (payment.allocationType !== "bill") return;
+            if (payment.allocationType !== "bill" || payment.paymentSource === "advance" || payment.advanceReceiptId) return;
 
             const linkedBill = bills.find(bill =>
                 String(bill.billNo || "") ===

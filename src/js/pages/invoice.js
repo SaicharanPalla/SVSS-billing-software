@@ -627,14 +627,7 @@ document.addEventListener(
                                 ${item.code || "-"}
                             </td>
 
-                            <td>
-                                ${
-                                    item.productName ||
-                                    item.product ||
-                                    item.name ||
-                                    "-"
-                                }
-                            </td>
+                            <td></td>
 
                             <td>
                                 ${item.unit || "-"}
@@ -673,10 +666,9 @@ document.addEventListener(
                     `;
 
 
-                    tbody.insertAdjacentHTML(
-                        "beforeend",
-                        row
-                    );
+                    tbody.insertAdjacentHTML("beforeend", row);
+                    tbody.lastElementChild.cells[2].textContent =
+                        item.productName || item.product || item.name || "-";
 
                 }
             );
